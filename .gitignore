@@ -36,3 +36,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Claude Code
+# Skills live in .agents/ (tracked); .claude/skills holds machine-specific
+# absolute symlinks into it. Re-create with: npx skills add <repo> --skill <name>
+.claude/
