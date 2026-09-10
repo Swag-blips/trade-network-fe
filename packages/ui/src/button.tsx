@@ -5,32 +5,16 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 export type ButtonVariant =
   "primary" | "secondary" | "outline" | "ghost" | "destructive";
 
-export type ButtonSize = "sm" | "md";
+export type ButtonSize = "sm" | "md" | "lg";
 
-/*
- * Interaction states are pseudo-class variants, not props: Figma models Hover
- * and Pressed as component variants because it has no interaction model. Only
- * `loading` and `disabled` are props, because only those are application state.
- */
-
-/*
- * Every variant sets its own border-color, including the transparent ones.
- * Putting `border-transparent` in BASE would not work: both it and a variant's
- * border-color are the same kind of utility, so which one wins is decided by
- * Tailwind's generated stylesheet order, not by the order of the class strings.
- */
 const BASE =
   "group relative inline-flex cursor-pointer items-center justify-center " +
-  // text-body-sm/[normal]: the size token, but with Figma's line-height. As a
-  // separate `leading-[normal]` it loses to the line-height baked into the
-  // font-size utility, depending on Tailwind's output order.
-  "rounded-full border font-sans text-body-sm/[normal] font-medium " +
+  "rounded-full border font-sans font-medium " +
   "whitespace-nowrap transition-colors duration-100 ease-out " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 " +
   "disabled:cursor-not-allowed motion-reduce:transition-none";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  // Figma specifies no background change on hover — only the label drops to 50%.
   primary:
     "border-transparent bg-evergreen-600 text-white " +
     "enabled:active:bg-evergreen-800 " +
@@ -45,11 +29,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "border-evergreen-600 bg-transparent text-evergreen-600 " +
     "enabled:hover:bg-grey-100 enabled:active:bg-grey-200 " +
     "disabled:border-evergreen-600/40 disabled:bg-white disabled:text-evergreen-600/40",
-  // Figma specifies no hover or pressed change; only disabled differs.
   ghost:
     "border-transparent bg-transparent text-evergreen-600 " +
     "disabled:bg-white disabled:text-evergreen-600/40",
-  // Figma specifies the same fill for default and pressed.
   destructive:
     "border-transparent bg-destructive text-white " +
     "enabled:hover:bg-destructive-hover enabled:active:bg-destructive " +
@@ -57,8 +39,18 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, { button: string; content: string }> = {
-  md: { button: "p-xs", content: "gap-xs [&_svg]:size-5" },
-  sm: { button: "px-1.5 py-1", content: "gap-xxs [&_svg]:size-4" },
+  sm: {
+    button: "px-1.5 py-1 text-body-sm/[normal]",
+    content: "gap-xxs [&_svg]:size-4",
+  },
+  md: {
+    button: "p-xs text-body-sm/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  lg: {
+    button: "px-lg py-md text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
 };
 
 function cx(...parts: (string | false | null | undefined)[]) {
@@ -68,7 +60,6 @@ function cx(...parts: (string | false | null | undefined)[]) {
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /** Renders the dot indicator and blocks interaction. */
   loading?: boolean;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
@@ -111,8 +102,6 @@ export function Button({
           </span>
         ) : null}
       </span>
-      {/* The label stays in the DOM (invisible) so the button keeps its natural
-          width instead of jumping to the fixed 121px the Figma variant hardcodes. */}
       {loading ? (
         <span
           className="absolute inset-0 inline-flex items-center justify-center gap-[3px]"

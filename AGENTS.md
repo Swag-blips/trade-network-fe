@@ -37,6 +37,18 @@ apps/web/src/
   utils/
 ```
 
+### Routes
+
+```
+/            marketing starter page — still create-turbo boilerplate
+/home        lender dashboard  → app/(lender)/home
+```
+
+`app/(lender)/` is the signed-in lender workspace: `layout.tsx` renders the sidebar
+shell, and `components/` holds the chrome (sidebar, topbar, avatars) shared by every
+route in the group. Sibling routes the sidebar already links to — `/portfolio`,
+`/inbox`, `/matched`, `/offers` — do not exist yet and will 404.
+
 **The promotion rule:** start colocated. Move something up to `src/` the moment a
 _second_ route imports it — not in anticipation of one. A single consumer means it
 stays in the route folder.
@@ -95,6 +107,7 @@ The source of truth is the Figma style guide — _Marketing Designs | Hops_ →
 | 4. Typography | `--font-*`, `--text-*` (+ `--line-height` etc.) | `font-display`, `text-h2`          |
 | 5. Radius     | `--radius-none` … `--radius-full`               | `rounded-lg`, `rounded-full`       |
 | 6. Spacing    | `--spacing-xxs` … `--spacing-4xl`               | `p-xs`, `gap-lg`, `mt-2xl`         |
+| 7. Elevation  | `--shadow-small-thick`, `--shadow-soft-section` | `shadow-soft-section`              |
 
 The semantic layer renames Figma's labels to Tailwind's idiom, because `bg-background-primary`
 and `text-text-primary` stutter. The mapping is written out in `globals.css`:
@@ -114,9 +127,26 @@ Text Secondary → `text-foreground-muted`, Text On Dark → `text-foreground-in
 - `type-overline` is a custom `@utility`, not a size token: Overline / Label carries
   weight and uppercase too, so `text-overline` alone is not the whole style.
 
-**Fonts:** Fraunces (display serif, Display/H1–H3) and Rethink Sans (H4 and below),
-loaded via `next/font/google` in `apps/web/src/app/layout.tsx`. Don't add `<link>` tags
-or `@font-face` — go through `next/font` so Next self-hosts and preloads them.
+**Fonts — two faces, two jobs:**
+
+- `font-display` → **Fraunces** (serif). Display/H1–H3 only: the 48/36/28px marketing
+  headings. It should not appear anywhere in the signed-in app.
+- `font-sans` → **Inter**. H4 (22px) and everything below — body, labels, app chrome.
+- `font-brand` → **Rethink Sans**. In-app emphasis, only where a comp names it: the
+  dashboard greeting and the currency figures. Not general-purpose — reach for
+  `font-sans` first, and check the comp before using this.
+
+The style guide names _Rethink Sans_ for the whole sans role, but the comps draw UI in
+Inter and keep Rethink Sans for those emphasis moments, so all three faces are loaded.
+Only the family differs — the sizes, line-heights and tracking are the style guide's.
+All three load via `next/font/google` in `apps/web/src/app/layout.tsx`; don't add
+`<link>` tags or `@font-face`.
+
+**`@layer base` binds Fraunces to the `h1`–`h3` elements**, which is right for prose and
+wrong for app UI, where a heading is often a 12–16px label. Overriding only the size
+(`text-body`, `type-overline`) leaves the serif in place — the whole lender dashboard
+shipped that way until it was caught by eye. **When a heading is app chrome, say
+`font-sans` explicitly.**
 
 To pull new values from Figma, use the Figma MCP tools (`get_variable_defs` for bound
 variables, `get_metadata` for spec text baked into layer names). `get_design_context`
@@ -135,10 +165,11 @@ covered, extend that component's variant/size union rather than writing a parall
 Current inventory — `ls packages/ui/src/` is the authoritative check, this list will go
 stale:
 
-| Component | Import            | Notes                                                        |
-| --------- | ----------------- | ------------------------------------------------------------ |
-| `Button`  | `@repo/ui/button` | 5 variants × 2 sizes, `loading` / `disabled` props           |
-| `Card`    | `@repo/ui/card`   | ⚠️ untouched `create-turbo` scaffolding — rewrite before use |
+| Component | Import            | Notes                                                           |
+| --------- | ----------------- | --------------------------------------------------------------- |
+| `Button`  | `@repo/ui/button` | 5 variants × 2 sizes, `loading` / `disabled` props              |
+| `Avatar`  | `@repo/ui/avatar` | Structure only (size/shape/clip); pass the skin via `className` |
+| `Card`    | `@repo/ui/card`   | ⚠️ untouched `create-turbo` scaffolding — rewrite before use    |
 
 ```tsx
 import { Button } from "@repo/ui/button";
@@ -153,13 +184,30 @@ import { Button } from "@repo/ui/button";
 </Button>;
 ```
 
-`variant`: `primary` | `secondary` | `outline` | `ghost` | `destructive`. `size`: `md` | `sm`.
+`variant`: `primary` | `secondary` | `outline` | `ghost` | `destructive`. `size`: `sm` | `md` | `lg`.
 Everything else forwards to the underlying `<button>`.
 
 Where a new component belongs is the same promotion rule as everything else — route
 folder first, `apps/web/src/components/` when a second route needs it, `packages/ui`
 only when it is app-agnostic enough that `apps/agent` could use it too. See
 [Code organisation](#code-organisation--colocate-first).
+
+**App shell** lives in `apps/web/src/components/`, global to the web app but not
+generic enough for `packages/ui`:
+
+| Component                   | Notes                                                      |
+| --------------------------- | ---------------------------------------------------------- |
+| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props       |
+| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons |
+| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size     |
+
+`UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
+`viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
+
+**Keep the shell free of persona knowledge.** `Sidebar` knows nothing about lenders;
+`app/(lender)/components/lender-sidebar.tsx` supplies the destinations and the org
+footer. A borrower or supplier workspace adds its own config file and reuses the same
+shell — do not fork it.
 
 Components are React + Tailwind utility classes, with variants expressed as plain
 `Record<Variant, string>` maps — no `cva`, no `clsx`, just a local `cx()` join. Match
@@ -178,9 +226,6 @@ Two pieces of wiring make this work across the workspace boundary:
 as variants because Figma has no interaction model. In code those are `:hover` and
 `:active`; only application state (`disabled`, `loading`) becomes a prop. Don't mirror a
 Figma variant axis into the TypeScript API without asking what it actually represents.
-
-Live matrix of every button variant, size and state: `/buttons`
-([`app/(styleguide)/buttons`](<apps/web/src/app/(styleguide)/buttons>)).
 
 ## Icons
 
@@ -217,6 +262,19 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 - **`--text-secondary` is darker than `--text-primary`** (Cordovan `#200000` vs
   Evergreen `#023937`). That's what the Figma semantic table specifies; it reads as
   unusual but is intentional until a designer says otherwise.
+- **`next/image` will destroy a transparent PNG/WebP.** The optimiser re-encodes to
+  JPEG for any client that doesn't advertise webp/avif, and JPEG has no alpha — the
+  transparency flattens to black with no error. Pass `unoptimized` for cut-out images
+  (see the modal photo in `welcome-modal.tsx`).
+- **The Figma MCP asset server is ephemeral.** Exported asset URLs
+  (`http://localhost:3845/assets/…`) stop resolving — returning `Error getting image` —
+  as soon as the Figma desktop app switches to a different tab. Download anything you
+  need _while_ the file is the active tab, not later.
+- **The lender dashboard uses values that are off the design system**, kept verbatim
+  from Figma and marked with comments at each site: the 24px greeting and 20px stat
+  figures are not on the type scale (which jumps 18 → 22), `#e0f2fe` behind the update
+  icon is off-palette (nearest is `azure-100`), and the sidebar org avatar's gradient
+  stops sit just off the ocean ramp.
 - **Tailwind pitfalls this repo has already hit** (all three cost real debugging time):
   - **`next/font` variables must go on `<html>`, not `<body>`.** `@theme` declares
     `--font-sans` on `:root`; a `:root` variable cannot read one defined on a
@@ -237,7 +295,7 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 - **`Card` in `packages/ui` is still untouched scaffolding** (`Button` has been replaced).
 - **The Figma button matrix contradicts the style guide in places** — see
   [node 2770-1631](https://www.figma.com/design/TcbSe6y2vzc4z3MU6P8ldR/Marketing-Designs-%7C-Hops?node-id=2770-1631).
-  Its labels are set in Inter, not Rethink Sans; its Destructive fills (`#e9594e`,
+  Its Destructive fills (`#e9594e`,
   `#d92d20`) match neither each other nor the style guide's `Error / Danger` red
   (`#C0392B`). The implementation follows the style guide for the font and Figma for the
   fills. Several states are also no-ops (Primary hover, Ghost hover/pressed, Destructive

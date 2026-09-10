@@ -1,25 +1,8 @@
 @import "tailwindcss";
 
-/* @repo/ui resolves through node_modules, which Tailwind skips by default —
-   this is what makes utility classes inside the component library generate. */
 @source "../../../../packages/ui/src";
 
-/* =========================================================================
-   Trade Network — Design tokens
-   Source: Figma "Marketing Designs | Hops" → trade-network-design-system
-   Section 01: Colour Palette & Semantic Mapping
-
-   Everything in @theme becomes a Tailwind utility: --color-evergreen-600
-   generates bg-evergreen-600 / text-evergreen-600 / border-evergreen-600, and
-   likewise for --text-*, --radius-* and --spacing-*.
-   ========================================================================= */
-
 @theme {
-  /* -----------------------------------------------------------------------
-     1. Primitives — colour ramps
-     Prefer the semantic tokens in section 3 when building UI.
-     ----------------------------------------------------------------------- */
-
   --color-evergreen-50: #f0fbfa;
   --color-evergreen-100: #d7f0ee;
   --color-evergreen-200: #b8e3dd;
@@ -119,19 +102,11 @@
   --color-ochre-800: #b45309;
   --color-ochre-900: #78350f;
 
-  /* Not part of a ramp — defined only as the danger primitive. */
   --color-warm-red: #c0392b;
+  --color-tai: #4b8df9;
 
-  /* The Figma button matrix fills Destructive with two reds that match neither
-     each other's ramp nor --color-danger below. Kept verbatim, pending a
-     designer decision — see AGENTS.md. */
   --color-destructive: #e9594e;
   --color-destructive-hover: #d92d20;
-
-  /* -----------------------------------------------------------------------
-     2. Brand colours
-     The single swatch each family is identified by in the style guide.
-     ----------------------------------------------------------------------- */
 
   --color-brand-evergreen: var(--color-evergreen-900);
   --color-brand-eucalyptus: var(--color-eucalyptus-400);
@@ -142,18 +117,6 @@
   --color-brand-azure: var(--color-azure-200);
   --color-brand-ochre: var(--color-ochre-200);
 
-  /* -----------------------------------------------------------------------
-     3. Semantic tokens — what application code should reference
-
-     Figma name            Utility
-     Background Primary    bg-background
-     Background Secondary  bg-background-secondary
-     Background Inverse    bg-background-inverse
-     Text Primary          text-foreground
-     Text Secondary        text-foreground-muted
-     Text On Dark          text-foreground-inverse
-     ----------------------------------------------------------------------- */
-
   --color-background: var(--color-brand-alabaster);
   --color-background-secondary: var(--color-brand-linen);
   --color-background-inverse: var(--color-brand-evergreen);
@@ -163,88 +126,81 @@
   --color-foreground-inverse: var(--color-brand-alabaster);
 
   --color-accent: var(--color-brand-eucalyptus);
-  --color-border: rgb(155 209 198 / 40%); /* eucalyptus @ 40% */
+  --color-border: rgb(155 209 198 / 40%);
 
   --color-success: var(--color-brand-eucalyptus);
   --color-warning: var(--color-brand-ochre);
   --color-info: var(--color-brand-azure);
   --color-danger: var(--color-warm-red);
 
-  /* -----------------------------------------------------------------------
-     4. Typography
-     Fraunces (display serif) for Display/H1-H3, Rethink Sans for H4 and below.
-     Both are loaded in app/layout.tsx via next/font/google.
-     ----------------------------------------------------------------------- */
-
   --font-display: var(--font-fraunces), georgia, "times new roman", serif;
   --font-sans:
-    var(--font-rethink-sans), -apple-system, blinkmacsystemfont, "segoe ui",
-    roboto, helvetica, arial, sans-serif;
+    var(--font-inter), -apple-system, blinkmacsystemfont, "segoe ui", roboto,
+    helvetica, arial, sans-serif;
 
-  --text-display: 3rem; /* 48px */
+  --font-brand: var(--font-rethink-sans), var(--font-inter), sans-serif;
+
+  --text-display: 3rem;
   --text-display--line-height: 1.1;
-  --text-display--letter-spacing: -0.0625rem; /* -1px */
+  --text-display--letter-spacing: -0.0625rem;
 
-  --text-h2: 2.25rem; /* 36px */
+  --text-h2: 2.25rem;
   --text-h2--line-height: 1.15;
-  --text-h2--letter-spacing: -0.03125rem; /* -0.5px */
+  --text-h2--letter-spacing: -0.03125rem;
 
-  --text-h3: 1.75rem; /* 28px */
+  --text-h3: 1.75rem;
   --text-h3--line-height: 1.2;
   --text-h3--letter-spacing: 0rem;
 
-  --text-h4: 1.375rem; /* 22px */
+  --text-h4: 1.375rem;
   --text-h4--line-height: 1.3;
   --text-h4--letter-spacing: 0rem;
 
-  --text-body-lg: 1.125rem; /* 18px */
+  --text-body-lg: 1.125rem;
   --text-body-lg--line-height: 1.5;
   --text-body-lg--letter-spacing: 0rem;
 
-  --text-body: 1rem; /* 16px */
+  --text-body: 1rem;
   --text-body--line-height: 1.5;
   --text-body--letter-spacing: 0rem;
 
-  --text-body-sm: 0.875rem; /* 14px */
+  --text-body-sm: 0.875rem;
   --text-body-sm--line-height: 1.5;
   --text-body-sm--letter-spacing: 0rem;
 
-  --text-caption: 0.75rem; /* 12px */
+  --text-caption: 0.75rem;
   --text-caption--line-height: 1.4;
   --text-caption--letter-spacing: 0rem;
 
-  --text-overline: 0.75rem; /* 12px */
+  --text-overline: 0.75rem;
   --text-overline--line-height: 1.2;
-  --text-overline--letter-spacing: 0.09375rem; /* 1.5px */
+  --text-overline--letter-spacing: 0.09375rem;
 
-  /* -----------------------------------------------------------------------
-     5. Border radius scale
-     ----------------------------------------------------------------------- */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 999px;
 
-  --radius-none: 0; /* sharp edges for technical structured borders */
-  --radius-sm: 0.25rem; /* 4px  — tags, inputs, checkboxes, small labels */
-  --radius-md: 0.5rem; /* 8px  — system default: buttons, interface elements */
-  --radius-lg: 0.75rem; /* 12px — core standard: cards, system windows */
-  --radius-xl: 1rem; /* 16px — major layout hero modules, landing sections */
-  --radius-full: 999px; /* pill — secondary button outlines & badges */
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
 
-  /* -----------------------------------------------------------------------
-     6. Spacing scale — p-xs, gap-lg, mt-2xl, …
-     ----------------------------------------------------------------------- */
+  /* Guided tour: card width from Figma; spotlight covers the viewport. */
+  --spacing-tour-card: 19.25rem;
+  --shadow-tour-spotlight: 0 0 0 100vmax rgb(0 0 0 / 40%);
 
-  --spacing-xxs: 0.25rem; /* 4px */
-  --spacing-xs: 0.5rem; /* 8px */
-  --spacing-sm: 0.75rem; /* 12px */
-  --spacing-md: 1rem; /* 16px */
-  --spacing-lg: 1.5rem; /* 24px */
-  --spacing-xl: 2rem; /* 32px */
-  --spacing-2xl: 3rem; /* 48px */
-  --spacing-3xl: 4rem; /* 64px */
-  --spacing-4xl: 6rem; /* 96px */
-
-  /* -----------------------------------------------------------------------
-     7. Motion
-     ----------------------------------------------------------------------- */
+  --shadow-small-thick:
+    0 0 1px 0 #6b6b6b1a, 0 1px 1px 0 #6b6b6b17, 0 3px 2px 0 #6b6b6b0d,
+    0 5px 2px 0 #6b6b6b03, 0 8px 2px 0 #6b6b6b00;
+  --shadow-soft-section: 0 1px 3px 0 #22252408;
 
   --animate-dot-pulse: dot-pulse 1.2s ease-in-out infinite;
 
@@ -260,21 +216,9 @@
   }
 }
 
-/* =========================================================================
-   Custom utilities
-   ========================================================================= */
-
-/* The Overline / Label style is more than a size — it carries weight and
-   casing too, so `text-overline` alone is not the full style. */
 @utility type-overline {
-  @apply text-overline font-medium uppercase;
+  @apply font-sans text-overline font-medium uppercase;
 }
-
-/* =========================================================================
-   Base — the type scale applied to bare elements.
-   Use the utilities (text-display, text-h2, …) when the semantic element and
-   the visual style need to differ.
-   ========================================================================= */
 
 @layer base {
   html,

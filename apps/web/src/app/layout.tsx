@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Fraunces, Rethink_Sans } from "next/font/google";
+import { Fraunces, Inter, Rethink_Sans } from "next/font/google";
 import "./globals.css";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["500"],
   variable: "--font-fraunces",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -26,12 +32,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // The font variables must land on <html>, not <body>: Tailwind's @theme
-  // declares --font-sans/--font-display on :root, and a :root variable cannot
-  // read one defined on a descendant — the value would compute to invalid and
-  // silently fall back to the system stack.
   return (
-    <html lang="en" className={`${fraunces.variable} ${rethinkSans.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${inter.variable} ${rethinkSans.variable}`}
+    >
       <body>{children}</body>
     </html>
   );
