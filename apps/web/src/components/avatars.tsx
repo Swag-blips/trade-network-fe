@@ -60,3 +60,23 @@ export function OrgAvatar({
     />
   );
 }
+
+export function InitialsAvatar({
+  initials,
+  size = 40,
+  className = "",
+}: {
+  initials: string;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.29) }}
+      className={`inline-flex flex-none items-center justify-center overflow-hidden rounded-full border border-linen-200 bg-linen-100 font-sans font-medium text-linen-600 ${className}`}
+    >
+      {initials}
+    </span>
+  );
+}

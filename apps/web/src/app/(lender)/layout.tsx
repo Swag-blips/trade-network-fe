@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { LenderSidebar } from "./components/lender-sidebar";
+import { AgentFab } from "@/components/agent-fab";
 
 export default function LenderLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function LenderLayout({ children }: { children: ReactNode }) {
           {children}
         </div>
       </div>
+      <AgentFab />
     </div>
   );
 }

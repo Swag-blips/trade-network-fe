@@ -5,35 +5,35 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 export type ButtonVariant =
   "primary" | "secondary" | "outline" | "ghost" | "destructive";
 
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "sm" | "md" | "lg" | "form" | "flush";
 
 const BASE =
   "group relative inline-flex cursor-pointer items-center justify-center " +
-  "rounded-full border font-sans font-medium " +
+  "rounded-full font-sans font-medium " +
   "whitespace-nowrap transition-colors duration-100 ease-out " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 " +
   "disabled:cursor-not-allowed motion-reduce:transition-none";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "border-transparent bg-evergreen-600 text-white " +
+    "bg-evergreen-600 text-white " +
     "enabled:active:bg-evergreen-800 " +
     "enabled:hover:[&_[data-label]]:opacity-50 " +
     "enabled:active:[&_[data-label]]:opacity-100 " +
     "disabled:bg-evergreen-600/40",
   secondary:
-    "border-grey-200 bg-grey-100 text-grey-900 " +
+    "inset-ring inset-ring-grey-200 bg-grey-100 text-grey-900 " +
     "enabled:hover:bg-grey-200 enabled:active:bg-grey-300 " +
-    "disabled:border-grey-200 disabled:bg-grey-100 disabled:text-grey-900/40",
+    "disabled:inset-ring-grey-200 disabled:bg-grey-100 disabled:text-grey-900/40",
   outline:
-    "border-evergreen-600 bg-transparent text-evergreen-600 " +
+    "inset-ring inset-ring-evergreen-600 bg-transparent text-evergreen-600 " +
     "enabled:hover:bg-grey-100 enabled:active:bg-grey-200 " +
-    "disabled:border-evergreen-600/40 disabled:bg-white disabled:text-evergreen-600/40",
+    "disabled:inset-ring-evergreen-600/40 disabled:bg-white disabled:text-evergreen-600/40",
   ghost:
-    "border-transparent bg-transparent text-evergreen-600 " +
+    "bg-transparent text-evergreen-600 " +
     "disabled:bg-white disabled:text-evergreen-600/40",
   destructive:
-    "border-transparent bg-destructive text-white " +
+    "bg-destructive text-white " +
     "enabled:hover:bg-destructive-hover enabled:active:bg-destructive " +
     "disabled:bg-destructive-hover/20",
 };
@@ -49,6 +49,14 @@ const SIZES: Record<ButtonSize, { button: string; content: string }> = {
   },
   lg: {
     button: "px-lg py-md text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  form: {
+    button: "px-md py-xs text-body-sm/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  flush: {
+    button: "py-xs text-body-sm/[normal]",
     content: "gap-xs [&_svg]:size-5",
   },
 };
