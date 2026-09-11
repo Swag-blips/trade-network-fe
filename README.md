@@ -1,159 +1,120 @@
-# Turborepo starter
+# Trade Network
 
-This Turborepo starter is maintained by the Turborepo core team.
+A B2B trade-finance platform connecting lenders with suppliers and distributors across
+regional supply chains. This repo is a Turborepo monorepo holding the Next.js web app and
+the shared packages it is built from.
 
-## Using this example
+## Requirements
 
-Run the following command:
+| Tool    | Version   | Notes                                                      |
+| ------- | --------- | ---------------------------------------------------------- |
+| Node.js | `>= 24`   | Enforced by `engines` in the root `package.json`           |
+| pnpm    | `11.25.0` | Pinned via `packageManager` — Corepack installs it for you |
 
-```sh
-npx create-turbo@latest
+**Use pnpm.** The workspace links packages with the `workspace:*` protocol; installing
+with npm or yarn writes a second lockfile and breaks those links.
+
+If you don't have pnpm, let Corepack handle it rather than installing globally:
+
+```bash
+corepack enable
 ```
 
-## What's inside?
+## Setup
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+git clone <repo-url> trade-network && cd trade-network && pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+There are no environment variables to configure — the app currently runs entirely on
+local mock data, so a clean install is all you need.
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm exec turbo build
-pnpm exec turbo build
+## Run it
+
+```bash
+pnpm dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+The web app comes up on [http://localhost:3000](http://localhost:3000). Turbopack is on,
+so edits reload as you save.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+Signed-in routes worth opening first:
 
-```sh
-turbo build --filter=docs
+| Route               | What it is                                                 |
+| ------------------- | ---------------------------------------------------------- |
+| `/home`             | Lender dashboard                                           |
+| `/matched`          | Matched opportunities, with the offer flow                 |
+| `/offers`           | Offers list                                                |
+| `/offers/[id]`      | Negotiation timeline — counter, accept, disburse, withdraw |
+| `/portfolio`        | Funded customers                                           |
+| `/portfolio/[id]`   | Customer overview, funded trades and repayments            |
+| `/settings/profile` | Account and organisation settings                          |
+
+`/` is still unmodified `create-turbo` boilerplate, and `/inbox` does not exist yet.
+
+## Commands
+
+Run these from the repo root; Turbo fans each one out across every workspace.
+
+| Command            | What it does                                      |
+| ------------------ | ------------------------------------------------- |
+| `pnpm dev`         | Dev servers (web on :3000)                        |
+| `pnpm build`       | Production builds                                 |
+| `pnpm lint`        | ESLint — **`--max-warnings 0`, so warnings fail** |
+| `pnpm check-types` | `tsc --noEmit`                                    |
+| `pnpm format`      | Prettier over `**/*.{ts,tsx,md}`                  |
+
+Scope any of them to a single workspace with a filter:
+
+```bash
+pnpm --filter web dev
 ```
 
-Without global `turbo`:
+Before pushing, the full gate is:
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+pnpm format && pnpm check-types && pnpm lint && pnpm build
 ```
 
-### Develop
+## Layout
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```
+apps/
+  web/     Next.js 16 app (App Router) — the only app currently built
+  agent/   AI agent service — planned, not yet scaffolded
+packages/
+  ui/                @repo/ui — shared React components
+  eslint-config/     base / next-js / react-internal presets
+  typescript-config/ base / nextjs / react-library
 ```
 
-Without global `turbo`, use your package manager:
+App source lives under `apps/web/src/`, not a top-level `app/`. Code is colocated: each
+route folder owns its own `components/`, `hooks/`, `types/` and `utils/`, and only moves
+up to `src/` once a second route imports it.
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
+## Stack
+
+- **Next.js 16.3.4** (App Router, Turbopack), **React 19.2.8**, **TypeScript 7**
+- **React Compiler is enabled** — don't hand-write `useMemo` or `useCallback`
+- **Tailwind CSS v4**, configured in CSS via `@theme` in
+  [`apps/web/src/app/globals.css`](apps/web/src/app/globals.css). There is no
+  `tailwind.config.js` and there should not be one.
+- [Hugeicons](https://hugeicons.com) for icons, three Google fonts via `next/font`
+
+Every design token from the Figma style guide is a Tailwind utility: `--color-evergreen-600`
+generates `bg-evergreen-600`, `text-evergreen-600` and so on. Reach for a token before
+writing a hex or a pixel value.
+
+## Working on this repo
+
+[`AGENTS.md`](AGENTS.md) is the detailed guide — design-system rules, the component
+inventory in `packages/ui`, the colocation and promotion rules, and a list of pitfalls
+this codebase has already hit. Read it before adding UI. `CLAUDE.md` just points at it,
+so Claude Code picks up the same instructions.
+
+Agent skills live in `.agents/skills/` and are tracked in git. `.claude/` is ignored
+because it holds machine-specific symlinks into that folder; re-create them locally with:
+
+```bash
+npx skills add https://github.com/hugeicons/hugeicons --skill hugeicons
 ```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
