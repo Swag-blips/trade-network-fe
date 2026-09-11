@@ -30,11 +30,16 @@ export function OpportunityList({
   const [tab, setTab] = useState<OpportunityFilter>("all");
   const [sort, setSort] = useState(SORTS[0]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [dismissed, setDismissed] = useState<string[]>([]);
 
+  const remaining = items.filter((item) => !dismissed.includes(item.id));
   const countFor = (id: OpportunityFilter) =>
-    id === "all" ? items.length : items.filter((i) => i.kind === id).length;
+    id === "all"
+      ? remaining.length
+      : remaining.filter((i) => i.kind === id).length;
 
   const visible = items
+    .filter((item) => !dismissed.includes(item.id))
     .filter((item) => tab === "all" || item.kind === tab)
     .filter((item) => sort !== "Strong matches" || item.match >= 80);
 
@@ -120,6 +125,10 @@ export function OpportunityList({
           item={visible[openIndex]}
           detail={details[visible[openIndex].id]!}
           onClose={() => setOpenIndex(null)}
+          onDismissOpportunity={() => {
+            setDismissed([...dismissed, visible[openIndex]!.id]);
+            setOpenIndex(null);
+          }}
           onPrev={openIndex > 0 ? () => setOpenIndex(openIndex - 1) : undefined}
           onNext={
             openIndex < visible.length - 1

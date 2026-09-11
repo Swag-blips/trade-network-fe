@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { HistoryIcon, MenuCollapseIcon } from "@hugeicons/core-free-icons";
+import { IconButton } from "@repo/ui/icon-button";
 
 export interface ChatConversation {
   id: string;
@@ -53,14 +54,9 @@ export function ChatHistory({
           <h2 className="min-w-0 flex-1 font-brand text-[1.5rem]/[1.3] font-medium text-grey-900">
             Chat history
           </h2>
-          <button
-            type="button"
-            aria-label="Collapse chat history"
-            onClick={onClose}
-            className="flex-none text-grey-900"
-          >
-            <HugeiconsIcon icon={MenuCollapseIcon} size={20} />
-          </button>
+          <IconButton label="Collapse chat history" size="xs" onClick={onClose}>
+            <HugeiconsIcon icon={MenuCollapseIcon} />
+          </IconButton>
         </div>
 
         <div className="min-h-px flex-1 overflow-y-auto">

@@ -10,6 +10,7 @@ import {
   RefreshIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
+import { IconButton } from "@repo/ui/icon-button";
 import { InitialsAvatar } from "@/components/avatars";
 import type {
   EvidenceStatus,
@@ -165,13 +166,13 @@ function TradeActivityList({
             Updated 2 mins ago
           </span>
         </div>
-        <button
-          type="button"
-          aria-label="Refresh activity"
-          className="flex-none text-grey-500 hover:text-grey-900"
+        <IconButton
+          label="Refresh activity"
+          size="xs"
+          className="text-grey-500"
         >
-          <HugeiconsIcon icon={RefreshIcon} size={20} />
-        </button>
+          <HugeiconsIcon icon={RefreshIcon} />
+        </IconButton>
       </div>
       <ul className="flex max-h-[300px] flex-col overflow-y-auto">
         {activity.map((event) => (

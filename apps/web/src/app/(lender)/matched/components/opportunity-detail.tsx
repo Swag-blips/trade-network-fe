@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
+  HandHelpingIcon,
+  NewsIcon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Cancel01Icon,
@@ -17,9 +19,12 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { Button } from "@repo/ui/button";
+import { IconButton } from "@repo/ui/icon-button";
+import { useToast } from "@repo/ui/toast";
 import { InitialsAvatar } from "@/components/avatars";
 import { TaiAgent } from "@/components/tai-agent";
 import { TradeRoom } from "./trade-room";
+import { OfferModal } from "@/components/offer-modal";
 import type { Opportunity, OpportunityDetail } from "../types/opportunity";
 
 const METRIC_ICONS: IconSvgElement[] = [
@@ -89,15 +94,31 @@ export function OpportunityDetailModal({
   onClose,
   onPrev,
   onNext,
+  onDismissOpportunity,
 }: {
   item: Opportunity;
   detail: OpportunityDetail;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  onDismissOpportunity: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [tab, setTab] = useState<"Details" | "TradeRoom">("Details");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerSent, setOfferSent] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [menuOpen]);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -126,33 +147,26 @@ export function OpportunityDetailModal({
             </h2>
           </div>
           <div className="flex flex-none items-center gap-xs">
-            <button
-              type="button"
-              aria-label="Previous opportunity"
+            <IconButton
+              label="Previous opportunity"
+              size="sm"
               disabled={!onPrev}
               onClick={onPrev}
-              className="flex size-6 items-center justify-center rounded-full text-grey-900 hover:bg-grey-100 disabled:text-grey-300"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
-            </button>
-            <button
-              type="button"
-              aria-label="Next opportunity"
+              <HugeiconsIcon icon={ArrowLeft01Icon} />
+            </IconButton>
+            <IconButton
+              label="Next opportunity"
+              size="sm"
               disabled={!onNext}
               onClick={onNext}
-              className="flex size-6 items-center justify-center rounded-full text-grey-900 hover:bg-grey-100 disabled:text-grey-300"
             >
-              <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
-            </button>
+              <HugeiconsIcon icon={ArrowRight01Icon} />
+            </IconButton>
             <span aria-hidden className="mx-xs h-3.5 w-px bg-grey-200" />
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="text-grey-900 hover:text-grey-600"
-            >
-              <HugeiconsIcon icon={Cancel01Icon} size={20} />
-            </button>
+            <IconButton label="Close" size="xs" onClick={onClose}>
+              <HugeiconsIcon icon={Cancel01Icon} />
+            </IconButton>
           </div>
         </header>
 
@@ -212,26 +226,85 @@ export function OpportunityDetailModal({
                 </span>
               </div>
             </div>
-            <div className="flex flex-col gap-md">
-              <Button
-                size="lg"
-                className="w-full"
-                trailingIcon={<HugeiconsIcon icon={ArrowDown01Icon} />}
-              >
-                Take action
+            {offerSent ? (
+              <Button variant="outline" size="form" className="w-full">
+                View my offer
               </Button>
-              <Button
-                variant="outline"
-                size="form"
-                className="w-full"
-                leadingIcon={<HugeiconsIcon icon={UnavailableIcon} />}
-              >
-                Not interested
-              </Button>
-            </div>
+            ) : (
+              <div ref={menuRef} className="relative flex flex-col gap-md">
+                <Button
+                  size="lg"
+                  className="w-full"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  trailingIcon={<HugeiconsIcon icon={ArrowDown01Icon} />}
+                >
+                  Take action
+                </Button>
+
+                {menuOpen ? (
+                  <div
+                    role="menu"
+                    className="absolute top-full right-0 left-0 z-10 mt-xs overflow-hidden rounded-lg border border-grey-200 bg-white p-xs shadow-thick"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setOfferOpen(true);
+                      }}
+                      className="flex w-full items-center gap-xs rounded-md px-xs py-1 text-left text-body text-grey-800 hover:bg-grey-100"
+                    >
+                      <HugeiconsIcon icon={HandHelpingIcon} size={20} />
+                      Make an offer
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="flex w-full items-center gap-xs rounded-md px-xs py-1 text-left text-body text-grey-800 hover:bg-grey-100"
+                    >
+                      <HugeiconsIcon icon={NewsIcon} size={20} />
+                      Request information
+                    </button>
+                  </div>
+                ) : null}
+
+                <Button
+                  variant="outline"
+                  size="form"
+                  className="w-full"
+                  onClick={() => {
+                    onDismissOpportunity();
+                    toast({
+                      state: "success",
+                      message: "Opportunity has been removed from your list",
+                    });
+                  }}
+                  leadingIcon={<HugeiconsIcon icon={UnavailableIcon} />}
+                >
+                  Not interested
+                </Button>
+              </div>
+            )}
           </aside>
         </div>
       </div>
+
+      {offerOpen ? (
+        <OfferModal
+          party={item}
+          requested={`${item.advance} requested · ${item.tenor}`}
+          invoiceValue={10_680_000}
+          initialAmount="8,500,000"
+          onClose={() => setOfferOpen(false)}
+          onSent={() => {
+            setOfferOpen(false);
+            setOfferSent(true);
+          }}
+        />
+      ) : null}
     </dialog>
   );
 }
