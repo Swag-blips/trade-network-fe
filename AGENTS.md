@@ -40,14 +40,22 @@ apps/web/src/
 ### Routes
 
 ```
-/            marketing starter page — still create-turbo boilerplate
-/home        lender dashboard  → app/(lender)/home
+/                          marketing starter page — still create-turbo boilerplate
+/home                      lender dashboard        → app/(lender)/home
+/settings/profile          my profile              → app/(settings)/settings/…
+/settings/preferences      notifications + Tai autonomy
+/settings/delete-account
+/settings/company          company details
+/settings/funding-mandate  mandate + ticket range
 ```
 
-`app/(lender)/` is the signed-in lender workspace: `layout.tsx` renders the sidebar
-shell, and `components/` holds the chrome (sidebar, topbar, avatars) shared by every
-route in the group. Sibling routes the sidebar already links to — `/portfolio`,
-`/inbox`, `/matched`, `/offers` — do not exist yet and will 404.
+**There are two shells, deliberately.** `app/(lender)/` is the dashboard workspace with
+the main sidebar; `app/(settings)/` is a separate group with its own settings sidebar
+(Back link, Account / Organisation groups, Sign out). They share nothing but the token
+system and `AgentFab`, which both layouts render.
+
+Sibling routes the lender sidebar links to — `/portfolio`, `/inbox`, `/matched`,
+`/offers` — do not exist yet and will 404.
 
 **The promotion rule:** start colocated. Move something up to `src/` the moment a
 _second_ route imports it — not in anticipation of one. A single consumer means it
@@ -165,11 +173,18 @@ covered, extend that component's variant/size union rather than writing a parall
 Current inventory — `ls packages/ui/src/` is the authoritative check, this list will go
 stale:
 
-| Component | Import            | Notes                                                           |
-| --------- | ----------------- | --------------------------------------------------------------- |
-| `Button`  | `@repo/ui/button` | 5 variants × 2 sizes, `loading` / `disabled` props              |
-| `Avatar`  | `@repo/ui/avatar` | Structure only (size/shape/clip); pass the skin via `className` |
-| `Card`    | `@repo/ui/card`   | ⚠️ untouched `create-turbo` scaffolding — rewrite before use    |
+| Component      | Import              | Notes                                                                                      |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------ |
+| `Button`       | `@repo/ui/button`   | 5 variants × 2 sizes, `loading` / `disabled` props                                         |
+| `Avatar`       | `@repo/ui/avatar`   | Structure only (size/shape/clip); pass the skin via `className`                            |
+| `Field`        | `@repo/ui/field`    | Label + control wrapper; `required` appends the asterisk                                   |
+| `Input`        | `@repo/ui/input`    | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute) |
+| `Select`       | `@repo/ui/select`   | Native `<select>` with the chevron overlaid                                                |
+| `Switch`       | `@repo/ui/switch`   | `role="switch"`, controlled                                                                |
+| `Radio`        | `@repo/ui/radio`    | Controlled radio dot                                                                       |
+| `CheckboxChip` | `@repo/ui/checkbox` | Pill-shaped checkbox used for sector picking                                               |
+| `Badge`        | `@repo/ui/badge`    | Small uppercase label (RECOMMENDED)                                                        |
+| `Card`         | `@repo/ui/card`     | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                               |
 
 ```tsx
 import { Button } from "@repo/ui/button";
@@ -195,11 +210,12 @@ only when it is app-agnostic enough that `apps/agent` could use it too. See
 **App shell** lives in `apps/web/src/components/`, global to the web app but not
 generic enough for `packages/ui`:
 
-| Component                   | Notes                                                      |
-| --------------------------- | ---------------------------------------------------------- |
-| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props       |
-| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons |
-| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size     |
+| Component                   | Notes                                                            |
+| --------------------------- | ---------------------------------------------------------------- |
+| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props             |
+| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons       |
+| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide |
+| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size           |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.

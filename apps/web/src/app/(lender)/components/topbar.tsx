@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, LicenseDraftIcon } from "@hugeicons/core-free-icons";
+import { LicenseDraftIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
-import { UserAvatar } from "@/components/avatars";
+import { ProfileMenu } from "./profile-menu";
 
 export function Topbar({ title }: { title: string }) {
   return (
@@ -16,18 +16,7 @@ export function Topbar({ title }: { title: string }) {
         >
           Update mandate
         </Button>
-        <button
-          type="button"
-          className="flex items-center gap-xs rounded-full"
-          aria-label="Account menu"
-        >
-          <UserAvatar name="Shile" size={24} />
-          <HugeiconsIcon
-            icon={ArrowDown01Icon}
-            size={16}
-            className="text-grey-900"
-          />
-        </button>
+        <ProfileMenu name="Shile Owoka" email="ceo@hoptool.co" />
       </div>
     </header>
   );

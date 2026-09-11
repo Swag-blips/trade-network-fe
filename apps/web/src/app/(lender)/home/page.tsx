@@ -9,7 +9,6 @@ import {
   type UpdateItem,
 } from "./components/new-for-you-card";
 import { WelcomeModalHost } from "./components/welcome-modal-host";
-import { AgentFab } from "./components/agent-fab";
 
 const LENDER = { firstName: "Shile" };
 
@@ -68,7 +67,6 @@ export default function LenderHomePage() {
           <NewForYouCard items={UPDATES} />
         </div>
       </div>
-      <AgentFab />
       <WelcomeModalHost />
     </>
   );

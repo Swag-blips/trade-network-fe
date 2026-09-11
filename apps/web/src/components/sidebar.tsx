@@ -1,11 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PanelLeftIcon } from "@hugeicons/core-free-icons";
+import { Wordmark } from "@/components/wordmark";
 import type { IconSvgElement } from "@hugeicons/react";
 
 export interface SidebarItem {
@@ -55,13 +55,7 @@ export function Sidebar({ sections, footer }: SidebarProps) {
   return (
     <aside className="flex w-65.5 flex-none flex-col gap-md bg-grey-50 pt-md pb-lg">
       <div className="flex h-12 items-center justify-between px-md py-2.5">
-        <Image
-          src="/brand/wordmark.svg"
-          alt="Trade Network"
-          width={149}
-          height={16}
-          priority
-        />
+        <Wordmark className="h-[13.435px] w-[149px] text-evergreen-900" />
         <button
           type="button"
           className="flex size-6 items-center justify-center rounded-xl text-grey-900 hover:bg-grey-100"

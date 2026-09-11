@@ -7,7 +7,7 @@ import {
   Cancel01Icon,
 } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
-import { TaiAgent } from "./tai-agent";
+import { TaiAgent } from "@/components/tai-agent";
 import { useDashboardTour } from "../hooks/use-dashboard-tour";
 
 const TAIL_CLIP = {

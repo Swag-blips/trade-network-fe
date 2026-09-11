@@ -1,14 +1,14 @@
 "use client";
 
 import { useRef } from "react";
-import { useEyeTracking } from "../hooks/use-eye-tracking";
+import { useEyeTracking } from "@/hooks/use-eye-tracking";
 
 interface TaiAgentProps {
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   className?: string;
 }
 
-const PX = { sm: 32, md: 56 } as const;
+const PX = { xs: 20, sm: 32, md: 56 } as const;
 
 export function TaiAgent({ size = "md", className = "" }: TaiAgentProps) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -19,7 +19,7 @@ export function TaiAgent({ size = "md", className = "" }: TaiAgentProps) {
     <span
       ref={ref}
       aria-hidden="true"
-      className={`pointer-events-none relative inline-block shrink-0 ${size === "sm" ? "size-8" : "size-14"} ${className}`}
+      className={`pointer-events-none relative inline-block shrink-0 ${size === "xs" ? "size-5" : size === "sm" ? "size-8" : "size-14"} ${className}`}
     >
       <span
         className="absolute top-1/2 left-1/2 size-[97.5%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tai opacity-40"
