@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, Rethink_Sans } from "next/font/google";
+import { ToastProvider } from "@repo/ui/toast";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -37,7 +38,9 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${inter.variable} ${rethinkSans.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AssistantMessage, ChatMessage } from "@/types/types";
 
 export type ChatStatus = "idle" | "thinking";
@@ -105,14 +105,19 @@ export function useChat() {
   const [title, setTitle] = useState("New conversation");
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const clearTimers = useCallback(() => {
+  function clearTimers() {
     timers.current.forEach(clearTimeout);
     timers.current = [];
+  }
+
+  useEffect(() => {
+    return () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+    };
   }, []);
 
-  useEffect(() => clearTimers, [clearTimers]);
-
-  const send = useCallback((text: string) => {
+  function send(text: string) {
     setMessages((current) => [
       ...current,
       { id: `u-${Date.now()}`, role: "user", text },
@@ -130,14 +135,14 @@ export function useChat() {
         setStatus("idle");
       }, 2000),
     );
-  }, []);
+  }
 
-  const reset = useCallback(() => {
+  function reset() {
     clearTimers();
     setMessages([]);
     setStatus("idle");
     setTitle("New conversation");
-  }, [clearTimers]);
+  }
 
   return { messages, status, statusLabel, title, send, reset };
 }

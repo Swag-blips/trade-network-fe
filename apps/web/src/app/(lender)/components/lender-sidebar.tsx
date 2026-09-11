@@ -12,6 +12,7 @@ import {
   SidebarFooter,
   type SidebarSection,
 } from "@/components/sidebar";
+import { IconButton } from "@repo/ui/icon-button";
 import { OrgAvatar } from "@/components/avatars";
 
 const SECTIONS: SidebarSection[] = [
@@ -49,13 +50,9 @@ export function LenderSidebar() {
           title={ORG.name}
           subtitle={ORG.role}
           action={
-            <button
-              type="button"
-              className="flex size-6 flex-none items-center justify-center rounded-xl text-grey-900 hover:bg-grey-100"
-              aria-label="Organisation settings"
-            >
-              <HugeiconsIcon icon={Settings01Icon} size={16} />
-            </button>
+            <IconButton label="Organisation settings" size="sm">
+              <HugeiconsIcon icon={Settings01Icon} />
+            </IconButton>
           }
         />
       }

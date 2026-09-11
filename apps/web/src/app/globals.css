@@ -104,7 +104,21 @@
 
   --color-warm-red: #c0392b;
   --color-tai: #4b8df9;
+  --color-green-50: #f1f7f4;
+  --color-green-200: #b8d7c7;
   --color-green-500: #147a45;
+  --color-green-600: #0d7d4e;
+
+  --color-blue-50: #f2f6fe;
+  --color-blue-500: #2563eb;
+  --color-red-error-500: #c93636;
+  --color-orange-50: #fbf5f0;
+  --color-orange-100: #f5e8dd;
+  --color-orange-500: #b55c0a;
+
+  --color-toast-success: #4c9a72;
+  --color-toast-info: #5988f0;
+  --color-toast-error: #d66666;
 
   --color-destructive: #e9594e;
   --color-destructive-hover: #d92d20;
@@ -202,8 +216,21 @@
     0 0 1px 0 #6b6b6b1a, 0 1px 1px 0 #6b6b6b17, 0 3px 2px 0 #6b6b6b0d,
     0 5px 2px 0 #6b6b6b03, 0 8px 2px 0 #6b6b6b00;
   --shadow-soft-section: 0 1px 3px 0 #22252408;
+  --shadow-elevated:
+    0 5px 11px 0 #00000029, 0 20px 20px 0 #00000024, 0 45px 27px 0 #00000014,
+    0 80px 32px 0 #00000005;
+  --shadow-thick:
+    1px 8px 17px 0 #0000001a, 2px 31px 31px 0 #00000017,
+    5px 70px 42px 0 #0000000d, 8px 125px 50px 0 #00000003;
 
   --animate-dot-pulse: dot-pulse 1.2s ease-in-out infinite;
+  --animate-spinner-chase: spinner-chase 0.9s steps(8) infinite;
+
+  @keyframes spinner-chase {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   @keyframes dot-pulse {
     0%,

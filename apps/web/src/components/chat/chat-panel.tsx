@@ -13,6 +13,7 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from "@hugeicons/core-free-icons";
+import { IconButton } from "@repo/ui/icon-button";
 import { TaiAgent } from "@/components/tai-agent";
 import { useChat } from "@/hooks/use-chat";
 import { ChatAssetBlock } from "./chat-assets";
@@ -40,14 +41,13 @@ function FeedbackActions() {
         { icon: ThumbsDownIcon, label: "Not helpful" },
         { icon: Copy01Icon, label: "Copy response" },
       ].map((action) => (
-        <button
+        <IconButton
           key={action.label}
-          type="button"
-          aria-label={action.label}
-          className="flex size-8 items-center justify-center rounded-full text-grey-500 hover:bg-grey-100 hover:text-grey-900"
+          label={action.label}
+          className="text-grey-500"
         >
-          <HugeiconsIcon icon={action.icon} size={21} />
-        </button>
+          <HugeiconsIcon icon={action.icon} />
+        </IconButton>
       ))}
     </div>
   );
@@ -157,23 +157,13 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
           )}
         </div>
         {!empty ? (
-          <button
-            type="button"
-            aria-label="New conversation"
-            onClick={reset}
-            className="flex-none text-grey-900"
-          >
-            <HugeiconsIcon icon={MessageAdd01Icon} size={20} />
-          </button>
+          <IconButton label="New conversation" size="xs" onClick={reset}>
+            <HugeiconsIcon icon={MessageAdd01Icon} />
+          </IconButton>
         ) : null}
-        <button
-          type="button"
-          aria-label="Collapse chat"
-          onClick={onClose}
-          className="flex-none text-grey-900"
-        >
-          <HugeiconsIcon icon={CircleArrowDown02Icon} size={20} />
-        </button>
+        <IconButton label="Collapse chat" size="xs" onClick={onClose}>
+          <HugeiconsIcon icon={CircleArrowDown02Icon} />
+        </IconButton>
       </header>
 
       <div ref={scrollRef} className="min-h-px flex-1 overflow-y-auto">
