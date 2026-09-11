@@ -42,6 +42,11 @@ apps/web/src/
 ```
 /                          marketing starter page — still create-turbo boilerplate
 /home                      lender dashboard        → app/(lender)/home
+/matched                   matched opportunities   → app/(lender)/matched
+/offers                    offers list             → app/(lender)/offers
+/offers/[id]               negotiation timeline    → app/(lender)/offers/[id]
+/portfolio                 funded customers        → app/(lender)/portfolio
+/portfolio/[id]            customer overview / funded trades / repayments
 /settings/profile          my profile              → app/(settings)/settings/…
 /settings/preferences      notifications + Tai autonomy
 /settings/delete-account
@@ -54,8 +59,7 @@ the main sidebar; `app/(settings)/` is a separate group with its own settings si
 (Back link, Account / Organisation groups, Sign out). They share nothing but the token
 system and `AgentFab`, which both layouts render.
 
-Sibling routes the lender sidebar links to — `/portfolio`, `/inbox`, `/matched`,
-`/offers` — do not exist yet and will 404.
+`/inbox`, which the lender sidebar links to, does not exist yet and will 404.
 
 **The promotion rule:** start colocated. Move something up to `src/` the moment a
 _second_ route imports it — not in anticipation of one. A single consumer means it
@@ -94,6 +98,10 @@ mixing lockfiles breaks the workspace protocol (`workspace:*`) deps.
 ## Stack
 
 - **Next.js 16.3.4**, App Router, Turbopack, React 19.2.8, TypeScript 7.0.2
+- **React Compiler is on** (`reactCompiler: true` in `apps/web/next.config.js`). Do not
+  hand-write `useCallback` or `useMemo` — the compiler memoizes for you, and manual
+  memoization is noise it has to work around. There is currently none in the codebase;
+  keep it that way unless you can show a profile that needs it.
 - **Styling: Tailwind CSS v4**, configured in CSS (`@theme`), not a JS config file —
   there is no `tailwind.config.js` and there should not be one. No CSS Modules, no
   CSS-in-JS.
@@ -173,18 +181,21 @@ covered, extend that component's variant/size union rather than writing a parall
 Current inventory — `ls packages/ui/src/` is the authoritative check, this list will go
 stale:
 
-| Component      | Import              | Notes                                                                                      |
-| -------------- | ------------------- | ------------------------------------------------------------------------------------------ |
-| `Button`       | `@repo/ui/button`   | 5 variants × 2 sizes, `loading` / `disabled` props                                         |
-| `Avatar`       | `@repo/ui/avatar`   | Structure only (size/shape/clip); pass the skin via `className`                            |
-| `Field`        | `@repo/ui/field`    | Label + control wrapper; `required` appends the asterisk                                   |
-| `Input`        | `@repo/ui/input`    | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute) |
-| `Select`       | `@repo/ui/select`   | Native `<select>` with the chevron overlaid                                                |
-| `Switch`       | `@repo/ui/switch`   | `role="switch"`, controlled                                                                |
-| `Radio`        | `@repo/ui/radio`    | Controlled radio dot                                                                       |
-| `CheckboxChip` | `@repo/ui/checkbox` | Pill-shaped checkbox used for sector picking                                               |
-| `Badge`        | `@repo/ui/badge`    | Small uppercase label (RECOMMENDED)                                                        |
-| `Card`         | `@repo/ui/card`     | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                               |
+| Component       | Import                    | Notes                                                                                                                                                                                                                       |
+| --------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`        | `@repo/ui/button`         | 5 variants × 5 sizes, `loading` / `disabled` props                                                                                                                                                                          |
+| `buttonClasses` | `@repo/ui/button-classes` | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                    |
+| `Avatar`        | `@repo/ui/avatar`         | Structure only (size/shape/clip); pass the skin via `className`                                                                                                                                                             |
+| `IconButton`    | `@repo/ui/icon-button`    | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                |
+| `Toast`         | `@repo/ui/toast`          | `ToastProvider` in the root layout, pinned **top centre**; call `useToast().toast({ message, state })`                                                                                                                      |
+| `Field`         | `@repo/ui/field`          | Label + control wrapper; `required` appends the asterisk                                                                                                                                                                    |
+| `Input`         | `@repo/ui/input`          | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute)                                                                                                                                  |
+| `Select`        | `@repo/ui/select`         | Native `<select>` with the chevron overlaid. `variant`: `field` (40px form control) or `chip` (29px filter pill). Not `size` — that is a real `<select>` attribute typed `number`, the same collision as `Input`'s `prefix` |
+| `Switch`        | `@repo/ui/switch`         | `role="switch"`, controlled                                                                                                                                                                                                 |
+| `Radio`         | `@repo/ui/radio`          | Controlled radio dot                                                                                                                                                                                                        |
+| `CheckboxChip`  | `@repo/ui/checkbox`       | Pill-shaped checkbox used for sector picking                                                                                                                                                                                |
+| `Badge`         | `@repo/ui/badge`          | Small uppercase label (RECOMMENDED)                                                                                                                                                                                         |
+| `Card`          | `@repo/ui/card`           | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                |
 
 ```tsx
 import { Button } from "@repo/ui/button";
@@ -199,8 +210,21 @@ import { Button } from "@repo/ui/button";
 </Button>;
 ```
 
-`variant`: `primary` | `secondary` | `outline` | `ghost` | `destructive`. `size`: `sm` | `md` | `lg`.
+`variant`: `primary` | `secondary` | `outline` | `ghost` | `destructive`.
+`size`: `sm` | `md` | `lg` | `form` (settings/dialog footers) | `flush` (vertical padding only).
 Everything else forwards to the underlying `<button>`.
+
+**A button that navigates is a link.** Use `ButtonLink` (`@/components/button-link`) —
+it wraps `next/link` in `buttonClasses()` so it keeps client-side navigation, middle-click
+and the same visuals. That is why the variants use `not-disabled:hover:` rather than
+`enabled:hover:`: `:enabled` never matches an anchor, so the hover states would silently
+drop out.
+
+**When NOT to use `Button`.** Most raw `<button>` in this app is correct: tabs
+(`role="tab"`), menu rows (`role="menuitem"`), and whole clickable surfaces (an
+opportunity card, a chat suggestion, an accordion header) are not buttons in the
+design-system sense, and forcing a pill on them would be wrong. Icon-only actions are
+the exception — reach for `IconButton`, never a hand-rolled `<button>` with `size-N`.
 
 Where a new component belongs is the same promotion rule as everything else — route
 folder first, `apps/web/src/components/` when a second route needs it, `packages/ui`
@@ -210,12 +234,17 @@ only when it is app-agnostic enough that `apps/agent` could use it too. See
 **App shell** lives in `apps/web/src/components/`, global to the web app but not
 generic enough for `packages/ui`:
 
-| Component                   | Notes                                                            |
-| --------------------------- | ---------------------------------------------------------------- |
-| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props             |
-| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons       |
-| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide |
-| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size           |
+| Component                   | Notes                                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props                                                                                        |
+| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons                                                                                  |
+| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide                                                                            |
+| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size                                                                                      |
+| `ButtonLink`                | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                              |
+| `DetailHeader`              | 60px record header: back, avatar, name, status slot, prev/next. Used by `/offers/[id]` and `/portfolio/[id]`                                |
+| `OfferModal`                | Offer / counter-offer composer: form → review → send. `onSubmit` hands the draft back and closes; `onSent` renders the success step instead |
+| `ConfirmModal`              | 453px confirm dialog — title, body slot, cancel + confirm footer. Accept offer / Confirm disbursement / Exit negotiation all use it         |
+| `PartyCard`                 | Borrower identity block (name, type, terms line, 56px avatar) shared by the offer and accept dialogs                                        |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -286,6 +315,27 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   (`http://localhost:3845/assets/…`) stop resolving — returning `Error getting image` —
   as soon as the Figma desktop app switches to a different tab. Download anything you
   need _while_ the file is the active tab, not later.
+- **Trig in SSR-ed markup must be rounded.** `HealthGauge` computes tick and needle
+  coordinates from `Math.cos`/`Math.sin`; the server and client disagreed on the last
+  digit (`51.30642496536482` vs `…481`) and React reported a hydration mismatch. Every
+  computed coordinate goes through `round()` to 3 decimals. Do the same in any other
+  geometry drawn during render.
+- **The portfolio banner ships without its grain overlay.** Figma layers a 1024×1024
+  noise PNG at 4% opacity over the gradient; the export is 1.9 MB, which is not worth it
+  for that. The gradient, the diagonals and the masked dot field
+  (`public/portfolio-banner-dots.png`) are all there. Add the grain back only if a
+  compressed export turns up.
+- **The funding-window countdown has no real typeface.** Figma sets it in
+  _Digital Numbers_, which is not on Google Fonts, and `next/font/google` is the only
+  font path here — it renders in the system monospace stack with `tabular-nums`. Swap in
+  the real face if the designer supplies it.
+- **`/offers/[id]` runs the whole negotiation in local state.** `NegotiationTimeline`
+  owns the thread: only the newest entry carries the NEW tag and the action buttons,
+  entries are grouped into one dot per day, and executing Tai's recommendation or
+  sending a counter prepends a new "Offer sent" entry. Exactly one accordion is open per
+  card — opening the recommendation collapses the offer details, as the Figma variants
+  specify. Accepting prepends a `terms-agreed` entry, which strips the counter offer's
+  action buttons and hands over to the disbursement dialogs.
 - **The lender dashboard uses values that are off the design system**, kept verbatim
   from Figma and marked with comments at each site: the 24px greeting and 20px stat
   figures are not on the type scale (which jumps 18 → 22), `#e0f2fe` behind the update
