@@ -12,7 +12,7 @@ import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { SettingsPage, SectionHeading } from "../../components/settings-page";
-import { TicketRange } from "../../components/ticket-range";
+import { TicketRange } from "@/components/ticket-range";
 
 const TENORS = ["30-90 days", "90-180 days", "180-365 days"];
 const FUNDING_TYPES = [
