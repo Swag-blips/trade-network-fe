@@ -7,8 +7,14 @@ import {
   Invoice01Icon,
 } from "@hugeicons/core-free-icons";
 import { Select } from "@repo/ui/select";
+import { useToast } from "@repo/ui/toast";
 import { StatusChip } from "./status-chip";
-import { CUSTOMER_STATUS, type Customer } from "../types/customer";
+import { FundedTradeDrawer } from "./funded-trade-drawer";
+import {
+  CUSTOMER_STATUS,
+  type Customer,
+  type FundedTrade,
+} from "../types/customer";
 
 const STATUSES = [
   "Any status",
@@ -17,6 +23,8 @@ const STATUSES = [
 
 export function FundedTradesTab({ customer }: { customer: Customer }) {
   const [status, setStatus] = useState(STATUSES[0]!);
+  const [open, setOpen] = useState<FundedTrade | null>(null);
+  const { toast } = useToast();
 
   const visible = customer.trades.filter(
     (trade) =>
@@ -68,9 +76,11 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
           </p>
         ) : (
           visible.map((trade) => (
-            <div
+            <button
               key={trade.id}
-              className="flex items-center gap-[52px] rounded-md px-sm py-2.5"
+              type="button"
+              onClick={() => setOpen(trade)}
+              className="flex cursor-pointer items-center gap-[52px] rounded-md px-sm py-2.5 text-left hover:bg-grey-50"
             >
               <span className="flex w-[108px] flex-none items-center gap-xs">
                 <span className="flex size-8 flex-none items-center justify-center rounded-full bg-evergreen-100">
@@ -96,10 +106,21 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
               <span className="flex w-[124px] flex-none items-center">
                 <StatusChip status={trade.status} />
               </span>
-            </div>
+            </button>
           ))
         )}
       </div>
+
+      {open ? (
+        <FundedTradeDrawer
+          trade={open}
+          onClose={() => setOpen(null)}
+          onRecordRepayment={() => {
+            setOpen(null);
+            toast({ message: "Repayment recorded" });
+          }}
+        />
+      ) : null}
     </div>
   );
 }

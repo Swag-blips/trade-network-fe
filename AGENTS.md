@@ -234,17 +234,18 @@ only when it is app-agnostic enough that `apps/agent` could use it too. See
 **App shell** lives in `apps/web/src/components/`, global to the web app but not
 generic enough for `packages/ui`:
 
-| Component                   | Notes                                                                                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props                                                                                        |
-| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons                                                                                  |
-| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide                                                                            |
-| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size                                                                                      |
-| `ButtonLink`                | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                              |
-| `DetailHeader`              | 60px record header: back, avatar, name, status slot, prev/next. Used by `/offers/[id]` and `/portfolio/[id]`                                |
-| `OfferModal`                | Offer / counter-offer composer: form → review → send. `onSubmit` hands the draft back and closes; `onSent` renders the success step instead |
-| `ConfirmModal`              | 453px confirm dialog — title, body slot, cancel + confirm footer. Accept offer / Confirm disbursement / Exit negotiation all use it         |
-| `PartyCard`                 | Borrower identity block (name, type, terms line, 56px avatar) shared by the offer and accept dialogs                                        |
+| Component                   | Notes                                                                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props                                                                                          |
+| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons                                                                                    |
+| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide                                                                              |
+| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size                                                                                        |
+| `ButtonLink`                | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                |
+| `DetailHeader`              | 60px record header: back, avatar, name, status slot, prev/next. Used by `/offers/[id]` and `/portfolio/[id]`                                  |
+| `OfferModal`                | Offer / counter-offer composer: form → review → send. `onSubmit` hands the draft back and closes; `onSent` renders the success step instead   |
+| `ConfirmModal`              | 453px confirm dialog — title, body slot, cancel + confirm footer. Accept offer / Confirm disbursement / Exit negotiation all use it           |
+| `PartyCard`                 | Borrower identity block (name, type, terms line, 56px avatar) shared by the offer and accept dialogs                                          |
+| `TradeRoom`                 | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. Shared by the matched-opportunity modal and the funded-trade drawer |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -329,6 +330,10 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   _Digital Numbers_, which is not on Google Fonts, and `next/font/google` is the only
   font path here — it renders in the system monospace stack with `tabular-nums`. Swap in
   the real face if the designer supplies it.
+- **Clicking a funded trade opens a right-side sheet, not a route.** Figma draws it as a
+  544px panel pinned to the right edge (node 3649-63954), so it is a native `<dialog>`
+  with `ml-auto h-full` — the platform still gives the focus trap, Escape and backdrop.
+  `/portfolio/[id]` keeps its own URL while the sheet is open.
 - **`/offers/[id]` runs the whole negotiation in local state.** `NegotiationTimeline`
   owns the thread: only the newest entry carries the NEW tag and the action buttons,
   entries are grouped into one dot per day, and executing Tai's recommendation or

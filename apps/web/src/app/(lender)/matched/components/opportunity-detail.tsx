@@ -23,7 +23,7 @@ import { IconButton } from "@repo/ui/icon-button";
 import { useToast } from "@repo/ui/toast";
 import { InitialsAvatar } from "@/components/avatars";
 import { TaiAgent } from "@/components/tai-agent";
-import { TradeRoom } from "./trade-room";
+import { TradeRoom } from "@/components/trade-room";
 import { OfferModal } from "@/components/offer-modal";
 import type { Opportunity, OpportunityDetail } from "../types/opportunity";
 
@@ -200,7 +200,17 @@ export function OpportunityDetailModal({
               {tab === "Details" ? (
                 <Overview detail={detail} />
               ) : (
-                <TradeRoom item={item} detail={detail} />
+                <TradeRoom
+                  data={{
+                    seller: detail.trade.seller,
+                    sellerInitials: item.initials,
+                    buyer: detail.trade.buyer,
+                    buyerInitials: detail.trade.buyerInitials,
+                    rows: detail.trade.rows,
+                    evidence: detail.evidence,
+                    activity: detail.activity,
+                  }}
+                />
               )}
             </div>
           </div>

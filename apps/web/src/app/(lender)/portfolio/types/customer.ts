@@ -1,3 +1,5 @@
+import type { TradeRoomData } from "@/components/trade-room";
+
 export type CustomerStatus = "outstanding" | "repaid" | "overdue";
 export type HealthLevel = "healthy" | "watch" | "at-risk" | "critical";
 
@@ -7,6 +9,17 @@ export interface FundedTrade {
   outstanding: string;
   dueDate: string;
   status: CustomerStatus;
+  paymentDue: string;
+  summary: string;
+  maturityDate: string;
+  overdueExposure: string;
+  tradeExceptions: string;
+  amountFunded: string;
+  fee: string;
+  tenor: string;
+  verified: boolean;
+  duplicateFunding: string;
+  tradeRoom: TradeRoomData;
 }
 
 export interface Repayment {

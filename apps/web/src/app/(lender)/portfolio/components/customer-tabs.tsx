@@ -27,7 +27,7 @@ export function CustomerTabs({ customer }: { customer: Customer }) {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setTab(name)}
-                className={`-mb-px border-b-2 px-2.5 py-xs font-sans text-body font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
+                className={`-mb-px border-b-2 px-2.5 py-xs font-sans text-body/[normal] font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
                   active
                     ? "border-evergreen-600 text-grey-900"
                     : "border-transparent text-grey-500 hover:text-grey-900"
