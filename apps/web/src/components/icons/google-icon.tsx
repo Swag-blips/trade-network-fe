@@ -1,6 +1,8 @@
-export function GoogleIcon({ className }: { className?: string }) {
+import type { SVGProps } from "react";
+
+export function GoogleIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
       <path
         d="M4.43242 12.0863L3.73625 14.6852L1.19176 14.739C0.431328 13.3286 0 11.7148 0 10C0 8.34176 0.403281 6.77801 1.11812 5.4011H1.11867L3.38398 5.81641L4.37633 8.06813C4.16863 8.67364 4.05543 9.32364 4.05543 10C4.05551 10.7341 4.18848 11.4374 4.43242 12.0863Z"
         fill="#FBBB00"
