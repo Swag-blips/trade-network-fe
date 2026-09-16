@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDataTransferHorizontalIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
@@ -30,11 +30,14 @@ const SECTORS = [
   "Retail",
 ];
 
-export function FundingMandateForm() {
+export function FundingMandateForm({
+  role,
+  orgName,
+}: {
+  role: string;
+  orgName: string;
+}) {
   const router = useRouter();
-  const params = useSearchParams();
-  const role = params.get("role") ?? "capital-provider";
-  const orgName = params.get("org") ?? "Mycompany";
 
   const [allocation, setAllocation] = useState("700,000,000");
   const [tenor, setTenor] = useState(TENORS[0]);
@@ -58,7 +61,7 @@ export function FundingMandateForm() {
 
   return (
     <OnboardingShell step={2} orgName={orgName} orgRole={roleLabel(role)}>
-      <div className="flex w-full max-w-[506px] flex-col gap-lg">
+      <div className="flex w-full max-w-126.5 flex-col gap-lg">
         <div className="flex flex-col gap-xs">
           <h1 className="font-sans text-h4 font-medium text-grey-900">
             Set funding mandate
@@ -73,7 +76,7 @@ export function FundingMandateForm() {
           label="Capital allocation"
           required
           htmlFor="allocation"
-          className="w-[308px]"
+          className="w-77"
         >
           <Input
             id="allocation"

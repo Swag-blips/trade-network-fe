@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
@@ -19,10 +19,8 @@ const COUNTRIES = [
   "United States",
 ];
 
-export function OrganisationForm() {
+export function OrganisationForm({ role }: { role: string }) {
   const router = useRouter();
-  const params = useSearchParams();
-  const role = params.get("role") ?? "capital-provider";
   const [companyName, setCompanyName] = useState("");
   const [country, setCountry] = useState("");
 
@@ -42,7 +40,7 @@ export function OrganisationForm() {
       orgRole={roleLabel(role)}
     >
       <form
-        className="flex w-full max-w-[386px] flex-col items-start gap-lg"
+        className="flex w-full max-w-96.5 flex-col items-start gap-lg"
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-xs">

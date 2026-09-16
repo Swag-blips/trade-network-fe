@@ -1,10 +1,16 @@
-import { Suspense } from "react";
 import { WelcomeMessage } from "./components/welcome-message";
 
-export default function WelcomePage() {
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ name?: string; role?: string }>;
+}) {
+  const { name, role } = await searchParams;
+
   return (
-    <Suspense>
-      <WelcomeMessage />
-    </Suspense>
+    <WelcomeMessage
+      name={name ?? "there"}
+      role={role ?? "capital-provider"}
+    />
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
+import { GoogleIcon } from "@/components/icons/google-icon";
 
 export function LoginForm() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export function LoginForm() {
         variant="secondary"
         size="md"
         className="w-full"
-        leadingIcon={<img src="/google-icon.svg" alt="" className="size-5" />}
+        leadingIcon={<GoogleIcon className="size-5" />}
       >
         Continue with Google
       </Button>

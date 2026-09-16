@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@repo/ui/button";
 import { Wordmark } from "@/components/wordmark";
@@ -9,9 +9,8 @@ import { BrandMark } from "@/components/brand-mark";
 import { ROLE_OPTIONS } from "../../components/roles";
 import { GuidelinesModal } from "./guidelines-modal";
 
-export function RoleSelection() {
+export function RoleSelection({ firstName }: { firstName: string }) {
   const router = useRouter();
-  const firstName = useSearchParams().get("firstName") ?? "";
   const [role, setRole] = useState<string | null>(null);
   const [showGuidelines, setShowGuidelines] = useState(false);
 
@@ -33,10 +32,10 @@ export function RoleSelection() {
   return (
     <div className="relative flex min-h-screen w-full flex-col lg:flex-row">
       <div className="relative flex min-w-0 flex-1 flex-col">
-        <Wordmark className="absolute top-6 left-6 h-4 w-[149px] text-evergreen-900" />
+        <Wordmark className="absolute top-6 left-6 h-4 w-37.25 text-evergreen-900" />
 
-        <div className="flex flex-1 items-center justify-center px-6 py-2xl sm:px-10 lg:px-[62px]">
-          <div className="flex w-full max-w-[690px] flex-col gap-xl">
+        <div className="flex flex-1 items-center justify-center px-6 py-2xl sm:px-10 lg:px-15.5">
+          <div className="flex w-full max-w-172.5 flex-col gap-xl">
             <div className="flex flex-col gap-xs">
               <h1 className="font-brand text-[32px] leading-[1.24] font-medium text-grey-900">
                 How will you use TradeNetwork?
@@ -66,7 +65,7 @@ export function RoleSelection() {
                       <HugeiconsIcon
                         icon={option.icon}
                         size={24}
-                        className="text-grey-900"
+                        className="text-evergreen-600"
                       />
                       <p className="font-sans text-body font-medium text-grey-900">
                         {option.label}
@@ -94,7 +93,10 @@ export function RoleSelection() {
         </div>
       </div>
 
-      <div className="relative hidden h-[40vh] w-full flex-none overflow-hidden bg-evergreen-900 lg:block lg:h-screen lg:w-[437px]">
+      {/* Figma comp has a photo of a trade event here; that asset couldn't be
+          fetched (Figma MCP rate limit), so this reuses the app's existing
+          gradient + dot-field treatment from the portfolio banner instead. */}
+      <div className="relative hidden h-[40vh] w-full flex-none overflow-hidden bg-evergreen-900 lg:block lg:h-screen lg:w-109.25">
         <div className="absolute inset-x-0 top-0 h-[73%] overflow-hidden">
           <img
             src="/role-photo.png"
@@ -104,18 +106,18 @@ export function RoleSelection() {
         </div>
         <span
           aria-hidden
-          className="absolute top-[46%] right-[-40px] h-[310px] w-[338px] bg-evergreen-300 opacity-50 [mask-image:url(/role-dot-mask.png)] [mask-position:44px_13px] [mask-repeat:no-repeat] [mask-size:286px_286px]"
+          className="absolute top-[46%] -right-10 h-77.5 w-84.5 bg-evergreen-300 opacity-50 mask-[url(/role-dot-mask.png)] mask-[44px_13px] mask-no-repeat mask-size-[286px_286px]"
         />
         <span
           aria-hidden
-          className="absolute top-[75%] left-[10%] h-px w-[232px] -rotate-45 bg-linear-to-r from-transparent via-white/30 to-transparent"
+          className="absolute top-[75%] left-[10%] h-px w-58 -rotate-45 bg-linear-to-r from-transparent via-white/30 to-transparent"
         />
         <span
           aria-hidden
-          className="absolute top-[60%] left-[32%] h-px w-[232px] -rotate-45 bg-linear-to-r from-transparent via-white/30 to-transparent"
+          className="absolute top-[60%] left-[32%] h-px w-58 -rotate-45 bg-linear-to-r from-transparent via-white/30 to-transparent"
         />
         <BrandMark className="absolute top-lg right-lg h-6 w-8 text-evergreen-50/90" />
-        <p className="absolute bottom-2xl left-lg max-w-[280px] font-brand text-[28px] leading-[1.24] text-evergreen-50">
+        <p className="absolute bottom-2xl left-lg max-w-70 font-brand text-[28px] leading-[1.24] text-evergreen-50">
           One Network. Endless Trade Connections.
         </p>
       </div>

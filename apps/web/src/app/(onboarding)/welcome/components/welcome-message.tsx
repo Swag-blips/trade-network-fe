@@ -1,16 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export function WelcomeMessage() {
+export function WelcomeMessage({
+  name,
+  role,
+}: {
+  name: string;
+  role: string;
+}) {
   const router = useRouter();
-  const params = useSearchParams();
-  const name = params.get("name") ?? "there";
-  const role = params.get("role") ?? "capital-provider";
 
   useEffect(() => {
-    const timer = setTimeout(() => router.push(`/organisation?role=${role}`), 1600);
+    const timer = setTimeout(
+      () => router.push(`/organisation?role=${role}`),
+      1600,
+    );
     return () => clearTimeout(timer);
   }, [router, role]);
 

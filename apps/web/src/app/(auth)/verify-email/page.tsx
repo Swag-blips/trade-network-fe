@@ -1,10 +1,21 @@
-import { Suspense } from "react";
 import { VerifyEmailForm } from "./components/verify-email-form";
 
-export default function VerifyEmailPage() {
+export default async function VerifyEmailPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    email?: string;
+    firstName?: string;
+    redirectTo?: string;
+  }>;
+}) {
+  const { email, firstName, redirectTo } = await searchParams;
+
   return (
-    <Suspense>
-      <VerifyEmailForm />
-    </Suspense>
+    <VerifyEmailForm
+      email={email ?? "your email"}
+      firstName={firstName ?? ""}
+      redirectTo={redirectTo}
+    />
   );
 }

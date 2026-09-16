@@ -1,10 +1,16 @@
-import { Suspense } from "react";
 import { FundingMandateForm } from "./components/funding-mandate-form";
 
-export default function FundingMandatePage() {
+export default async function FundingMandatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string; org?: string }>;
+}) {
+  const { role, org } = await searchParams;
+
   return (
-    <Suspense>
-      <FundingMandateForm />
-    </Suspense>
+    <FundingMandateForm
+      role={role ?? "capital-provider"}
+      orgName={org ?? "Mycompany"}
+    />
   );
 }

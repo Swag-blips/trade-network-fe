@@ -8,6 +8,7 @@ import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { useToast } from "@repo/ui/toast";
+import { GoogleIcon } from "@/components/icons/google-icon";
 
 export function CreateAccountForm() {
   const router = useRouter();
@@ -25,7 +26,11 @@ export function CreateAccountForm() {
     event.preventDefault();
     if (!consent) {
       setConsentError(true);
-      toast({ message: "Please check the box to continue", state: "error" });
+      toast({
+        message:
+          "Please consent to the TradeNetwork Ecosystem Participation Agreement to continue",
+        state: "error",
+      });
       return;
     }
     router.push(
@@ -44,7 +49,7 @@ export function CreateAccountForm() {
         variant="secondary"
         size="md"
         className="w-full"
-        leadingIcon={<img src="/google-icon.svg" alt="" className="size-5" />}
+        leadingIcon={<GoogleIcon className="size-5" />}
       >
         Continue with Google
       </Button>
@@ -105,7 +110,7 @@ export function CreateAccountForm() {
               className="peer sr-only"
             />
             <span
-              className={`flex size-5 items-center justify-center rounded-[4px] border transition-colors motion-reduce:transition-none ${
+              className={`flex size-5 items-center justify-center rounded-sm border transition-colors motion-reduce:transition-none ${
                 consent
                   ? "border-evergreen-600 bg-evergreen-600 text-white"
                   : consentError

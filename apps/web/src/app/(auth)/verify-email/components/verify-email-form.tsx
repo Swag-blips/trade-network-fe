@@ -1,19 +1,23 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 
 const CODE_LENGTH = 6;
 
-export function VerifyEmailForm() {
+export function VerifyEmailForm({
+  email,
+  firstName,
+  redirectTo,
+}: {
+  email: string;
+  firstName: string;
+  redirectTo?: string;
+}) {
   const router = useRouter();
-  const params = useSearchParams();
-  const email = params.get("email") ?? "your email";
-  const firstName = params.get("firstName") ?? "";
-  const redirectTo = params.get("redirectTo");
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -51,7 +55,7 @@ export function VerifyEmailForm() {
 
       <div className="flex flex-col items-start gap-lg">
         <div className="flex flex-col items-start gap-md">
-          <div className="flex w-[308px] items-start gap-xs">
+          <div className="flex w-77 items-start gap-xs">
             {digits.map((digit, index) => (
               <input
                 // eslint-disable-next-line react/no-array-index-key
@@ -85,7 +89,7 @@ export function VerifyEmailForm() {
             variant="primary"
             size="lg"
             disabled={!canSubmit}
-            className="w-[308px]"
+            className="w-77"
             onClick={() =>
               router.push(
                 redirectTo ??
@@ -98,7 +102,7 @@ export function VerifyEmailForm() {
           <Button
             variant="ghost"
             size="lg"
-            className="w-[308px]"
+            className="w-77"
             leadingIcon={<HugeiconsIcon icon={ArrowLeft01Icon} />}
             onClick={() => router.back()}
           >

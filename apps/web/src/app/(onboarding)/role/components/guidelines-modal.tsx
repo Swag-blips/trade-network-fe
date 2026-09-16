@@ -61,7 +61,7 @@ export function GuidelinesModal({
         event.preventDefault();
         onClose();
       }}
-      className="m-auto h-[calc(100vh-4rem)] w-[600px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className="m-auto h-[calc(100vh-4rem)] w-150 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
     >
       <div className="flex h-full flex-col">
         <header className="flex items-center gap-md border-b border-grey-100 px-lg py-md">
@@ -73,7 +73,7 @@ export function GuidelinesModal({
               className="peer sr-only"
             />
             <span
-              className={`flex size-5 flex-none items-center justify-center rounded-[4px] border text-white transition-colors ${
+              className={`flex size-5 flex-none items-center justify-center rounded-sm border text-white transition-colors ${
                 consent
                   ? "border-evergreen-600 bg-evergreen-600"
                   : "border-grey-400 bg-white"
