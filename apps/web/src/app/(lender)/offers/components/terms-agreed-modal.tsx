@@ -45,12 +45,12 @@ export function TermsAgreedModal({
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[453px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className="m-auto w-113.25 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
     >
-      <div className="relative h-[134px] w-full overflow-hidden">
+      <div className="relative h-33.5 w-full overflow-hidden">
         <span
           aria-hidden
-          className="absolute top-[-27px] left-1/2 h-[252.257px] w-[327px] -translate-x-1/2 bg-[url(/confetti.svg)] bg-center bg-no-repeat"
+          className="absolute -top-6.75 left-1/2 h-[252.257px] w-81.75 -translate-x-1/2 bg-[url(/confetti.svg)] bg-center bg-no-repeat"
         />
         <div className="absolute top-1/2 left-1/2 h-20 w-[136.25px] -translate-x-1/2 -translate-y-1/2">
           <span className="absolute top-0 -left-2.5 shadow-xs">
@@ -59,7 +59,7 @@ export function TermsAgreedModal({
           <span className="absolute top-0 left-[66.25px] shadow-xs">
             <InitialsAvatar initials={initials} size={80} />
           </span>
-          <span className="absolute top-[25px] left-[54px] flex size-[33.333px] items-center justify-center rounded-full bg-green-600 text-white ring-[3px] ring-white">
+          <span className="absolute top-6.25 left-13.5 flex size-[33.333px] items-center justify-center rounded-full bg-green-600 text-white ring-[3px] ring-white">
             <HugeiconsIcon icon={HandshakeIcon} size={20} />
           </span>
         </div>
@@ -76,7 +76,7 @@ export function TermsAgreedModal({
           The final terms are confirmed. Complete the disbursement within the
           required funding window.
         </p>
-        <div className="flex w-[190px] flex-col gap-md overflow-hidden rounded-lg border border-grey-100 bg-grey-50 px-md py-2.5">
+        <div className="flex w-47.5 flex-col gap-md overflow-hidden rounded-lg border border-grey-100 bg-grey-50 px-md py-2.5">
           <p className="w-full text-center font-sans text-caption/[normal] font-medium text-grey-500 uppercase">
             Funding window
           </p>

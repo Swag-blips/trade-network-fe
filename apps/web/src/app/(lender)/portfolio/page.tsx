@@ -10,7 +10,7 @@ export default function PortfolioPage() {
   return (
     <>
       <Topbar title="Portfolio" />
-      <div className="flex min-h-px flex-1 flex-col overflow-y-auto pb-lg">
+      <div className="min-h-px flex-1 overflow-y-auto pb-lg">
         <PortfolioBanner
           stats={[
             {

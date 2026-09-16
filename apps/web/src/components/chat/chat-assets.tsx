@@ -40,7 +40,7 @@ function PriorityRow({ item }: { item: PriorityItem }) {
           className="text-ocean-700"
         />
         {item.count ? (
-          <span className="absolute -top-0.5 left-[27px] flex min-w-4 items-center justify-center rounded-full bg-evergreen-900 px-1 py-0.5 text-[10px]/none text-white">
+          <span className="absolute -top-0.5 left-6.75 flex min-w-4 items-center justify-center rounded-full bg-evergreen-900 px-1 py-0.5 text-[10px]/none text-white">
             {item.count}
           </span>
         ) : null}

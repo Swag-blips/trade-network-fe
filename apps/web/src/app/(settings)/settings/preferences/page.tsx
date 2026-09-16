@@ -61,7 +61,7 @@ export default function PreferencesPage() {
 
   return (
     <SettingsPage title="Preferences">
-      <div className="flex max-w-[506px] flex-col gap-lg">
+      <div className="flex max-w-126.5 flex-col gap-lg">
         <SectionHeading
           title="Notification preference"
           description="Set your notification preference."

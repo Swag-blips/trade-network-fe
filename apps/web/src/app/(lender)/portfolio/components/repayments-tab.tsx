@@ -1,11 +1,17 @@
+"use client";
+
+import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ReceiptIcon } from "@hugeicons/core-free-icons";
-import type { Customer } from "../types/customer";
+import { RepaymentDetailsDrawer } from "./repayment-details-drawer";
+import type { Customer, Repayment } from "../types/customer";
 
 export function RepaymentsTab({ customer }: { customer: Customer }) {
+  const [open, setOpen] = useState<Repayment | null>(null);
+
   return (
     <div className="flex w-full flex-col gap-lg">
-      <h2 className="w-full font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+      <h2 className="w-full font-sans text-xl/normal font-medium text-grey-900">
         Repayment history
       </h2>
 
@@ -20,29 +26,44 @@ export function RepaymentsTab({ customer }: { customer: Customer }) {
         </div>
       ) : (
         <div className="flex w-full flex-col gap-xs">
-          <div className="type-overline flex h-[35px] items-center gap-[52px] bg-grey-50 px-sm tracking-[0.24px] text-grey-500">
-            <span className="w-[160px] flex-none">Date</span>
-            <span className="min-w-[176px] flex-1">Method</span>
-            <span className="w-[160px] flex-none">Amount</span>
+          <div className="type-overline flex h-8.75 items-center gap-13 bg-grey-50 px-sm tracking-[0.24px] text-grey-500">
+            <span className="w-27 flex-none">Date</span>
+            <span className="w-27 flex-none">Trade ID</span>
+            <span className="min-w-0 flex-1">Repayment amount</span>
+            <span className="w-40 flex-none">Remaining balance</span>
+            <span className="w-40 flex-none">Action</span>
           </div>
           {customer.repayments.map((repayment) => (
             <div
               key={repayment.id}
-              className="flex items-center gap-[52px] rounded-md px-sm py-2.5"
+              className="flex items-center gap-13 rounded-md px-sm py-2.5 text-body-sm/[normal] text-grey-800"
             >
-              <span className="w-[160px] flex-none text-body-sm/[normal] text-grey-800">
-                {repayment.date}
+              <span className="w-27 flex-none">{repayment.date}</span>
+              <span className="w-27 flex-none">{repayment.tradeId}</span>
+              <span className="min-w-0 flex-1">{repayment.amount}</span>
+              <span className="w-40 flex-none">
+                {repayment.remainingBalance}
               </span>
-              <span className="min-w-[176px] flex-1 text-body-sm/[normal] text-grey-800">
-                {repayment.method}
-              </span>
-              <span className="w-[160px] flex-none text-body-sm/[normal] text-grey-800">
-                {repayment.amount}
+              <span className="w-40 flex-none">
+                <button
+                  type="button"
+                  onClick={() => setOpen(repayment)}
+                  className="cursor-pointer font-sans font-medium text-evergreen-600 hover:underline"
+                >
+                  View receipt
+                </button>
               </span>
             </div>
           ))}
         </div>
       )}
+
+      {open ? (
+        <RepaymentDetailsDrawer
+          repayment={open}
+          onClose={() => setOpen(null)}
+        />
+      ) : null}
     </div>
   );
 }

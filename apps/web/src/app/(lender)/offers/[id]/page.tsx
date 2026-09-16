@@ -37,7 +37,7 @@ export default async function OfferDetailPage({
           OFFERS[index + 1] ? `/offers/${OFFERS[index + 1]!.id}` : undefined
         }
       />
-      <div className="flex min-h-px flex-1 flex-col overflow-y-auto py-lg">
+      <div className="min-h-px flex-1 overflow-y-auto py-lg">
         <div className="flex items-start gap-20 px-lg">
           <NegotiationTimeline offer={offer} />
           <OfferSummary offer={offer} />

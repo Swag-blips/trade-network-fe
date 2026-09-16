@@ -97,7 +97,7 @@ export function OfferModal({
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[414px] max-w-[calc(100vw-2rem)] overflow-visible rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className="m-auto w-103.5 max-w-[calc(100vw-2rem)] overflow-visible rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
     >
       {step === "sent" ? (
         <div className="flex flex-col items-center gap-lg px-lg py-xl text-center">
@@ -109,7 +109,7 @@ export function OfferModal({
           <div className="flex flex-col gap-xs">
             <h2
               id="offer-title"
-              className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900"
+              className="font-sans text-xl/normal font-medium text-grey-900"
             >
               Your offer has been sent!
             </h2>
@@ -223,12 +223,9 @@ export function OfferModal({
                   <Select
                     id="offer-tenor"
                     value={tenor}
-                    onChange={(event) => setTenor(event.target.value)}
-                  >
-                    {TENORS.map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                  </Select>
+                    onValueChange={setTenor}
+                    options={TENORS}
+                  />
                 </Field>
               </div>
             </div>

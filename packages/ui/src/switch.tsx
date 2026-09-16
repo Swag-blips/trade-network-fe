@@ -27,7 +27,7 @@ export function Switch({
     >
       <span
         className={`absolute size-5 rounded-full bg-white transition-[left] duration-150 motion-reduce:transition-none ${
-          checked ? "left-[22px]" : "left-0.5"
+          checked ? "left-5.5" : "left-0.5"
         }`}
       />
     </button>

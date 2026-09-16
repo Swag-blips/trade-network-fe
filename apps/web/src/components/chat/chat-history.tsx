@@ -48,7 +48,7 @@ export function ChatHistory({
         ref={ref}
         tabIndex={-1}
         aria-label="Chat history"
-        className="absolute inset-y-0 left-0 flex w-[367px] max-w-[85%] flex-col overflow-hidden bg-white outline-none"
+        className="absolute inset-y-0 left-0 flex w-91.75 max-w-[85%] flex-col overflow-hidden bg-white outline-none"
       >
         <div className="flex flex-none items-center gap-2.5 border-b border-grey-100 px-5 py-md">
           <h2 className="min-w-0 flex-1 font-brand text-[1.5rem]/[1.3] font-medium text-grey-900">
@@ -61,7 +61,7 @@ export function ChatHistory({
 
         <div className="min-h-px flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="mx-auto mt-xl flex w-[247px] flex-col items-center gap-md">
+            <div className="mx-auto mt-xl flex w-61.75 flex-col items-center gap-md">
               <HugeiconsIcon
                 icon={HistoryIcon}
                 size={32}

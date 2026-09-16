@@ -20,7 +20,7 @@ function Metric({
   value: string;
 }) {
   return (
-    <div className="flex min-w-[205px] flex-1 items-center overflow-hidden rounded-lg border border-grey-100 bg-white px-md py-2.5">
+    <div className="flex min-w-51.25 flex-1 items-center overflow-hidden rounded-lg border border-grey-100 bg-white px-md py-2.5">
       <div className="flex min-w-0 flex-1 flex-col gap-md">
         <span className="flex size-8 items-center justify-center rounded-xl bg-evergreen-100">
           <HugeiconsIcon icon={icon} size={20} className="text-evergreen-700" />
@@ -39,7 +39,7 @@ function Metric({
 export function OverviewTab({ customer }: { customer: Customer }) {
   return (
     <div className="flex w-full flex-col gap-lg">
-      <h2 className="w-full font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+      <h2 className="w-full font-sans text-xl/normal font-medium text-grey-900">
         Overview
       </h2>
 
@@ -68,7 +68,7 @@ export function OverviewTab({ customer }: { customer: Customer }) {
         </div>
 
         <div className="flex w-full flex-wrap items-stretch gap-md overflow-hidden">
-          <section className="flex min-w-[320px] flex-1 flex-col gap-md self-stretch overflow-hidden rounded-lg border border-[#92bbfd] bg-white p-sm">
+          <section className="flex min-w-80 flex-1 flex-col gap-md self-stretch overflow-hidden rounded-lg border border-[#92bbfd] bg-white p-sm">
             <div className="flex w-full items-center">
               <span className="flex min-w-0 flex-1 items-center gap-xs">
                 <TaiAgent size="xs" />
@@ -86,7 +86,7 @@ export function OverviewTab({ customer }: { customer: Customer }) {
             </div>
           </section>
 
-          <section className="flex w-[313px] flex-none flex-col justify-center gap-lg rounded-xl border border-grey-100 bg-white pt-xs pb-lg">
+          <section className="flex w-78.25 flex-none flex-col justify-center gap-lg rounded-xl border border-grey-100 bg-white pt-xs pb-lg">
             <h3 className="w-full text-center font-sans text-body font-medium text-grey-800">
               Portfolio health
             </h3>

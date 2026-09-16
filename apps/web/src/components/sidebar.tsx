@@ -56,7 +56,7 @@ export function Sidebar({ sections, footer }: SidebarProps) {
   return (
     <aside className="flex w-65.5 flex-none flex-col gap-md bg-grey-50 pt-md pb-lg">
       <div className="flex h-12 items-center justify-between px-md py-2.5">
-        <Wordmark className="h-[13.435px] w-[149px] text-evergreen-900" />
+        <Wordmark className="h-[13.435px] w-37.25 text-evergreen-900" />
         <IconButton label="Collapse sidebar" size="sm">
           <HugeiconsIcon icon={PanelLeftIcon} />
         </IconButton>

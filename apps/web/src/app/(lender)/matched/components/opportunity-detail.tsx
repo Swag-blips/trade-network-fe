@@ -23,7 +23,7 @@ import { IconButton } from "@repo/ui/icon-button";
 import { useToast } from "@repo/ui/toast";
 import { InitialsAvatar } from "@/components/avatars";
 import { TaiAgent } from "@/components/tai-agent";
-import { TradeRoom } from "./trade-room";
+import { TradeRoom } from "@/components/trade-room";
 import { OfferModal } from "@/components/offer-modal";
 import type { Opportunity, OpportunityDetail } from "../types/opportunity";
 
@@ -37,7 +37,7 @@ const METRIC_ICONS: IconSvgElement[] = [
 function Overview({ detail }: { detail: OpportunityDetail }) {
   return (
     <div className="flex flex-col gap-lg">
-      <h3 className="font-brand text-[1.5rem]/[1.5] font-medium text-grey-900">
+      <h3 className="font-brand text-2xl/normal font-medium text-grey-900">
         Opportunity details
       </h3>
 
@@ -45,7 +45,7 @@ function Overview({ detail }: { detail: OpportunityDetail }) {
         {detail.metrics.map((metric, index) => (
           <div
             key={metric.id}
-            className="flex min-w-[205px] flex-1 flex-col gap-md overflow-hidden rounded-lg border border-grey-100 bg-white px-md py-2.5"
+            className="flex min-w-51.25 flex-1 flex-col gap-md overflow-hidden rounded-lg border border-grey-100 bg-white px-md py-2.5"
           >
             <span className="flex size-8 items-center justify-center rounded-xl bg-evergreen-100">
               <HugeiconsIcon
@@ -78,7 +78,7 @@ function Overview({ detail }: { detail: OpportunityDetail }) {
         </div>
         <hr className="border-grey-100" />
         <div className="flex flex-col gap-xs">
-          <p className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+          <p className="font-sans text-xl/normal font-medium text-grey-900">
             {detail.summary.verdict}
           </p>
           <p className="text-body text-grey-800">{detail.summary.body}</p>
@@ -133,7 +133,7 @@ export function OpportunityDetailModal({
         event.preventDefault();
         onClose();
       }}
-      className="m-auto h-[791px] max-h-[calc(100vh-2.5rem)] w-[1244px] max-w-[calc(100vw-2.25rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className="m-auto h-197.75 max-h-[calc(100vh-2.5rem)] w-311 max-w-[calc(100vw-2.25rem)] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
     >
       <div className="flex h-full flex-col">
         <header className="flex flex-none items-center gap-lg border-b border-grey-100 px-lg py-2.5">
@@ -200,16 +200,26 @@ export function OpportunityDetailModal({
               {tab === "Details" ? (
                 <Overview detail={detail} />
               ) : (
-                <TradeRoom item={item} detail={detail} />
+                <TradeRoom
+                  data={{
+                    seller: detail.trade.seller,
+                    sellerInitials: item.initials,
+                    buyer: detail.trade.buyer,
+                    buyerInitials: detail.trade.buyerInitials,
+                    rows: detail.trade.rows,
+                    evidence: detail.evidence,
+                    activity: detail.activity,
+                  }}
+                />
               )}
             </div>
           </div>
 
-          <aside className="flex w-[327px] flex-none flex-col gap-lg p-lg">
+          <aside className="flex w-81.75 flex-none flex-col gap-lg p-lg">
             <div className="flex flex-col items-center gap-lg">
               <InitialsAvatar initials={item.initials} size={80} />
               <div className="flex flex-col items-center gap-1">
-                <p className="font-brand text-[1.25rem]/[1.5] font-medium text-grey-900">
+                <p className="font-brand text-xl/normal font-medium text-grey-900">
                   {item.name}
                 </p>
                 <span className="flex items-center gap-1">

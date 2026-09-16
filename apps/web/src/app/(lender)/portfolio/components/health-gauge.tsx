@@ -39,12 +39,12 @@ export function HealthGauge({ level }: { level: HealthLevel }) {
   const [nx, ny] = point(angle, R - 16);
 
   return (
-    <div className="relative h-[163px] w-full">
+    <div className="relative h-40.75 w-full">
       <svg
         viewBox="0 0 202 163"
         role="img"
         aria-label={`Portfolio health: ${tone.label}`}
-        className="absolute top-1/2 left-1/2 h-[163px] w-[202px] -translate-x-1/2 -translate-y-1/2"
+        className="absolute top-1/2 left-1/2 h-40.75 w-50.5 -translate-x-1/2 -translate-y-1/2"
       >
         <defs>
           <linearGradient id="gauge-track" x1="0" y1="1" x2="1" y2="0">
@@ -100,7 +100,7 @@ export function HealthGauge({ level }: { level: HealthLevel }) {
         <circle cx={CX} cy={CY} r={10} fill="#e2e5e4" />
       </svg>
 
-      <span className="absolute top-[140px] left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full bg-evergreen-100 px-xs py-0.5 font-sans text-body-sm font-medium text-evergreen-600">
+      <span className="absolute top-35 left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full bg-evergreen-100 px-xs py-0.5 font-sans text-body-sm font-medium text-evergreen-600">
         {tone.label}
       </span>
     </div>

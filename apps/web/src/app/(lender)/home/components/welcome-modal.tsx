@@ -31,17 +31,17 @@ export function WelcomeModal({ open, onStartTour, onSkip }: WelcomeModalProps) {
         onSkip();
       }}
       aria-labelledby="welcome-modal-title"
-      className="m-auto w-full max-w-[787px] overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className="m-auto w-full max-w-196.75 overflow-hidden rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
     >
       <div className="flex">
-        <div className="relative hidden h-[479px] w-[309px] flex-none overflow-hidden bg-evergreen-600 md:block">
+        <div className="relative hidden h-119.75 w-77.25 flex-none overflow-hidden bg-evergreen-600 md:block">
           <BrandArc
             arc="outer"
-            className="absolute left-[39.6px] top-[93px] h-[244.2px] w-[253.5px] text-evergreen-300 opacity-10"
+            className="absolute left-[39.6px] top-23.25 h-[244.2px] w-[253.5px] text-evergreen-300 opacity-10"
           />
           <BrandArc
             arc="inner"
-            className="absolute left-[-57px] top-[118.2px] h-[240.6px] w-[253.5px] text-evergreen-300 opacity-10"
+            className="absolute -left-14.25 top-[118.2px] h-[240.6px] w-[253.5px] text-evergreen-300 opacity-10"
           />
 
           <div className="absolute left-[calc(50%+18.55px)] top-[calc(50%+61.15px)] flex h-[638.283px] w-[440.693px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
@@ -58,7 +58,7 @@ export function WelcomeModal({ open, onStartTour, onSkip }: WelcomeModalProps) {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 h-[139px] w-[346px] bg-linear-to-b from-evergreen-600/0 to-evergreen-600" />
+          <div className="absolute bottom-0 left-0 h-34.75 w-86.5 bg-linear-to-b from-evergreen-600/0 to-evergreen-600" />
 
           <BrandMark className="absolute left-[24.2px] top-6 h-6 w-[31.61px] text-evergreen-50" />
         </div>

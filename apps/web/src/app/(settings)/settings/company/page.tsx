@@ -25,7 +25,7 @@ export default function CompanySettingsPage() {
 
   return (
     <SettingsPage title="Company details">
-      <div className="flex max-w-[632px] flex-col gap-lg">
+      <div className="flex max-w-158 flex-col gap-lg">
         <SectionHeading
           title="About details"
           description="Edit your company details."
@@ -61,16 +61,18 @@ export default function CompanySettingsPage() {
           </Field>
         </div>
 
-        <Field label="Country" required htmlFor="country" className="w-[308px]">
+        <Field
+          label="Country"
+          required
+          htmlFor="country"
+          className="w-tour-card"
+        >
           <Select
             id="country"
             value={country}
-            onChange={(event) => setCountry(event.target.value)}
-          >
-            {COUNTRIES.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </Select>
+            onValueChange={setCountry}
+            options={COUNTRIES}
+          />
         </Field>
 
         <div>

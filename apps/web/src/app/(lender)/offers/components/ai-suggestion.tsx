@@ -82,7 +82,7 @@ export function AiSuggestion({
                 <Button variant="ghost" size="sm" onClick={onExecute}>
                   Execute offer
                 </Button>
-                <span aria-hidden className="h-[19px] w-px bg-grey-200" />
+                <span aria-hidden className="h-4.75 w-px bg-grey-200" />
                 <Button variant="ghost" size="sm" onClick={onEdit}>
                   Edit offer
                 </Button>
