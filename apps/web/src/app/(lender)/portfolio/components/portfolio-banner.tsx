@@ -50,15 +50,15 @@ export function PortfolioBanner({ stats }: { stats: PortfolioStat[] }) {
     <section className="relative flex w-full items-center gap-md overflow-hidden rounded-b-[20px] bg-[linear-gradient(175.65deg,#2a8178_14.1%,#065653_67.4%)] px-5 pt-lg pb-md">
       <span
         aria-hidden
-        className="absolute top-[-137px] left-[808px] hidden h-[310px] w-[338px] bg-evergreen-400 opacity-80 [mask-image:url(/portfolio-banner-dots.png)] [mask-position:44px_13px] [mask-repeat:no-repeat] [mask-size:286px_289px] lg:block"
+        className="absolute -top-34.25 left-202 hidden h-77.5 w-84.5 bg-evergreen-400 opacity-80 mask-[url(/portfolio-banner-dots.png)] mask-[44px_13px] mask-no-repeat mask-size-[286px_289px] lg:block"
       />
       <span
         aria-hidden
-        className="absolute top-[-46px] left-[608px] hidden h-px w-[232px] -rotate-45 bg-linear-to-r from-transparent via-white/20 to-transparent lg:block"
+        className="absolute -top-11.5 left-152 hidden h-px w-58 -rotate-45 bg-linear-to-r from-transparent via-white/20 to-transparent lg:block"
       />
       <span
         aria-hidden
-        className="absolute top-[44px] left-[628px] hidden h-px w-[232px] -rotate-45 bg-linear-to-r from-transparent via-white/20 to-transparent lg:block"
+        className="absolute top-11 left-157 hidden h-px w-58 -rotate-45 bg-linear-to-r from-transparent via-white/20 to-transparent lg:block"
       />
 
       <div className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-xl">

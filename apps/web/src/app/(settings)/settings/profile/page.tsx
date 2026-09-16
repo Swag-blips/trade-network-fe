@@ -16,7 +16,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <SettingsPage title="My profile">
-      <div className="flex max-w-[632px] flex-col gap-lg">
+      <div className="flex max-w-158 flex-col gap-lg">
         <SectionHeading
           title="Profile details"
           description="Edit your account profile details."
@@ -60,7 +60,7 @@ export default function ProfileSettingsPage() {
           label="Email address"
           required
           htmlFor="email"
-          className="w-[308px]"
+          className="w-tour-card"
         >
           <Input
             id="email"

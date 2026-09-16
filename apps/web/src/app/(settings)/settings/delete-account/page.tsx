@@ -6,7 +6,7 @@ import { SettingsPage } from "../../components/settings-page";
 export default function DeleteAccountPage() {
   return (
     <SettingsPage title="Delete account">
-      <section className="max-w-[506px] overflow-hidden rounded-lg border border-grey-200">
+      <section className="max-w-126.5 overflow-hidden rounded-lg border border-grey-200">
         <div className="flex flex-col gap-1 p-md">
           <h2 className="font-sans text-body font-medium text-grey-900">
             Delete your account

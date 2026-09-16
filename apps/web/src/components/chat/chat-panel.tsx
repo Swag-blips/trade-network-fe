@@ -129,7 +129,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
   return (
     <section
       aria-label="Tai assistant"
-      className="fixed right-xl bottom-xl z-20 flex h-[743px] max-h-[calc(100vh-4rem)] w-[517px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-azure-200 bg-grey-50 shadow-small-thick"
+      className="fixed right-xl bottom-xl z-20 flex h-185.75 max-h-[calc(100vh-4rem)] w-129.25 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-azure-200 bg-grey-50 shadow-small-thick"
     >
       <header className="flex flex-none items-center gap-lg px-5 py-md">
         <div className="flex min-w-0 flex-1 items-center gap-md">
@@ -169,18 +169,18 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
       <div ref={scrollRef} className="min-h-px flex-1 overflow-y-auto">
         {empty ? (
           <>
-            <div className="relative flex h-[406px] flex-col items-center justify-center overflow-hidden">
+            <div className="relative flex h-101.5 flex-col items-center justify-center overflow-hidden">
               <div
                 aria-hidden
-                className="absolute top-[140px] left-[67px] size-[158px] rounded-full bg-azure-200 opacity-30 blur-[60px]"
+                className="absolute top-35 left-16.75 size-39.5 rounded-full bg-azure-200 opacity-30 blur-[60px]"
               />
               <div
                 aria-hidden
-                className="absolute top-[230px] left-[267px] size-[218px] rounded-full bg-evergreen-200 opacity-30 blur-[60px]"
+                className="absolute top-57.5 left-66.75 size-54.5 rounded-full bg-evergreen-200 opacity-30 blur-[60px]"
               />
               <div className="relative flex flex-col items-center gap-md">
                 <TaiAgent />
-                <p className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+                <p className="font-sans text-xl/normal font-medium text-grey-900">
                   How can I help you Shile?
                 </p>
               </div>
@@ -247,7 +247,7 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
             event.preventDefault();
             submit(draft);
           }}
-          className="flex w-full items-center gap-2.5 rounded-full border border-evergreen-500 bg-white px-lg py-md shadow-[0_0_1px_4px_rgb(47_138_122_/_8%)]"
+          className="flex w-full items-center gap-2.5 rounded-full border border-evergreen-500 bg-white px-lg py-md shadow-[0_0_1px_4px_rgb(47_138_122/8%)]"
         >
           <input
             value={draft}

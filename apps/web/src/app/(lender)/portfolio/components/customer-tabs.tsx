@@ -8,7 +8,13 @@ import type { Customer } from "../types/customer";
 
 const TABS = ["Overview", "Funded trades", "Repayments"] as const;
 
-export function CustomerTabs({ customer }: { customer: Customer }) {
+export function CustomerTabs({
+  customer,
+  onRecordRepayment,
+}: {
+  customer: Customer;
+  onRecordRepayment?: (tradeId: string) => void;
+}) {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
 
   return (
@@ -43,7 +49,10 @@ export function CustomerTabs({ customer }: { customer: Customer }) {
       <div className="flex flex-col items-start px-lg pt-lg">
         {tab === "Overview" ? <OverviewTab customer={customer} /> : null}
         {tab === "Funded trades" ? (
-          <FundedTradesTab customer={customer} />
+          <FundedTradesTab
+            customer={customer}
+            onRecordRepayment={onRecordRepayment}
+          />
         ) : null}
         {tab === "Repayments" ? <RepaymentsTab customer={customer} /> : null}
       </div>

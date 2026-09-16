@@ -1,6 +1,6 @@
 import type { TradeRoomData } from "@/components/trade-room";
 
-export type CustomerStatus = "outstanding" | "repaid" | "overdue";
+export type CustomerStatus = "outstanding" | "repaid" | "overdue" | "settled";
 export type HealthLevel = "healthy" | "watch" | "at-risk" | "critical";
 
 export interface FundedTrade {
@@ -25,8 +25,10 @@ export interface FundedTrade {
 export interface Repayment {
   id: string;
   date: string;
+  tradeId: string;
   amount: string;
-  method: string;
+  remainingBalance: string;
+  evidence?: string;
 }
 
 export interface Customer {
@@ -57,6 +59,7 @@ export const CUSTOMER_STATUS: Record<
   },
   repaid: { label: "Repaid", className: "bg-evergreen-50 text-green-500" },
   overdue: { label: "Overdue", className: "bg-cordovan-50 text-red-error-500" },
+  settled: { label: "Settled", className: "bg-grey-100 text-grey-600" },
 };
 
 export const HEALTH: Record<

@@ -19,11 +19,11 @@ function Row({ label, value }: { label: string; value: string }) {
 
 export function OfferSummary({ offer }: { offer: Offer }) {
   return (
-    <aside className="flex w-[344px] flex-none flex-col rounded-lg border border-grey-100 bg-white">
+    <aside className="flex w-86 flex-none flex-col rounded-lg border border-grey-100 bg-white">
       <div className="flex w-full flex-col items-center justify-center gap-md px-5 py-md">
         <InitialsAvatar initials={offer.initials} size={64} />
         <div className="flex w-full flex-col items-center justify-center gap-1">
-          <p className="w-full text-center font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+          <p className="w-full text-center font-sans text-xl/normal font-medium text-grey-900">
             {offer.applicant}
           </p>
           <span className="flex items-center justify-center gap-1">

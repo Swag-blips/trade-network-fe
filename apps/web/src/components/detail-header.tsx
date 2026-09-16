@@ -36,7 +36,7 @@ export function DetailHeader({
   const router = useRouter();
 
   return (
-    <header className="flex h-[60px] flex-none items-center justify-center gap-2.5 overflow-hidden border-b border-grey-100 bg-white px-lg py-sm">
+    <header className="flex h-15 flex-none items-center justify-center gap-2.5 overflow-hidden border-b border-grey-100 bg-white px-lg py-sm">
       <div className="flex min-w-0 flex-1 items-center gap-xs">
         <IconButton
           label={`Back to ${backLabel}`}
@@ -47,7 +47,7 @@ export function DetailHeader({
         </IconButton>
         <div className="flex min-w-0 items-center gap-sm">
           <InitialsAvatar initials={initials} size={32} />
-          <h1 className="max-w-[200px] truncate font-sans text-body font-medium text-grey-900">
+          <h1 className="max-w-50 truncate font-sans text-body font-medium text-grey-900">
             {name}
           </h1>
         </div>

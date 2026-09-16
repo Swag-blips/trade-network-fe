@@ -36,12 +36,12 @@ export function OpportunityCard({
     <button
       type="button"
       onClick={onSelect}
-      className="relative flex w-full max-w-[666px] cursor-pointer flex-col gap-md overflow-hidden rounded-xl border border-grey-100 bg-white p-md text-left shadow-small-thick transition-colors hover:border-grey-200 motion-reduce:transition-none"
+      className="relative flex w-full max-w-166.5 cursor-pointer flex-col gap-md overflow-hidden rounded-xl border border-grey-100 bg-white p-md text-left shadow-small-thick transition-colors hover:border-grey-200 motion-reduce:transition-none"
     >
       {item.unread ? (
         <span
           aria-label="New opportunity"
-          className="absolute top-[21px] left-[15px] size-3 rounded-full bg-grey-900"
+          className="absolute top-5.25 left-3.75 size-3 rounded-full bg-grey-900"
         />
       ) : null}
 
@@ -68,11 +68,11 @@ export function OpportunityCard({
       </div>
 
       <div className="flex w-full items-center gap-lg">
-        <Detail label="Requested advance" className="w-[116px] flex-none">
+        <Detail label="Requested advance" className="w-29 flex-none">
           {item.advance}
         </Detail>
         <Divider />
-        <Detail label="Counterparty" className="w-[140px] flex-none">
+        <Detail label="Counterparty" className="w-35 flex-none">
           <span className="flex items-center gap-xs">
             <InitialsAvatar
               initials={item.counterpartyInitials}
@@ -83,7 +83,7 @@ export function OpportunityCard({
           </span>
         </Detail>
         <Divider />
-        <Detail label="Tenor" className="w-[86px] flex-none">
+        <Detail label="Tenor" className="w-21.5 flex-none">
           {item.tenor}
         </Detail>
         <Divider />

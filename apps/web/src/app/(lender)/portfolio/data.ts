@@ -210,8 +210,9 @@ export const CUSTOMERS: Customer[] = [
       {
         id: "RP-0001",
         date: "Oct 02, 2025",
+        tradeId: "FT-0002",
         amount: "₦6,072,000",
-        method: "Bank transfer",
+        remainingBalance: "₦0",
       },
     ],
   },
@@ -316,8 +317,9 @@ export const CUSTOMERS: Customer[] = [
       {
         id: "RP-0002",
         date: "Jul 18, 2025",
+        tradeId: "FT-0003",
         amount: "₦3,166,400",
-        method: "Direct debit",
+        remainingBalance: "₦4,120,000",
       },
     ],
   },

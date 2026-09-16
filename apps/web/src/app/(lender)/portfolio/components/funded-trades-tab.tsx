@@ -7,7 +7,6 @@ import {
   Invoice01Icon,
 } from "@hugeicons/core-free-icons";
 import { Select } from "@repo/ui/select";
-import { useToast } from "@repo/ui/toast";
 import { StatusChip } from "./status-chip";
 import { FundedTradeDrawer } from "./funded-trade-drawer";
 import {
@@ -21,10 +20,15 @@ const STATUSES = [
   ...Object.values(CUSTOMER_STATUS).map((status) => status.label),
 ];
 
-export function FundedTradesTab({ customer }: { customer: Customer }) {
+export function FundedTradesTab({
+  customer,
+  onRecordRepayment,
+}: {
+  customer: Customer;
+  onRecordRepayment?: (tradeId: string) => void;
+}) {
   const [status, setStatus] = useState(STATUSES[0]!);
   const [open, setOpen] = useState<FundedTrade | null>(null);
-  const { toast } = useToast();
 
   const visible = customer.trades.filter(
     (trade) =>
@@ -34,7 +38,7 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
   return (
     <div className="flex w-full flex-col">
       <div className="flex w-full items-center gap-md">
-        <h2 className="min-w-0 flex-1 font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+        <h2 className="min-w-0 flex-1 font-sans text-xl/normal font-medium text-grey-900">
           Funded trades
         </h2>
         <span className="flex flex-none items-center gap-md">
@@ -52,22 +56,19 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
             aria-label="Filter trades by status"
             variant="chip"
             value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            {STATUSES.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </Select>
+            onValueChange={setStatus}
+            options={STATUSES}
+          />
         </span>
       </div>
 
       <div className="mt-md flex w-full flex-col gap-xs">
-        <div className="type-overline flex h-[35px] items-center gap-[52px] bg-grey-50 px-sm tracking-[0.24px] text-grey-500">
-          <span className="w-[108px] flex-none">Trade ID</span>
-          <span className="min-w-[176px] flex-1">Funding type</span>
-          <span className="w-[160px] flex-none">Outstanding balance</span>
-          <span className="w-[160px] flex-none">Due date</span>
-          <span className="w-[124px] flex-none">Status</span>
+        <div className="type-overline flex h-8.75 items-center gap-13 bg-grey-50 px-sm tracking-[0.24px] text-grey-500">
+          <span className="w-27 flex-none">Trade ID</span>
+          <span className="min-w-44 flex-1">Funding type</span>
+          <span className="w-40 flex-none">Outstanding balance</span>
+          <span className="w-40 flex-none">Due date</span>
+          <span className="w-31 flex-none">Status</span>
         </div>
 
         {visible.length === 0 ? (
@@ -80,9 +81,9 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
               key={trade.id}
               type="button"
               onClick={() => setOpen(trade)}
-              className="flex cursor-pointer items-center gap-[52px] rounded-md px-sm py-2.5 text-left hover:bg-grey-50"
+              className="flex cursor-pointer items-center gap-13 rounded-md px-sm py-2.5 text-left hover:bg-grey-50"
             >
-              <span className="flex w-[108px] flex-none items-center gap-xs">
+              <span className="flex w-27 flex-none items-center gap-xs">
                 <span className="flex size-8 flex-none items-center justify-center rounded-full bg-evergreen-100">
                   <HugeiconsIcon
                     icon={Invoice01Icon}
@@ -94,16 +95,16 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
                   {trade.id}
                 </span>
               </span>
-              <span className="min-w-[176px] flex-1 text-body-sm/[normal] text-grey-800">
+              <span className="min-w-44 flex-1 text-body-sm/[normal] text-grey-800">
                 {trade.fundingType}
               </span>
-              <span className="w-[160px] flex-none text-body-sm/[normal] text-grey-800">
+              <span className="w-40 flex-none text-body-sm/[normal] text-grey-800">
                 {trade.outstanding}
               </span>
-              <span className="w-[160px] flex-none text-body-sm/[normal] text-grey-800">
+              <span className="w-40 flex-none text-body-sm/[normal] text-grey-800">
                 {trade.dueDate}
               </span>
-              <span className="flex w-[124px] flex-none items-center">
+              <span className="flex w-31 flex-none items-center">
                 <StatusChip status={trade.status} />
               </span>
             </button>
@@ -117,7 +118,7 @@ export function FundedTradesTab({ customer }: { customer: Customer }) {
           onClose={() => setOpen(null)}
           onRecordRepayment={() => {
             setOpen(null);
-            toast({ message: "Repayment recorded" });
+            onRecordRepayment?.(open.id);
           }}
         />
       ) : null}

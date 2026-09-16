@@ -33,8 +33,8 @@ const SECTORS = [
 
 export default function FundingMandatePage() {
   const [allocation, setAllocation] = useState("700,000,000");
-  const [tenor, setTenor] = useState(TENORS[0]);
-  const [fundingType, setFundingType] = useState(FUNDING_TYPES[0]);
+  const [tenor, setTenor] = useState(TENORS[0]!);
+  const [fundingType, setFundingType] = useState(FUNDING_TYPES[0]!);
   const [sectors, setSectors] = useState<string[]>([
     "Manufacturing",
     "Agriculture",
@@ -53,7 +53,7 @@ export default function FundingMandatePage() {
 
   return (
     <SettingsPage title="Funding mandate">
-      <div className="flex max-w-[506px] flex-col gap-lg">
+      <div className="flex max-w-126.5 flex-col gap-lg">
         <div className="flex items-center gap-xs rounded-md bg-azure-50 px-md py-sm">
           <HugeiconsIcon
             icon={InformationCircleIcon}
@@ -74,7 +74,7 @@ export default function FundingMandatePage() {
           label="Capital allocation"
           required
           htmlFor="allocation"
-          className="w-[308px]"
+          className="w-tour-card"
         >
           <Input
             id="allocation"
@@ -94,12 +94,9 @@ export default function FundingMandatePage() {
             <Select
               id="tenor"
               value={tenor}
-              onChange={(event) => setTenor(event.target.value)}
-            >
-              {TENORS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onValueChange={setTenor}
+              options={TENORS}
+            />
           </Field>
           <Field
             label="Preferred funding types"
@@ -110,12 +107,9 @@ export default function FundingMandatePage() {
             <Select
               id="funding-type"
               value={fundingType}
-              onChange={(event) => setFundingType(event.target.value)}
-            >
-              {FUNDING_TYPES.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onValueChange={setFundingType}
+              options={FUNDING_TYPES}
+            />
           </Field>
         </div>
 

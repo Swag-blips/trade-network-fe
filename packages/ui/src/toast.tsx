@@ -51,7 +51,7 @@ function Spinner() {
           }`}
           style={{ transform: `rotate(${index * 45}deg)` }}
         >
-          <span className="absolute top-0 left-0 h-[5px] w-full rounded-full bg-current" />
+          <span className="absolute top-0 left-0 h-1.25 w-full rounded-full bg-current" />
         </span>
       ))}
     </span>

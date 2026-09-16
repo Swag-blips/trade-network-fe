@@ -116,7 +116,7 @@ export function FundedTradeDrawer({
         event.preventDefault();
         onClose();
       }}
-      className="mt-0 mr-0 mb-0 ml-auto h-full max-h-full w-[544px] max-w-full overflow-y-auto bg-white p-0 backdrop:bg-grey-900/40"
+      className="mt-0 mr-0 mb-0 ml-auto h-full max-h-full w-136 max-w-full overflow-y-auto bg-white p-0 backdrop:bg-grey-900/40"
     >
       <header className="flex w-full items-center gap-md border-b border-grey-100 px-lg py-md">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">

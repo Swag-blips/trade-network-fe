@@ -73,7 +73,7 @@ const ACTIVITY_ICON: Record<ActivityKind, IconSvgElement> = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h3 className="w-full font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+    <h3 className="w-full font-sans text-xl/normal font-medium text-grey-900">
       {children}
     </h3>
   );
@@ -139,7 +139,7 @@ function TradeDetails({ data }: { data: TradeRoomData }) {
       <dl className="flex flex-col gap-md">
         {data.rows.map((row) => (
           <div key={row.label} className="flex items-center gap-xl">
-            <dt className="w-[169px] flex-none text-body-sm text-grey-600">
+            <dt className="w-42.25 flex-none text-body-sm text-grey-600">
               {row.label}
             </dt>
             <dd className="flex items-center gap-1 text-body-sm text-grey-800">
@@ -163,7 +163,7 @@ function TradeEvidence({ steps }: { steps: EvidenceStep[] }) {
   return (
     <div className="flex flex-col gap-lg">
       <SectionTitle>Trade evidence</SectionTitle>
-      <ol className="flex w-[346px] max-w-full flex-col">
+      <ol className="flex w-86.5 max-w-full flex-col">
         {steps.map((step, index) => {
           const tone = EVIDENCE_TONE[step.status];
           return (
@@ -171,7 +171,7 @@ function TradeEvidence({ steps }: { steps: EvidenceStep[] }) {
               {index > 0 ? (
                 <span
                   aria-hidden
-                  className="ml-[173px] block h-5 w-px bg-grey-200"
+                  className="ml-43.25 block h-5 w-px bg-grey-200"
                 />
               ) : null}
               <div className="flex flex-col gap-0.5 rounded-lg border border-grey-100 bg-white px-md py-2.5">
@@ -198,7 +198,7 @@ function TradeActivityList({ activity }: { activity: TradeActivity[] }) {
     <section className="w-full overflow-hidden rounded-lg border border-grey-100 bg-white">
       <div className="flex items-center gap-sm px-5 py-md">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+          <h3 className="font-sans text-xl/normal font-medium text-grey-900">
             Trade Activities
           </h3>
           <span className="flex items-center gap-xs text-body-sm/[normal] text-grey-600">
@@ -215,7 +215,7 @@ function TradeActivityList({ activity }: { activity: TradeActivity[] }) {
           <HugeiconsIcon icon={RefreshIcon} />
         </IconButton>
       </div>
-      <ul className="flex max-h-[428px] flex-col overflow-y-auto">
+      <ul className="flex max-h-107 flex-col overflow-y-auto">
         {activity.map((event) => (
           <li key={event.id} className="flex gap-sm px-5 py-sm">
             <span className="flex size-8 flex-none items-center justify-center rounded-lg bg-evergreen-100">

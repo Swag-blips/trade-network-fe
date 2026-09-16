@@ -4,10 +4,10 @@ function Glow() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 top-0 h-[220px] overflow-hidden"
+      className="pointer-events-none absolute inset-x-0 top-0 h-55 overflow-hidden"
     >
-      <div className="absolute -top-[120px] left-[-29px] size-[218px] rounded-full bg-evergreen-400 opacity-[0.06] blur-[60px]" />
-      <div className="absolute -top-[70px] left-[131px] size-[218px] rounded-full bg-linen-400 opacity-[0.06] blur-[60px]" />
+      <div className="absolute -top-30 -left-7.25 size-54.5 rounded-full bg-evergreen-400 opacity-[0.06] blur-[60px]" />
+      <div className="absolute -top-17.5 left-32.75 size-54.5 rounded-full bg-linen-400 opacity-[0.06] blur-[60px]" />
     </div>
   );
 }

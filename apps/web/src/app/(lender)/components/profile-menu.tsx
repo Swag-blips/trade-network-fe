@@ -53,7 +53,7 @@ export function ProfileMenu({ name, email }: { name: string; email: string }) {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 z-10 mt-xs w-[278px] overflow-hidden rounded-md border border-grey-200 bg-white shadow-small-thick"
+          className="absolute right-0 z-10 mt-xs w-69.5 overflow-hidden rounded-md border border-grey-200 bg-white shadow-small-thick"
         >
           <div className="flex items-center gap-sm border-b border-grey-100 p-md">
             <UserAvatar name={name} size={32} />

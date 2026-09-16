@@ -55,14 +55,14 @@ export function TimelineCard({
     setShown(open === next ? "none" : next);
 
   return (
-    <article className="w-[466px] max-w-full overflow-hidden rounded-lg border border-grey-100 bg-white shadow-small-thick">
-      <div className="flex w-full items-center gap-[15px] px-md py-2.5">
+    <article className="w-116.5 max-w-full overflow-hidden rounded-lg border border-grey-100 bg-white shadow-small-thick">
+      <div className="flex w-full items-center gap-3.75 px-md py-2.5">
         {isCounter ? (
           <InitialsAvatar initials={offer.initials} size={56} />
         ) : (
           <OrgAvatar name="Trade Network" size={56} />
         )}
-        <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.75">
           <p className="font-sans text-body/[normal] font-medium text-black">
             {entry.title}
           </p>

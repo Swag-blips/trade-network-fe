@@ -66,7 +66,7 @@ export function DashboardTour({ onClose }: { onClose: () => void }) {
         {placement !== "above" && (
           <span
             aria-hidden="true"
-            className="absolute h-[30px] w-4 bg-white"
+            className="absolute h-7.5 w-4 bg-white"
             style={{
               [tailSide]: -16,
               top: tailOffset,

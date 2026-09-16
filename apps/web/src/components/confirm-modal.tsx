@@ -13,6 +13,7 @@ export function ConfirmModal({
   confirmVariant = "primary",
   confirmIcon,
   confirmDisabled = false,
+  width = "sm",
   onClose,
   onConfirm,
   children,
@@ -23,6 +24,8 @@ export function ConfirmModal({
   confirmVariant?: ButtonVariant;
   confirmIcon?: ReactNode;
   confirmDisabled?: boolean;
+  /** `sm` is the 453px confirm dialog; `lg` the 613px form dialog. */
+  width?: "sm" | "lg";
   onClose: () => void;
   onConfirm: () => void;
   children?: ReactNode;
@@ -42,7 +45,7 @@ export function ConfirmModal({
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[453px] max-w-[calc(100vw-2rem)] overflow-visible rounded-xl bg-white p-0 backdrop:bg-grey-900/40"
+      className={`m-auto ${width === "lg" ? "w-153.25" : "w-113.25"} max-w-[calc(100vw-2rem)] overflow-visible rounded-xl bg-white p-0 backdrop:bg-grey-900/40`}
     >
       <header className="flex items-center gap-xs px-5 py-md">
         <h2

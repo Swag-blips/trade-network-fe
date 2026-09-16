@@ -28,7 +28,7 @@ export function OpportunityList({
   details: Record<string, OpportunityDetail>;
 }) {
   const [tab, setTab] = useState<OpportunityFilter>("all");
-  const [sort, setSort] = useState(SORTS[0]);
+  const [sort, setSort] = useState(SORTS[0]!);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [dismissed, setDismissed] = useState<string[]>([]);
 
@@ -58,18 +58,18 @@ export function OpportunityList({
               role="tab"
               aria-selected={active}
               onClick={() => setTab(item.id)}
-              className={`relative flex h-[83px] w-[180px] flex-col items-start gap-1.5 px-md py-sm text-left not-last:border-r border-grey-200 ${
+              className={`relative flex h-20.75 w-45 flex-col items-start gap-1.5 px-md py-sm text-left not-last:border-r border-grey-200 ${
                 active ? "bg-white" : "border-b bg-grey-50"
               }`}
             >
               {active ? (
                 <span
                   aria-hidden
-                  className="absolute inset-x-0 top-0 h-[5px] rounded-b-[4px] bg-evergreen-500"
+                  className="absolute inset-x-0 top-0 h-1.25 rounded-b-sm bg-evergreen-500"
                 />
               ) : null}
               <span className="text-body text-grey-800">{item.label}</span>
-              <span className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+              <span className="font-sans text-xl/normal font-medium text-grey-900">
                 {countFor(item.id)}
               </span>
             </button>
@@ -78,7 +78,7 @@ export function OpportunityList({
       </div>
 
       <div className="flex items-center gap-md pt-lg">
-        <h2 className="min-w-0 flex-1 font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+        <h2 className="min-w-0 flex-1 font-sans text-xl/normal font-medium text-grey-900">
           {tab === "all" ? "All opportunities" : `${tab}s`}
         </h2>
         <span className="flex flex-none items-center gap-sm">
@@ -93,13 +93,11 @@ export function OpportunityList({
           <Select
             aria-label="Filter opportunities"
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
-            className="h-[29px] w-[119px]"
-          >
-            {SORTS.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </Select>
+            onValueChange={setSort}
+            options={SORTS}
+            className="w-29.75"
+            variant="chip"
+          />
         </span>
       </div>
 

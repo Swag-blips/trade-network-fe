@@ -125,7 +125,7 @@ export function NegotiationTimeline({ offer }: { offer: Offer }) {
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="flex items-center gap-2.5 border-b border-grey-100 pb-md">
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-xs">
-          <h2 className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-900">
+          <h2 className="font-sans text-xl/normal font-medium text-grey-900">
             Negotiation timeline
           </h2>
           <p className="flex items-center gap-xs text-body-sm/[normal] text-grey-600">

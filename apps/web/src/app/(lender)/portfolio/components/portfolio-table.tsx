@@ -40,7 +40,7 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
     <>
       <div className="flex items-center px-lg">
         <div className="flex min-w-0 flex-1 items-center justify-between gap-md border-b border-grey-100 pb-md">
-          <label className="flex h-[33px] w-[327px] max-w-full items-center gap-xs overflow-hidden rounded-md bg-grey-100 px-sm py-xs focus-within:outline-2 focus-within:outline-evergreen-600">
+          <label className="flex h-8.25 w-81.75 max-w-full items-center gap-xs overflow-hidden rounded-md bg-grey-100 px-sm py-xs focus-within:outline-2 focus-within:outline-evergreen-600">
             <HugeiconsIcon
               icon={Search01Icon}
               size={16}
@@ -70,44 +70,35 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
               aria-label="Filter by customer type"
               variant="chip"
               value={kind}
-              onChange={(event) => setKind(event.target.value)}
-            >
-              {KINDS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onValueChange={setKind}
+              options={KINDS}
+            />
             <Select
               aria-label="Filter by status"
               variant="chip"
               value={status}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              {STATUSES.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onValueChange={setStatus}
+              options={STATUSES}
+            />
             <Select
               aria-label="Filter by portfolio health"
               variant="chip"
               value={health}
-              onChange={(event) => setHealth(event.target.value)}
-            >
-              {HEALTHS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </Select>
+              onValueChange={setHealth}
+              options={HEALTHS}
+            />
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-xs overflow-hidden bg-white">
-        <div className="flex h-[35px] items-center px-lg">
+        <div className="flex h-8.75 items-center px-lg">
           <div className="type-overline flex h-full min-w-0 flex-1 items-center gap-12 bg-grey-50 px-sm tracking-[0.24px] text-grey-500">
             <span className="min-w-0 flex-1">Customer</span>
-            <span className="w-[152px] flex-none">Outstanding balance</span>
-            <span className="w-[140px] flex-none">Repayment due</span>
-            <span className="w-[106px] flex-none">Status</span>
-            <span className="w-[124px] flex-none">Portfolio health</span>
+            <span className="w-38 flex-none">Outstanding balance</span>
+            <span className="w-35 flex-none">Repayment due</span>
+            <span className="w-26.5 flex-none">Status</span>
+            <span className="w-31 flex-none">Portfolio health</span>
           </div>
         </div>
 
@@ -127,7 +118,7 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
                   {customer.unread ? (
                     <span
                       aria-label="Unread"
-                      className="absolute top-px left-[7px] size-3 rounded-full bg-evergreen-900"
+                      className="absolute top-px left-1.75 size-3 rounded-full bg-evergreen-900"
                     />
                   ) : null}
                   <InitialsAvatar initials={customer.initials} size={40} />
@@ -140,16 +131,16 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
                     </span>
                   </span>
                 </span>
-                <span className="w-[152px] flex-none text-body-sm/[normal] text-grey-800">
+                <span className="w-38 flex-none text-body-sm/[normal] text-grey-800">
                   {customer.outstanding}
                 </span>
-                <span className="w-[140px] flex-none text-body-sm/[normal] text-grey-800">
+                <span className="w-35 flex-none text-body-sm/[normal] text-grey-800">
                   {customer.repaymentDue}
                 </span>
-                <span className="flex w-[106px] flex-none items-center">
+                <span className="flex w-26.5 flex-none items-center">
                   <StatusChip status={customer.status} />
                 </span>
-                <span className="flex w-[124px] flex-none items-center">
+                <span className="flex w-31 flex-none items-center">
                   <HealthDots level={customer.health} />
                 </span>
               </Link>
