@@ -35,22 +35,25 @@ local mock data, so a clean install is all you need.
 pnpm dev
 ```
 
-The web app comes up on [http://localhost:3000](http://localhost:3000). Turbopack is on,
-so edits reload as you save.
+Two apps come up: **lender** on [http://localhost:3001](http://localhost:3001) — this is
+where every screen currently lives — and **business** on [http://localhost:3000](http://localhost:3000),
+which has no routes yet. Turbopack is on, so edits
+reload as you save.
 
-Signed-in routes worth opening first:
+Lender routes worth opening first (all on :3001):
 
-| Route               | What it is                                                 |
-| ------------------- | ---------------------------------------------------------- |
-| `/home`             | Lender dashboard                                           |
-| `/matched`          | Matched opportunities, with the offer flow                 |
-| `/offers`           | Offers list                                                |
-| `/offers/[id]`      | Negotiation timeline — counter, accept, disburse, withdraw |
-| `/portfolio`        | Funded customers                                           |
-| `/portfolio/[id]`   | Customer overview, funded trades and repayments            |
-| `/settings/profile` | Account and organisation settings                          |
+| Route               | What it is                                                   |
+| ------------------- | ------------------------------------------------------------ |
+| `/create-account`   | Sign-up, then `/role` → `/organisation` → `/funding-mandate` |
+| `/home`             | Lender dashboard                                             |
+| `/matched`          | Matched opportunities, with the offer flow                   |
+| `/offers`           | Offers list                                                  |
+| `/offers/[id]`      | Negotiation timeline — counter, accept, disburse, withdraw   |
+| `/portfolio`        | Funded customers                                             |
+| `/portfolio/[id]`   | Customer overview, funded trades and repayments              |
+| `/settings/profile` | Account and organisation settings                            |
 
-`/` is still unmodified `create-turbo` boilerplate, and `/inbox` does not exist yet.
+`/` redirects to `/home`, and `/inbox` does not exist yet.
 
 ## Commands
 
@@ -58,7 +61,7 @@ Run these from the repo root; Turbo fans each one out across every workspace.
 
 | Command            | What it does                                      |
 | ------------------ | ------------------------------------------------- |
-| `pnpm dev`         | Dev servers (web on :3000)                        |
+| `pnpm dev`         | Dev servers (business :3000, lender :3001)        |
 | `pnpm build`       | Production builds                                 |
 | `pnpm lint`        | ESLint — **`--max-warnings 0`, so warnings fail** |
 | `pnpm check-types` | `tsc --noEmit`                                    |
@@ -67,7 +70,7 @@ Run these from the repo root; Turbo fans each one out across every workspace.
 Scope any of them to a single workspace with a filter:
 
 ```bash
-pnpm --filter web dev
+pnpm --filter lender dev
 ```
 
 Before pushing, the full gate is:
@@ -80,15 +83,16 @@ pnpm format && pnpm check-types && pnpm lint && pnpm build
 
 ```
 apps/
-  web/     Next.js 16 app (App Router) — the only app currently built
+  lender/  Next.js 16 — capital-provider app: onboarding, dashboard, settings
+  business/ Next.js 16 — business app (suppliers, distributors); empty shell for now
   agent/   AI agent service — planned, not yet scaffolded
 packages/
-  ui/                @repo/ui — shared React components
+  ui/                @repo/ui — design tokens + every component both apps share
   eslint-config/     base / next-js / react-internal presets
   typescript-config/ base / nextjs / react-library
 ```
 
-App source lives under `apps/web/src/`, not a top-level `app/`. Code is colocated: each
+App source lives under `apps/<app>/src/`, not a top-level `app/`. Code is colocated: each
 route folder owns its own `components/`, `hooks/`, `types/` and `utils/`, and only moves
 up to `src/` once a second route imports it.
 
@@ -97,7 +101,8 @@ up to `src/` once a second route imports it.
 - **Next.js 16.3.4** (App Router, Turbopack), **React 19.2.8**, **TypeScript 7**
 - **React Compiler is enabled** — don't hand-write `useMemo` or `useCallback`
 - **Tailwind CSS v4**, configured in CSS via `@theme` in
-  [`apps/web/src/app/globals.css`](apps/web/src/app/globals.css). There is no
+  [`packages/ui/src/styles.css`](packages/ui/src/styles.css), imported by each app's
+  `globals.css`. There is no
   `tailwind.config.js` and there should not be one.
 - [Hugeicons](https://hugeicons.com) for icons, three Google fonts via `next/font`
 

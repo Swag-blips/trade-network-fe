@@ -7,7 +7,9 @@ businesses across regional supply chains.
 
 ```
 apps/
-  web/     Next.js 16 marketing site (App Router) — the only app currently built
+  lender/  Next.js 16 — the capital-provider app: onboarding, dashboard, settings (:3001)
+  business/ Next.js 16 — the business app (suppliers, distributors, enterprises).
+            An empty shell for now: layout + tokens, no routes (:3000)
   agent/   AI agent service — planned, not yet scaffolded (empty directory)
 packages/
   ui/                @repo/ui — shared React components
@@ -21,7 +23,7 @@ packages/
 `components/`, `hooks/`, `types/` and `utils/`; only genuinely cross-page code moves up.
 
 ```
-apps/web/src/
+apps/lender/src/           (apps/business/src/ follows the same shape)
   app/
     layout.tsx          root layout — fonts, <html>/<body>
     globals.css         design tokens + base styles
@@ -39,8 +41,17 @@ apps/web/src/
 
 ### Routes
 
+All of these live in `apps/lender`. `apps/business` has none yet.
+
 ```
-/                          marketing starter page — still create-turbo boilerplate
+/                          redirects to /home
+/create-account            sign-up                 → app/(auth)/…
+/login
+/verify-email
+/role                      pick a role             → app/(onboarding)/…
+/organisation              company details
+/funding-mandate           mandate + ticket range
+/welcome
 /home                      lender dashboard        → app/(lender)/home
 /matched                   matched opportunities   → app/(lender)/matched
 /offers                    offers list             → app/(lender)/offers
@@ -54,10 +65,20 @@ apps/web/src/
 /settings/funding-mandate  mandate + ticket range
 ```
 
-**There are two shells, deliberately.** `app/(lender)/` is the dashboard workspace with
-the main sidebar; `app/(settings)/` is a separate group with its own settings sidebar
-(Back link, Account / Organisation groups, Sign out). They share nothing but the token
-system and `AgentFab`, which both layouts render.
+**Four route groups, four shells.** `(auth)` and `(onboarding)` are the signed-out and
+first-run flows, each with its own layout. `app/(lender)/` is the dashboard workspace
+with the main sidebar; `app/(settings)/` is a separate group with its own settings
+sidebar (Back link, Account / Organisation groups, Sign out). The dashboard and settings
+shells share nothing but the token system and `AgentFab`, which both layouts render.
+
+**Lender and business are separate apps; what they share lives in `packages/ui`.**
+That is the design tokens (`packages/ui/src/styles.css`, imported by each app's
+`globals.css`) and every component with no lender knowledge in it — tables, sheets,
+tabs, the sidebar shell, avatars, the Tai character. What stays in `apps/lender` is
+lender _content_: offers, matched opportunities, the trade room, Tai's chat (its mock
+data is lender-specific), the ticket-range mandate control. Onboarding is also still in
+lender: business will have a similar flow, but its shape isn't settled, so it stays put
+until there is a second real consumer to extract against.
 
 `/inbox`, which the lender sidebar links to, does not exist yet and will 404.
 
@@ -66,7 +87,7 @@ _second_ route imports it — not in anticipation of one. A single consumer mean
 stays in the route folder.
 
 - Import shared code via the `@/*` alias: `@/components/…`, `@/hooks/…`, `@/utils/…`
-  (mapped to `apps/web/src/*` in `tsconfig.json`). Colocated siblings use relative
+  (mapped to each app's own `src/*` in its `tsconfig.json`). Colocated siblings use relative
   paths (`./components/…`).
 - Truly app-agnostic components belong one level further out, in `packages/ui`.
 - A folder under `app/` only becomes a route if it contains a `page.tsx`, so
@@ -82,15 +103,15 @@ stays in the route folder.
 
 Run from the repo root; Turbo fans them out to every workspace.
 
-| Command            | What it does                     |
-| ------------------ | -------------------------------- |
-| `pnpm dev`         | Dev servers (web on :3000)       |
-| `pnpm build`       | Production builds                |
-| `pnpm lint`        | ESLint, `--max-warnings 0`       |
-| `pnpm check-types` | `tsc --noEmit`                   |
-| `pnpm format`      | Prettier over `**/*.{ts,tsx,md}` |
+| Command            | What it does                               |
+| ------------------ | ------------------------------------------ |
+| `pnpm dev`         | Dev servers (business :3000, lender :3001) |
+| `pnpm build`       | Production builds                          |
+| `pnpm lint`        | ESLint, `--max-warnings 0`                 |
+| `pnpm check-types` | `tsc --noEmit`                             |
+| `pnpm format`      | Prettier over `**/*.{ts,tsx,md}`           |
 
-To scope to one workspace: `pnpm --filter web dev`.
+To scope to one workspace: `pnpm --filter lender dev`.
 
 **Toolchain is pinned.** pnpm 11.25.0, Node >= 24. Use pnpm — never npm or yarn;
 mixing lockfiles breaks the workspace protocol (`workspace:*`) deps.
@@ -98,20 +119,20 @@ mixing lockfiles breaks the workspace protocol (`workspace:*`) deps.
 ## Stack
 
 - **Next.js 16.3.4**, App Router, Turbopack, React 19.2.8, TypeScript 7.0.2
-- **React Compiler is on** (`reactCompiler: true` in `apps/web/next.config.js`). Do not
+- **React Compiler is on** (`reactCompiler: true` in each app's `next.config.js`). Do not
   hand-write `useCallback` or `useMemo` — the compiler memoizes for you, and manual
   memoization is noise it has to work around. There is currently none in the codebase;
   keep it that way unless you can show a profile that needs it.
 - **Styling: Tailwind CSS v4**, configured in CSS (`@theme`), not a JS config file —
   there is no `tailwind.config.js` and there should not be one. No CSS Modules, no
   CSS-in-JS.
-- Source lives under `apps/web/src/` (not a top-level `app/`).
+- Source lives under `apps/<app>/src/` (not a top-level `app/`).
 
 ## Design system
 
 The source of truth is the Figma style guide — _Marketing Designs | Hops_ →
 `trade-network-design-system` ([node 2549-35198][fig]). It is implemented as a Tailwind
-`@theme` block in [`apps/web/src/app/globals.css`](apps/web/src/app/globals.css), so
+`@theme` block in [`packages/ui/src/styles.css`](packages/ui/src/styles.css), which every app's `globals.css` imports, so
 **every token is also a utility class** — `--color-evergreen-600` generates
 `bg-evergreen-600`, `text-evergreen-600`, `border-evergreen-600`, and so on.
 
@@ -126,7 +147,7 @@ The source of truth is the Figma style guide — _Marketing Designs | Hops_ →
 | 7. Elevation  | `--shadow-small-thick`, `--shadow-soft-section` | `shadow-soft-section`              |
 
 The semantic layer renames Figma's labels to Tailwind's idiom, because `bg-background-primary`
-and `text-text-primary` stutter. The mapping is written out in `globals.css`:
+and `text-text-primary` stutter. The mapping is written out in `styles.css`:
 Background Primary → `bg-background`, Text Primary → `text-foreground`,
 Text Secondary → `text-foreground-muted`, Text On Dark → `text-foreground-inverse`.
 
@@ -155,7 +176,7 @@ Text Secondary → `text-foreground-muted`, Text On Dark → `text-foreground-in
 The style guide names _Rethink Sans_ for the whole sans role, but the comps draw UI in
 Inter and keep Rethink Sans for those emphasis moments, so all three faces are loaded.
 Only the family differs — the sizes, line-heights and tracking are the style guide's.
-All three load via `next/font/google` in `apps/web/src/app/layout.tsx`; don't add
+All three load via `next/font/google` in each app's `src/app/layout.tsx`; don't add
 `<link>` tags or `@font-face`.
 
 **`@layer base` binds Fraunces to the `h1`–`h3` elements**, which is right for prose and
@@ -181,21 +202,36 @@ covered, extend that component's variant/size union rather than writing a parall
 Current inventory — `ls packages/ui/src/` is the authoritative check, this list will go
 stale:
 
-| Component       | Import                    | Notes                                                                                                                                                                                                                          |
-| --------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Button`        | `@repo/ui/button`         | 5 variants × 5 sizes, `loading` / `disabled` props                                                                                                                                                                             |
-| `buttonClasses` | `@repo/ui/button-classes` | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                       |
-| `Avatar`        | `@repo/ui/avatar`         | Structure only (size/shape/clip); pass the skin via `className`                                                                                                                                                                |
-| `IconButton`    | `@repo/ui/icon-button`    | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                   |
-| `Toast`         | `@repo/ui/toast`          | `ToastProvider` in the root layout, pinned **top centre**; call `useToast().toast({ message, state })`                                                                                                                         |
-| `Field`         | `@repo/ui/field`          | Label + control wrapper; `required` appends the asterisk                                                                                                                                                                       |
-| `Input`         | `@repo/ui/input`          | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute)                                                                                                                                     |
-| `Select`        | `@repo/ui/select`         | Custom listbox (not a native `<select>` — Figma styles the popup). `value` + `onValueChange` + `options` (`string[]` or `{value,label,display?}[]`); `variant`: `field` (40px) or `chip` (29px pill); `placeholder`, `leading` |
-| `Switch`        | `@repo/ui/switch`         | `role="switch"`, controlled                                                                                                                                                                                                    |
-| `Radio`         | `@repo/ui/radio`          | Controlled radio dot                                                                                                                                                                                                           |
-| `CheckboxChip`  | `@repo/ui/checkbox`       | Pill-shaped checkbox used for sector picking                                                                                                                                                                                   |
-| `Badge`         | `@repo/ui/badge`          | Small uppercase label (RECOMMENDED)                                                                                                                                                                                            |
-| `Card`          | `@repo/ui/card`           | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                   |
+| Component                                     | Import                                     | Notes                                                                                                                                                                                                                          |
+| --------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Button`                                      | `@repo/ui/button`                          | 5 variants × 5 sizes, `loading` / `disabled` props                                                                                                                                                                             |
+| `buttonClasses`                               | `@repo/ui/button-classes`                  | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                       |
+| `Avatar`                                      | `@repo/ui/avatar`                          | Structure only (size/shape/clip); pass the skin via `className`                                                                                                                                                                |
+| `IconButton`                                  | `@repo/ui/icon-button`                     | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                   |
+| `Toast`                                       | `@repo/ui/toast`                           | `ToastProvider` in the root layout, pinned **top centre**; call `useToast().toast({ message, state })`                                                                                                                         |
+| `Field`                                       | `@repo/ui/field`                           | Label + control wrapper; `required` appends the asterisk                                                                                                                                                                       |
+| `Input`                                       | `@repo/ui/input`                           | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute)                                                                                                                                     |
+| `Select`                                      | `@repo/ui/select`                          | Custom listbox (not a native `<select>` — Figma styles the popup). `value` + `onValueChange` + `options` (`string[]` or `{value,label,display?}[]`); `variant`: `field` (40px) or `chip` (29px pill); `placeholder`, `leading` |
+| `Switch`                                      | `@repo/ui/switch`                          | `role="switch"`, controlled                                                                                                                                                                                                    |
+| `Radio`                                       | `@repo/ui/radio`                           | Controlled radio dot                                                                                                                                                                                                           |
+| `CheckboxChip`                                | `@repo/ui/checkbox`                        | Pill-shaped checkbox used for sector picking                                                                                                                                                                                   |
+| `Badge`                                       | `@repo/ui/badge`                           | Small uppercase label (RECOMMENDED)                                                                                                                                                                                            |
+| `Card`                                        | `@repo/ui/card`                            | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                   |
+| `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows                                |
+| `Sheet`                                       | `@repo/ui/sheet`                           | 544px right-edge `<dialog>` panel: header with optional icon chip, title and close                                                                                                                                             |
+| `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets                                                                                                                                                                    |
+| `DetailRow`                                   | `@repo/ui/detail-row`                      | Label left, value right. `size="sm"` is the 14px summary row, default is 16px                                                                                                                                                  |
+| `Tabs`                                        | `@repo/ui/tabs`                            | Underlined tab strip (tablist only; panels stay at the call site)                                                                                                                                                              |
+| `FilterBar`                                   | `@repo/ui/filter-bar`                      | "Filter by:" and its chips — wrap one or more `<Select variant="chip">`                                                                                                                                                        |
+| `ConfirmModal`                                | `@repo/ui/confirm-modal`                   | Confirm dialog — title, body slot, cancel + confirm footer. `width`: `sm` (453px) or `lg` (613px)                                                                                                                              |
+| `UploadDropzone`                              | `@repo/ui/upload-dropzone`                 | Green dashed evidence dropzone with the attached-file row (click, drag-and-drop, replace, remove)                                                                                                                              |
+| `DetailHeader`                                | `@repo/ui/detail-header`                   | 60px record header: back, avatar, name, status slot, prev/next                                                                                                                                                                 |
+| `ButtonLink`                                  | `@repo/ui/button-link`                     | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                                                                                                 |
+| `Sidebar`                                     | `@repo/ui/sidebar`                         | Chrome only — takes `sections` and `footer` as props; knows nothing about lenders                                                                                                                                              |
+| `UserAvatar` / `OrgAvatar` / `InitialsAvatar` | `@repo/ui/avatars`                         | `Avatar` skinned with the app's tokens and icons                                                                                                                                                                               |
+| `TaiAgent`                                    | `@repo/ui/tai-agent`                       | The assistant character, built in DOM; eyes follow the cursor                                                                                                                                                                  |
+| `BrandMark` / `BrandArc` / `Wordmark`         | `@repo/ui/brand-mark`, `@repo/ui/wordmark` | The interlocking-arcs symbol and the TRADE NETWORK wordmark; `currentColor`, any size                                                                                                                                          |
+| `GoogleIcon`                                  | `@repo/ui/icons/google-icon`               | Sign-in-with-Google mark                                                                                                                                                                                                       |
 
 ```tsx
 import { Button } from "@repo/ui/button";
@@ -227,26 +263,23 @@ design-system sense, and forcing a pill on them would be wrong. Icon-only action
 the exception — reach for `IconButton`, never a hand-rolled `<button>` with `size-N`.
 
 Where a new component belongs is the same promotion rule as everything else — route
-folder first, `apps/web/src/components/` when a second route needs it, `packages/ui`
-only when it is app-agnostic enough that `apps/agent` could use it too. See
-[Code organisation](#code-organisation--colocate-first).
+folder first, the app's `src/components/` when a second route needs it, `packages/ui`
+when both apps need it (or certainly will). A component with no lender or business
+knowledge in it belongs in the package; one that renders lender content stays in the
+app. `packages/ui` lists `next` as a peer dependency, so it may use `next/link` and
+`next/navigation`. See [Code organisation](#code-organisation--colocate-first).
 
-**App shell** lives in `apps/web/src/components/`, global to the web app but not
-generic enough for `packages/ui`:
+**Lender-only components** live in `apps/lender/src/components/` — they render lender
+content, so they stay in the app until business genuinely needs one:
 
-| Component                   | Notes                                                                                                                                             |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Sidebar` / `SidebarFooter` | Chrome only — takes `sections` and `footer` as props                                                                                              |
-| `UserAvatar` / `OrgAvatar`  | `@repo/ui/avatar` skinned with this app's tokens and icons                                                                                        |
-| `TaiAgent` / `AgentFab`     | The assistant, built in DOM; FAB is pinned bottom-right app-wide                                                                                  |
-| `BrandMark` / `BrandArc`    | The interlocking-arcs symbol; `currentColor`, any size                                                                                            |
-| `ButtonLink`                | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                    |
-| `DetailHeader`              | 60px record header: back, avatar, name, status slot, prev/next. Used by `/offers/[id]` and `/portfolio/[id]`                                      |
-| `OfferModal`                | Offer / counter-offer composer: form → review → send. `onSubmit` hands the draft back and closes; `onSent` renders the success step instead       |
-| `ConfirmModal`              | 453px confirm dialog — title, body slot, cancel + confirm footer. Accept offer / Confirm disbursement / Exit negotiation all use it               |
-| `PartyCard`                 | Borrower identity block (name, type, terms line, 56px avatar) shared by the offer and accept dialogs                                              |
-| `TradeRoom`                 | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. Shared by the matched-opportunity modal and the funded-trade drawer     |
-| `UploadDropzone`            | Green dashed evidence dropzone with the attached-file row (click, drag-and-drop, replace, remove). Used by the disbursement and repayment dialogs |
+| Component             | Notes                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AgentFab` + `chat/*` | Tai's floating button and chat panel. The chat's suggestions and mock data are lender-specific, which is why the _character_ is shared but this isn't |
+| `OfferModal`          | Offer / counter-offer composer: form → review → send                                                                                                  |
+| `PartyCard`           | Borrower identity block (name, type, terms line, 56px avatar) for the offer and accept dialogs                                                        |
+| `TradeRoom`           | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail               |
+| `MatchBadge`          | Match-score pill on matched opportunities                                                                                                             |
+| `TicketRange`         | The funding-mandate ticket-size control, used by onboarding and settings                                                                              |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -262,11 +295,12 @@ that pattern in new components.
 
 Two pieces of wiring make this work across the workspace boundary:
 
-- `globals.css` has `@source "../../../../packages/ui/src";` — `@repo/ui` resolves
+- Each app's `globals.css` imports the tokens with `@import "@repo/ui/styles.css";`
+  (exported explicitly from the package) and has `@source "../../../../packages/ui/src";` — `@repo/ui` resolves
   through `node_modules`, which Tailwind skips by default, so **without this the
   package's utility classes silently never generate.** Add an `@source` line for every
   new workspace package that ships classes.
-- `apps/web/next.config.js` sets `transpilePackages: ["@repo/ui"]`, since the package
+- Each app's `next.config.js` sets `transpilePackages: ["@repo/ui"]`, since the package
   exports raw `.tsx` rather than a build output.
 
 **Figma state variants are not props.** A Figma component set enumerates Hover / Pressed
@@ -277,7 +311,7 @@ Figma variant axis into the TypeScript API without asking what it actually repre
 ## Icons
 
 [Hugeicons](https://hugeicons.com) — `@hugeicons/react` (renderer) + `@hugeicons/core-free-icons`
-(the icon data). Installed in `apps/web` only.
+(the icon data). Installed in each app and in `packages/ui`.
 
 ```jsx
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -378,10 +412,10 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
     Use the slash form (`text-body-sm/[normal]`) to set both in one utility.
 - **Lint warnings fail the build.** `eslint-plugin-only-warn` downgrades every rule to
   a warning, but the scripts run `--max-warnings 0`. A "warning" is a hard failure.
-- **The starter page is still boilerplate.** `apps/web/src/app/page.tsx` and
-  `page.module.css` are unmodified `create-turbo` output. `globals.css` keeps a couple
-  of compatibility shims for it (`--background` / `--foreground` aliases, `.imgDark`),
-  all marked with comments — delete them along with the starter page.
+- **The role picker spans both apps but lives in lender.** `/role` offers Enterprise,
+  Supplier, Distributor and Capital Provider; only Capital Provider is a lender. How a
+  business pick should route (into `apps/business`? a shared auth domain?) is undecided —
+  don't wire it up without asking.
 - **`Card` in `packages/ui` is still untouched scaffolding** (`Button` has been replaced).
 - **The Figma button matrix contradicts the style guide in places** — see
   [node 2770-1631](https://www.figma.com/design/TcbSe6y2vzc4z3MU6P8ldR/Marketing-Designs-%7C-Hops?node-id=2770-1631).
