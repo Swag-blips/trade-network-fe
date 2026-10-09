@@ -52,7 +52,7 @@ export function Button({
       </span>
       {loading ? (
         <span
-          className="absolute inset-0 inline-flex items-center justify-center gap-[3px]"
+          className="absolute inset-0 inline-flex items-center justify-center gap-0.75"
           aria-hidden="true"
         >
           <i className="size-1 animate-dot-pulse rounded-full bg-current" />

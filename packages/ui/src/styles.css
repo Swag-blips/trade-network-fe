@@ -1,0 +1,280 @@
+/* Trade Network design tokens and base styles. Imported by every app's globals.css. */
+
+@theme {
+  --color-evergreen-50: #f0fbfa;
+  --color-evergreen-100: #d7f0ee;
+  --color-evergreen-200: #b8e3dd;
+  --color-evergreen-300: #8fd6c8;
+  --color-evergreen-400: #5fb8a8;
+  --color-evergreen-500: #2f8a7a;
+  --color-evergreen-600: #1e6b63;
+  --color-evergreen-700: #145a54;
+  --color-evergreen-800: #0b3d3a;
+  --color-evergreen-900: #023937;
+
+  --color-eucalyptus-50: #f7fcfb;
+  --color-eucalyptus-100: #eaf8f4;
+  --color-eucalyptus-200: #d6f2ea;
+  --color-eucalyptus-300: #bde7e0;
+  --color-eucalyptus-400: #9bd1c6;
+  --color-eucalyptus-500: #7bb8b0;
+  --color-eucalyptus-600: #5f9f97;
+  --color-eucalyptus-700: #46807d;
+  --color-eucalyptus-800: #2e6b64;
+  --color-eucalyptus-900: #1b4d49;
+
+  --color-grey-50: #f8faf9;
+  --color-grey-100: #f0f2f1;
+  --color-grey-200: #e2e5e4;
+  --color-grey-300: #cdd1cf;
+  --color-grey-400: #afb4b2;
+  --color-grey-500: #8a908d;
+  --color-grey-600: #6b716e;
+  --color-grey-700: #515654;
+  --color-grey-800: #393d3b;
+  --color-grey-900: #222524;
+
+  --color-alabaster-50: #fefefb;
+  --color-alabaster-100: #fafaf6;
+  --color-alabaster-200: #f1f1eb;
+  --color-alabaster-300: #e3e3dc;
+  --color-alabaster-400: #ccccc4;
+  --color-alabaster-500: #a8a89f;
+  --color-alabaster-600: #82827a;
+  --color-alabaster-700: #5f5f58;
+  --color-alabaster-800: #42423d;
+  --color-alabaster-900: #282825;
+
+  --color-linen-50: #fefcf9;
+  --color-linen-100: #faf4eb;
+  --color-linen-200: #f3e6d4;
+  --color-linen-300: #e8d3b7;
+  --color-linen-400: #dbbf99;
+  --color-linen-500: #c9a678;
+  --color-linen-600: #a98a5e;
+  --color-linen-700: #876e4a;
+  --color-linen-800: #655339;
+  --color-linen-900: #473a28;
+
+  --color-cordovan-50: #fdf2f0;
+  --color-cordovan-100: #f5e7e4;
+  --color-cordovan-200: #e9cfcb;
+  --color-cordovan-300: #d8b3af;
+  --color-cordovan-400: #c89a93;
+  --color-cordovan-500: #a86a68;
+  --color-cordovan-600: #8b4d4d;
+  --color-cordovan-700: #6f3d3d;
+  --color-cordovan-800: #4a2e2e;
+  --color-cordovan-900: #200000;
+
+  --color-ocean-50: #eef7fa;
+  --color-ocean-100: #d3edf4;
+  --color-ocean-200: #a8dbea;
+  --color-ocean-300: #7ac5dc;
+  --color-ocean-400: #4dacc9;
+  --color-ocean-500: #2a8eae;
+  --color-ocean-600: #1b7392;
+  --color-ocean-700: #125a74;
+  --color-ocean-800: #0a4a5f;
+  --color-ocean-900: #03394a;
+
+  --color-azure-50: #f5f9fd;
+  --color-azure-100: #e4f0fa;
+  --color-azure-200: #c9e2f4;
+  --color-azure-300: #a4cee9;
+  --color-azure-400: #7ab6dd;
+  --color-azure-500: #539ccf;
+  --color-azure-600: #3a80b5;
+  --color-azure-700: #2c6594;
+  --color-azure-800: #204d73;
+  --color-azure-900: #153752;
+
+  --color-ochre-50: #fffdf7;
+  --color-ochre-100: #fff4c2;
+  --color-ochre-200: #fdfca5;
+  --color-ochre-300: #fde68a;
+  --color-ochre-400: #fcd34d;
+  --color-ochre-500: #fbbf24;
+  --color-ochre-600: #f59e0b;
+  --color-ochre-700: #d97706;
+  --color-ochre-800: #b45309;
+  --color-ochre-900: #78350f;
+
+  --color-warm-red: #c0392b;
+  --color-tai: #4b8df9;
+  --color-green-50: #f1f7f4;
+  --color-green-200: #b8d7c7;
+  --color-green-500: #147a45;
+  --color-green-600: #0d7d4e;
+
+  --color-blue-50: #f2f6fe;
+  --color-blue-500: #2563eb;
+  --color-red-error-500: #c93636;
+  --color-orange-50: #fbf5f0;
+  --color-orange-100: #f5e8dd;
+  --color-orange-500: #b55c0a;
+
+  --color-toast-success: #4c9a72;
+  --color-toast-info: #5988f0;
+  --color-toast-error: #d66666;
+
+  --color-destructive: #e9594e;
+  --color-destructive-hover: #d92d20;
+
+  --color-brand-evergreen: var(--color-evergreen-900);
+  --color-brand-eucalyptus: var(--color-eucalyptus-400);
+  --color-brand-alabaster: var(--color-alabaster-50);
+  --color-brand-linen: var(--color-linen-100);
+  --color-brand-cordovan: var(--color-cordovan-900);
+  --color-brand-ocean: var(--color-ocean-900);
+  --color-brand-azure: var(--color-azure-200);
+  --color-brand-ochre: var(--color-ochre-200);
+
+  --color-background: var(--color-brand-alabaster);
+  --color-background-secondary: var(--color-brand-linen);
+  --color-background-inverse: var(--color-brand-evergreen);
+
+  --color-foreground: var(--color-brand-evergreen);
+  --color-foreground-muted: var(--color-brand-cordovan);
+  --color-foreground-inverse: var(--color-brand-alabaster);
+
+  --color-accent: var(--color-brand-eucalyptus);
+  --color-border: rgb(155 209 198 / 40%);
+
+  --color-success: var(--color-brand-eucalyptus);
+  --color-warning: var(--color-brand-ochre);
+  --color-info: var(--color-brand-azure);
+  --color-danger: var(--color-warm-red);
+
+  --font-display: var(--font-fraunces), georgia, "times new roman", serif;
+  --font-sans:
+    var(--font-inter), -apple-system, blinkmacsystemfont, "segoe ui", roboto,
+    helvetica, arial, sans-serif;
+
+  --font-brand: var(--font-rethink-sans), var(--font-inter), sans-serif;
+
+  --text-display: 3rem;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.0625rem;
+
+  --text-h2: 2.25rem;
+  --text-h2--line-height: 1.15;
+  --text-h2--letter-spacing: -0.03125rem;
+
+  --text-h3: 1.75rem;
+  --text-h3--line-height: 1.2;
+  --text-h3--letter-spacing: 0rem;
+
+  --text-h4: 1.375rem;
+  --text-h4--line-height: 1.3;
+  --text-h4--letter-spacing: 0rem;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.5;
+  --text-body-lg--letter-spacing: 0rem;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-body--letter-spacing: 0rem;
+
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.5;
+  --text-body-sm--letter-spacing: 0rem;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0rem;
+
+  --text-overline: 0.75rem;
+  --text-overline--line-height: 1.2;
+  --text-overline--letter-spacing: 0.09375rem;
+
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 999px;
+
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+
+  /* Guided tour: card width from Figma; spotlight covers the viewport. */
+  --spacing-tour-card: 19.25rem;
+  --shadow-tour-spotlight: 0 0 0 100vmax rgb(0 0 0 / 40%);
+
+  --shadow-small-thick:
+    0 0 1px 0 #6b6b6b1a, 0 1px 1px 0 #6b6b6b17, 0 3px 2px 0 #6b6b6b0d,
+    0 5px 2px 0 #6b6b6b03, 0 8px 2px 0 #6b6b6b00;
+  --shadow-soft-section: 0 1px 3px 0 #22252408;
+  --shadow-elevated:
+    0 5px 11px 0 #00000029, 0 20px 20px 0 #00000024, 0 45px 27px 0 #00000014,
+    0 80px 32px 0 #00000005;
+  --shadow-thick:
+    1px 8px 17px 0 #0000001a, 2px 31px 31px 0 #00000017,
+    5px 70px 42px 0 #0000000d, 8px 125px 50px 0 #00000003;
+
+  --animate-dot-pulse: dot-pulse 1.2s ease-in-out infinite;
+  --animate-spinner-chase: spinner-chase 0.9s steps(8) infinite;
+
+  @keyframes spinner-chase {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes dot-pulse {
+    0%,
+    80%,
+    100% {
+      opacity: 0.35;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+}
+
+@utility type-overline {
+  @apply font-sans text-overline font-medium uppercase;
+}
+
+@layer base {
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans text-body antialiased;
+  }
+
+  h1 {
+    @apply font-display text-display font-medium;
+  }
+
+  h2 {
+    @apply font-display text-h2 font-medium;
+  }
+
+  h3 {
+    @apply font-display text-h3 font-medium;
+  }
+
+  h4 {
+    @apply font-sans text-h4 font-medium;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
