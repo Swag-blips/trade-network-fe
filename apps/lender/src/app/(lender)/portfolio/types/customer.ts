@@ -31,6 +31,21 @@ export interface Repayment {
   evidence?: string;
 }
 
+export interface Relationship {
+  name: string;
+  initials: string;
+  kind: "business" | "capital-provider";
+}
+
+export interface CompanyAbout {
+  businessNumber: string;
+  address: string;
+  industry: string;
+  email: string;
+  phone: string;
+  relationships: Relationship[];
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -43,6 +58,7 @@ export interface Customer {
   unread?: boolean;
   totalFunded: string;
   obligorLimitLeft: string;
+  about: CompanyAbout;
   activeTrades: number;
   summary: string;
   trades: FundedTrade[];

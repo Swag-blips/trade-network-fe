@@ -14,6 +14,7 @@ import { DetailHeader } from "@repo/ui/detail-header";
 import { InitialsAvatar } from "@repo/ui/avatars";
 import { StatusChip } from "./status-chip";
 import { CustomerTabs } from "./customer-tabs";
+import { AboutCompanySheet } from "./about-company-sheet";
 import {
   RecordRepaymentModal,
   type RepaymentDraft,
@@ -33,6 +34,7 @@ export function CustomerDetail({
 }) {
   const [customer, setCustomer] = useState(initial);
   const [repayingTradeId, setRepayingTradeId] = useState<string | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { toast } = useToast();
 
   const settled = customer.status === "settled";
@@ -109,6 +111,7 @@ export function CustomerDetail({
                 variant="secondary"
                 size="form"
                 leadingIcon={<HugeiconsIcon icon={InformationCircleIcon} />}
+                onClick={() => setAboutOpen(true)}
               >
                 About
               </Button>
@@ -130,6 +133,13 @@ export function CustomerDetail({
           onRecordRepayment={setRepayingTradeId}
         />
       </div>
+
+      {aboutOpen ? (
+        <AboutCompanySheet
+          customer={customer}
+          onClose={() => setAboutOpen(false)}
+        />
+      ) : null}
 
       {repayingTradeId !== null ? (
         <RecordRepaymentModal

@@ -16,7 +16,7 @@ export function CheckboxChip({
 }: CheckboxChipProps) {
   return (
     <label
-      className={`inline-flex cursor-pointer items-center gap-xs rounded-full border px-sm py-2 font-sans text-body-sm/[normal] transition-colors motion-reduce:transition-none ${
+      className={`relative inline-flex cursor-pointer items-center gap-xs rounded-full border px-sm py-2 font-sans text-body-sm/[normal] transition-colors motion-reduce:transition-none ${
         checked
           ? "border-evergreen-600 bg-evergreen-50 text-grey-900"
           : "border-grey-300 bg-white text-grey-900"

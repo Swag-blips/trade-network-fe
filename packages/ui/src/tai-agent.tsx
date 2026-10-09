@@ -3,23 +3,29 @@
 import { useRef } from "react";
 import { useEyeTracking } from "./use-eye-tracking";
 
+/** `avatar` is the 24px Tai that sits inside a 40px avatar circle. */
+const SIZES = {
+  xs: { px: 20, className: "size-5" },
+  avatar: { px: 24, className: "size-6" },
+  sm: { px: 32, className: "size-8" },
+  md: { px: 56, className: "size-14" },
+} as const;
+
 interface TaiAgentProps {
-  size?: "xs" | "sm" | "md";
+  size?: keyof typeof SIZES;
   className?: string;
 }
 
-const PX = { xs: 20, sm: 32, md: 56 } as const;
-
 export function TaiAgent({ size = "md", className = "" }: TaiAgentProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const px = PX[size];
+  const { px, className: sizeClass } = SIZES[size];
   const offset = useEyeTracking(ref, px * 0.045, px * 0.04);
 
   return (
     <span
       ref={ref}
       aria-hidden="true"
-      className={`pointer-events-none relative inline-block shrink-0 ${size === "xs" ? "size-5" : size === "sm" ? "size-8" : "size-14"} ${className}`}
+      className={`pointer-events-none relative inline-block shrink-0 ${sizeClass} ${className}`}
     >
       <span
         className="absolute top-1/2 left-1/2 size-[97.5%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tai opacity-40"

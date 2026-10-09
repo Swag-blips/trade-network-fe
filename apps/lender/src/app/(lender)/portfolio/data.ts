@@ -20,6 +20,22 @@ export const CUSTOMERS: Customer[] = [
     unread: true,
     totalFunded: "₦8,400,000",
     obligorLimitLeft: "₦42,500,000",
+    about: {
+      businessNumber: "RC1234567",
+      address: "Plot 87, Oshodi-Apapa Expressway, Lagos",
+      industry: "Manufacturing",
+      email: "info@ts.org",
+      phone: "(+234) 812 234 9736",
+      relationships: [
+        { name: "Unilever", initials: "UN", kind: "business" },
+        { name: "Dyson limited", initials: "DY", kind: "business" },
+        {
+          name: "Owoka Investment Limited",
+          initials: "OI",
+          kind: "capital-provider",
+        },
+      ],
+    },
     activeTrades: 1,
     summary: "This is a summary of what's going on with this customer...",
     trades: [
@@ -119,6 +135,21 @@ export const CUSTOMERS: Customer[] = [
     health: "healthy",
     totalFunded: "₦6,000,000",
     obligorLimitLeft: "₦24,000,000",
+    about: {
+      businessNumber: "RC7654321",
+      address: "14 Trans-Amadi Industrial Layout, Port Harcourt",
+      industry: "Logistics",
+      email: "hello@greenline.ng",
+      phone: "(+234) 803 555 0142",
+      relationships: [
+        { name: "Dangote Group", initials: "DG", kind: "business" },
+        {
+          name: "Owoka Investment Limited",
+          initials: "OI",
+          kind: "capital-provider",
+        },
+      ],
+    },
     activeTrades: 0,
     summary:
       "Repaid in full and ahead of schedule. A good candidate for a larger limit.",
@@ -227,6 +258,21 @@ export const CUSTOMERS: Customer[] = [
     health: "at-risk",
     totalFunded: "₦7,200,000",
     obligorLimitLeft: "₦12,800,000",
+    about: {
+      businessNumber: "RC2468013",
+      address: "22 Kano Road, Kaduna",
+      industry: "Agriculture",
+      email: "accounts@harvestmills.com",
+      phone: "(+234) 809 111 2233",
+      relationships: [
+        { name: "Shoprite", initials: "SH", kind: "business" },
+        {
+          name: "Owoka Investment Limited",
+          initials: "OI",
+          kind: "capital-provider",
+        },
+      ],
+    },
     activeTrades: 1,
     summary:
       "One repayment is 21 days past due. Collections has been notified.",

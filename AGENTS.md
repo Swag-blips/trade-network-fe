@@ -47,17 +47,15 @@ All of these live in `apps/lender`. `apps/business` has none yet.
 /                          redirects to /home
 /create-account            sign-up                 → app/(auth)/…
 /login
-/verify-email
-/role                      pick a role             → app/(onboarding)/…
-/organisation              company details
-/funding-mandate           mandate + ticket range
-/welcome
+/verify-email              OTP, then the welcome splash
+/onboarding                organisation + mandate  → app/(onboarding)/onboarding
 /home                      lender dashboard        → app/(lender)/home
 /matched                   matched opportunities   → app/(lender)/matched
 /offers                    offers list             → app/(lender)/offers
 /offers/[id]               negotiation timeline    → app/(lender)/offers/[id]
 /portfolio                 funded customers        → app/(lender)/portfolio
 /portfolio/[id]            customer overview / funded trades / repayments
+/inbox                     conversations: Tai + counterparties → app/(lender)/inbox
 /settings/profile          my profile              → app/(settings)/settings/…
 /settings/preferences      notifications + Tai autonomy
 /settings/delete-account
@@ -79,8 +77,6 @@ lender _content_: offers, matched opportunities, the trade room, Tai's chat (its
 data is lender-specific), the ticket-range mandate control. Onboarding is also still in
 lender: business will have a similar flow, but its shape isn't settled, so it stays put
 until there is a second real consumer to extract against.
-
-`/inbox`, which the lender sidebar links to, does not exist yet and will 404.
 
 **The promotion rule:** start colocated. Move something up to `src/` the moment a
 _second_ route imports it — not in anticipation of one. A single consumer means it
@@ -204,7 +200,7 @@ stale:
 
 | Component                                     | Import                                     | Notes                                                                                                                                                                                                                          |
 | --------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Button`                                      | `@repo/ui/button`                          | 5 variants × 5 sizes, `loading` / `disabled` props                                                                                                                                                                             |
+| `Button`                                      | `@repo/ui/button`                          | 6 variants × 6 sizes, `loading` / `disabled` props                                                                                                                                                                             |
 | `buttonClasses`                               | `@repo/ui/button-classes`                  | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                       |
 | `Avatar`                                      | `@repo/ui/avatar`                          | Structure only (size/shape/clip); pass the skin via `className`                                                                                                                                                                |
 | `IconButton`                                  | `@repo/ui/icon-button`                     | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                   |
@@ -219,7 +215,7 @@ stale:
 | `Card`                                        | `@repo/ui/card`                            | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                   |
 | `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows                                |
 | `Sheet`                                       | `@repo/ui/sheet`                           | 544px right-edge `<dialog>` panel: header with optional icon chip, title and close                                                                                                                                             |
-| `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets                                                                                                                                                                    |
+| `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets. `divided` adds a rule under the heading                                                                                                                           |
 | `DetailRow`                                   | `@repo/ui/detail-row`                      | Label left, value right. `size="sm"` is the 14px summary row, default is 16px                                                                                                                                                  |
 | `Tabs`                                        | `@repo/ui/tabs`                            | Underlined tab strip (tablist only; panels stay at the call site)                                                                                                                                                              |
 | `FilterBar`                                   | `@repo/ui/filter-bar`                      | "Filter by:" and its chips — wrap one or more `<Select variant="chip">`                                                                                                                                                        |
@@ -229,7 +225,7 @@ stale:
 | `ButtonLink`                                  | `@repo/ui/button-link`                     | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                                                                                                 |
 | `Sidebar`                                     | `@repo/ui/sidebar`                         | Chrome only — takes `sections` and `footer` as props; knows nothing about lenders                                                                                                                                              |
 | `UserAvatar` / `OrgAvatar` / `InitialsAvatar` | `@repo/ui/avatars`                         | `Avatar` skinned with the app's tokens and icons                                                                                                                                                                               |
-| `TaiAgent`                                    | `@repo/ui/tai-agent`                       | The assistant character, built in DOM; eyes follow the cursor                                                                                                                                                                  |
+| `TaiAgent`                                    | `@repo/ui/tai-agent`                       | The assistant character, built in DOM; eyes follow the cursor. `size`: `xs` 20 / `avatar` 24 / `sm` 32 / `md` 56                                                                                                               |
 | `BrandMark` / `BrandArc` / `Wordmark`         | `@repo/ui/brand-mark`, `@repo/ui/wordmark` | The interlocking-arcs symbol and the TRADE NETWORK wordmark; `currentColor`, any size                                                                                                                                          |
 | `GoogleIcon`                                  | `@repo/ui/icons/google-icon`               | Sign-in-with-Google mark                                                                                                                                                                                                       |
 
@@ -246,8 +242,10 @@ import { Button } from "@repo/ui/button";
 </Button>;
 ```
 
-`variant`: `primary` | `secondary` | `outline` | `ghost` | `destructive`.
-`size`: `sm` | `md` | `lg` | `form` (settings/dialog footers) | `flush` (vertical padding only).
+`variant`: `primary` | `secondary` (grey-100 fill) | `tertiary` (white fill, grey-200 ring —
+the social sign-in buttons) | `outline` | `ghost` | `destructive`.
+`size`: `sm` | `md` | `lg` | `form` (settings/dialog footers) | `auth` (the sign-in and
+sign-up pages) | `flush` (vertical padding only).
 Everything else forwards to the underlying `<button>`.
 
 **A button that navigates is a link.** Use `ButtonLink` (`@/components/button-link`) —
@@ -272,14 +270,15 @@ app. `packages/ui` lists `next` as a peer dependency, so it may use `next/link` 
 **Lender-only components** live in `apps/lender/src/components/` — they render lender
 content, so they stay in the app until business genuinely needs one:
 
-| Component             | Notes                                                                                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AgentFab` + `chat/*` | Tai's floating button and chat panel. The chat's suggestions and mock data are lender-specific, which is why the _character_ is shared but this isn't |
-| `OfferModal`          | Offer / counter-offer composer: form → review → send                                                                                                  |
-| `PartyCard`           | Borrower identity block (name, type, terms line, 56px avatar) for the offer and accept dialogs                                                        |
-| `TradeRoom`           | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail               |
-| `MatchBadge`          | Match-score pill on matched opportunities                                                                                                             |
-| `TicketRange`         | The funding-mandate ticket-size control, used by onboarding and settings                                                                              |
+| Component             | Notes                                                                                                                                                                                                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AgentFab` + `chat/*` | Tai's floating button and chat panel. The chat's suggestions and mock data are lender-specific, which is why the _character_ is shared but this isn't                                                                                                            |
+| `ChatThread`          | The conversation body — messages, Thinking row, composer, notice — shared by the floating Tai panel and the inbox pane. Takes a `ThreadChat` (`useChat` returns one); `gutter` is `panel` (20px) or `page` (24px). The seam to cut if agent UI becomes a package |
+| `OfferModal`          | Offer / counter-offer composer: form → review → send                                                                                                                                                                                                             |
+| `PartyCard`           | Borrower identity block (name, type, terms line, 56px avatar) for the offer and accept dialogs                                                                                                                                                                   |
+| `TradeRoom`           | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                                                                                          |
+| `MatchBadge`          | Match-score pill on matched opportunities                                                                                                                                                                                                                        |
+| `TicketRange`         | The funding-mandate ticket-size control, used by onboarding and settings                                                                                                                                                                                         |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -412,10 +411,27 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
     Use the slash form (`text-body-sm/[normal]`) to set both in one utility.
 - **Lint warnings fail the build.** `eslint-plugin-only-warn` downgrades every rule to
   a warning, but the scripts run `--max-warnings 0`. A "warning" is a hard failure.
-- **The role picker spans both apps but lives in lender.** `/role` offers Enterprise,
-  Supplier, Distributor and Capital Provider; only Capital Provider is a lender. How a
-  business pick should route (into `apps/business`? a shared auth domain?) is undecided —
-  don't wire it up without asking.
+- **There is no role picker, and no `/welcome` route.** `/role` was removed — this app
+  _is_ the Capital Provider app, so the shell says "Capital provider" outright and
+  `roles.ts` is gone with it. The welcome splash is a component `/verify-email` swaps in
+  once the OTP clears, which then hands over to `/organisation`; it is `fixed inset-0`
+  because it covers the auth chrome it renders inside. How a business picks a role (into
+  `apps/business`? a shared auth domain?) is still undecided.
+- **Onboarding is one route with two steps, not two routes.** `/onboarding` renders
+  `OrganisationStep` or `FundingMandateStep` off `useOnboarding()`; nothing about the step
+  is in the URL, and the collected fields stay in one place because step 3
+  (`completeOnboarding`) posts them in a single body. The trade-off is browser back: it
+  leaves onboarding rather than stepping backwards. The comps have no Back affordance on
+  either step, so that was accepted rather than intercepted.
+- **`app/(onboarding)/layout.tsx` is a _server_ component and stays that way.** It renders
+  `<OnboardingProvider>` (client) wrapping `<OnboardingShell>` (server). Children passed
+  from a server component into a client one keep their server-ness, so the sidebar, card
+  and footer never reach the browser — only `Steps` and the two forms do. Put new chrome
+  in the shell, not the provider.
+- **Session storage is a refresh hint for the wizard, not its source of truth.** React
+  state is; `saveOnboardingProgress` mirrors `{ step, data }` so a reload doesn't drop back
+  to step 1 with empty fields. Restoring happens in an effect, not as seeded initial state,
+  or the first client render would disagree with the server markup.
 - **`Card` in `packages/ui` is still untouched scaffolding** (`Button` has been replaced).
 - **The Figma button matrix contradicts the style guide in places** — see
   [node 2770-1631](https://www.figma.com/design/TcbSe6y2vzc4z3MU6P8ldR/Marketing-Designs-%7C-Hops?node-id=2770-1631).

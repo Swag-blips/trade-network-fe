@@ -51,9 +51,10 @@ Lender routes worth opening first (all on :3001):
 | `/offers/[id]`      | Negotiation timeline — counter, accept, disburse, withdraw   |
 | `/portfolio`        | Funded customers                                             |
 | `/portfolio/[id]`   | Customer overview, funded trades and repayments              |
+| `/inbox`            | Conversations with Tai and counterparties                    |
 | `/settings/profile` | Account and organisation settings                            |
 
-`/` redirects to `/home`, and `/inbox` does not exist yet.
+`/` redirects to `/home`.
 
 ## Commands
 

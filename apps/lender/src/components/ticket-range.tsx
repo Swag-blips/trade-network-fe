@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 
@@ -21,9 +21,19 @@ const THUMB =
 const format = (value: number) => value.toLocaleString("en-NG");
 const parse = (value: string) => Number(value.replace(/[^0-9]/g, ""));
 
-export function TicketRange({ icon }: { icon: ReactNode }) {
-  const [min, setMin] = useState(8_000_000);
-  const [max, setMax] = useState(50_000_000);
+export function TicketRange({
+  icon,
+  min,
+  max,
+  onChange,
+}: {
+  icon: ReactNode;
+  min: number;
+  max: number;
+  onChange: (range: { min: number; max: number }) => void;
+}) {
+  const setMin = (value: number) => onChange({ min: value, max });
+  const setMax = (value: number) => onChange({ min, max: value });
 
   const percent = (value: number) =>
     ((value - FLOOR) / (CEILING - FLOOR)) * 100;

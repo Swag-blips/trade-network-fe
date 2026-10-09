@@ -37,7 +37,7 @@ export function UploadDropzone({
         const dropped = event.dataTransfer.files?.[0];
         if (dropped) onFileChange(dropped.name);
       }}
-      className={`w-full overflow-hidden rounded-lg border border-dashed ${
+      className={`relative w-full overflow-hidden rounded-lg border border-dashed ${
         file
           ? "flex flex-col items-center justify-center gap-xl border-green-200 bg-white p-md"
           : "h-37 border-green-200 bg-green-50"

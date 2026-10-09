@@ -35,6 +35,8 @@ export default function FundingMandatePage() {
   const [allocation, setAllocation] = useState("700,000,000");
   const [tenor, setTenor] = useState(TENORS[0]!);
   const [fundingType, setFundingType] = useState(FUNDING_TYPES[0]!);
+  const [ticketMin, setTicketMin] = useState(8_000_000);
+  const [ticketMax, setTicketMax] = useState(50_000_000);
   const [sectors, setSectors] = useState<string[]>([
     "Manufacturing",
     "Agriculture",
@@ -114,6 +116,12 @@ export default function FundingMandatePage() {
         </div>
 
         <TicketRange
+          min={ticketMin}
+          max={ticketMax}
+          onChange={({ min, max }) => {
+            setTicketMin(min);
+            setTicketMax(max);
+          }}
           icon={
             <HugeiconsIcon
               icon={ArrowDataTransferHorizontalIcon}

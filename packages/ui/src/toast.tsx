@@ -70,10 +70,10 @@ export function Toast({
     <div
       role={state === "error" ? "alert" : "status"}
       aria-live={state === "error" ? "assertive" : "polite"}
-      className="flex items-center justify-center gap-md overflow-hidden rounded-md bg-grey-900 p-2.5 shadow-elevated"
+      className="flex max-w-full items-center justify-center gap-md overflow-hidden rounded-md bg-grey-900 p-2.5 shadow-elevated"
     >
       <div
-        className={`flex flex-none items-center ${state === "loading" ? "gap-2.5" : "gap-xs"}`}
+        className={`flex min-w-0 items-center ${state === "loading" ? "gap-2.5" : "gap-xs"}`}
       >
         {tone ? (
           <HugeiconsIcon
@@ -84,7 +84,7 @@ export function Toast({
         ) : (
           <Spinner />
         )}
-        <p className="font-sans text-body-sm/[normal] font-medium whitespace-nowrap text-white">
+        <p className="font-sans text-body-sm/[normal] font-medium text-white">
           {message}
         </p>
       </div>
@@ -138,7 +138,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-xl z-50 flex flex-col items-center gap-xs px-md">
+      <div className="pointer-events-none fixed inset-x-0 top-xl z-50 mx-auto flex max-w-120 flex-col items-center gap-xs px-md">
         {toasts.map((item) => (
           <div key={item.id} className="pointer-events-auto">
             <Toast {...item} onDismiss={() => dismiss(item.id)} />

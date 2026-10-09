@@ -5,19 +5,24 @@ import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
+import { useToast } from "@repo/ui/toast";
+import { readOnboardUid } from "@/lib/onboarding-storage";
+import { useVerifyEmail } from "../hooks/use-verify-email";
+import { WelcomeMessage } from "./welcome-message";
 
 const CODE_LENGTH = 6;
 
 export function VerifyEmailForm({
   email,
-  firstName,
   redirectTo,
 }: {
   email: string;
-  firstName: string;
   redirectTo?: string;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
+  const { mutate: verifyEmail, isPending } = useVerifyEmail();
+  const [verified, setVerified] = useState(false);
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -36,11 +41,38 @@ export function VerifyEmailForm({
     }
   }
 
+  function handleVerify() {
+    const onboardUid = readOnboardUid();
+
+    if (!onboardUid) {
+      toast({
+        message: "We've lost track of that sign-up. Please start again.",
+        state: "error",
+      });
+      return;
+    }
+
+    verifyEmail(
+      { onboardUid, otp: code },
+      {
+        onSuccess: (data) => {
+          if (redirectTo) {
+            router.push(redirectTo);
+            return;
+          }
+          setVerified(true);
+        },
+      },
+    );
+  }
+
   function handleKeyDown(index: number, event: React.KeyboardEvent) {
     if (event.key === "Backspace" && !digits[index] && index > 0) {
       inputs.current[index - 1]?.focus();
     }
   }
+
+  if (verified) return <WelcomeMessage />;
 
   return (
     <div className="flex w-full flex-col items-center gap-2xl">
@@ -88,14 +120,10 @@ export function VerifyEmailForm({
           <Button
             variant="primary"
             size="lg"
+            loading={isPending}
             disabled={!canSubmit}
             className="w-77"
-            onClick={() =>
-              router.push(
-                redirectTo ??
-                  `/role?firstName=${encodeURIComponent(firstName)}`,
-              )
-            }
+            onClick={handleVerify}
           >
             Continue
           </Button>

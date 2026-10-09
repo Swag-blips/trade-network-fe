@@ -9,6 +9,8 @@ import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { useToast } from "@repo/ui/toast";
 import { GoogleIcon } from "@repo/ui/icons/google-icon";
+import { saveOnboarding } from "@/lib/onboarding-storage";
+import { useCreateAccount } from "../hooks/use-create-account";
 
 export function CreateAccountForm() {
   const router = useRouter();
@@ -18,11 +20,12 @@ export function CreateAccountForm() {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState(false);
+  const { mutate: createAccount, isPending } = useCreateAccount();
 
   const fieldsFilled =
     firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "";
 
-  function handleSubmit(event: React.FormEvent) {
+  function handleSubmit(event: React.SubmitEvent) {
     event.preventDefault();
     if (!consent) {
       setConsentError(true);
@@ -33,21 +36,27 @@ export function CreateAccountForm() {
       });
       return;
     }
-    router.push(
-      `/verify-email?email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}`,
+
+    createAccount(
+      { email, firstName, lastName },
+      {
+        onSuccess: ({ onboardUid }) => {
+          saveOnboarding({ onboardUid, firstName });
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        },
+      },
     );
   }
 
   return (
-    <div className="flex w-full flex-col items-center gap-2xl">
-      {/* 32px is off the type scale (h2 is 36px) — matches the Figma comp verbatim. */}
-      <p className="w-full text-center font-brand text-[32px] leading-[1.5] font-medium text-grey-900">
+    <div className="flex w-full flex-col items-center gap-lg">
+      <p className="w-full text-center font-brand text-[32px] leading-normal font-medium text-grey-900">
         Welcome to TradeNetwork
       </p>
 
       <Button
-        variant="secondary"
-        size="md"
+        variant="tertiary"
+        size="auth"
         className="w-full"
         leadingIcon={<GoogleIcon className="size-5" />}
       >
@@ -91,16 +100,6 @@ export function CreateAccountForm() {
           />
         </Field>
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          disabled={!fieldsFilled}
-          className="w-full"
-        >
-          Continue with email
-        </Button>
-
         <label className="flex w-full items-center gap-md">
           <span className="relative flex-none">
             <input
@@ -113,7 +112,7 @@ export function CreateAccountForm() {
               className="peer sr-only"
             />
             <span
-              className={`flex size-5 items-center justify-center rounded-sm border transition-colors motion-reduce:transition-none ${
+              className={`flex size-4.5 items-center justify-center rounded-[3.6px] border transition-colors motion-reduce:transition-none ${
                 consent
                   ? "border-evergreen-600 bg-evergreen-600 text-white"
                   : consentError
@@ -134,6 +133,17 @@ export function CreateAccountForm() {
             </a>
           </span>
         </label>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="auth"
+          loading={isPending}
+          disabled={!fieldsFilled}
+          className="w-full"
+        >
+          Continue with email
+        </Button>
       </form>
     </div>
   );

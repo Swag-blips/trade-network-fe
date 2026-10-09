@@ -3,19 +3,11 @@ import { VerifyEmailForm } from "./components/verify-email-form";
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    email?: string;
-    firstName?: string;
-    redirectTo?: string;
-  }>;
+  searchParams: Promise<{ email?: string; redirectTo?: string }>;
 }) {
-  const { email, firstName, redirectTo } = await searchParams;
+  const { email, redirectTo } = await searchParams;
 
   return (
-    <VerifyEmailForm
-      email={email ?? "your email"}
-      firstName={firstName ?? ""}
-      redirectTo={redirectTo}
-    />
+    <VerifyEmailForm email={email ?? "your email"} redirectTo={redirectTo} />
   );
 }

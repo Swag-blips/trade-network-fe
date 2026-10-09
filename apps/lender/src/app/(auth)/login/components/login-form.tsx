@@ -26,8 +26,8 @@ export function LoginForm() {
       </p>
 
       <Button
-        variant="secondary"
-        size="md"
+        variant="tertiary"
+        size="auth"
         className="w-full"
         leadingIcon={<GoogleIcon className="size-5" />}
       >
@@ -55,7 +55,7 @@ export function LoginForm() {
         <Button
           type="submit"
           variant="primary"
-          size="lg"
+          size="auth"
           disabled={email.trim() === ""}
           className="w-full"
         >
