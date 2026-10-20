@@ -7,7 +7,10 @@ import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 import { useToast } from "@repo/ui/toast";
 import { readOnboardUid } from "@/lib/onboarding-storage";
+import { clearLoginSession, readLoginSession } from "@/lib/login-storage";
 import { useVerifyEmail } from "../hooks/use-verify-email";
+import { useVerifyLogin } from "../hooks/use-verify-login";
+import { useResendOtp } from "../hooks/use-resend-otp";
 import { WelcomeMessage } from "./welcome-message";
 
 const CODE_LENGTH = 6;
@@ -15,13 +18,19 @@ const CODE_LENGTH = 6;
 export function VerifyEmailForm({
   email,
   redirectTo,
+  flow = "signup",
 }: {
   email: string;
   redirectTo?: string;
+  /** Signing up verifies an onboarding record; logging in verifies a session. */
+  flow?: "signup" | "login";
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const { mutate: verifyEmail, isPending } = useVerifyEmail();
+  const { mutate: verifyEmail, isPending: verifying } = useVerifyEmail();
+  const { mutate: verifyLogin, isPending: signingIn } = useVerifyLogin();
+  const { mutate: resendOtp, isPending: resending } = useResendOtp();
+  const isPending = verifying || signingIn;
   const [verified, setVerified] = useState(false);
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -42,6 +51,29 @@ export function VerifyEmailForm({
   }
 
   function handleVerify() {
+    if (flow === "login") {
+      const sessionToken = readLoginSession();
+
+      if (!sessionToken) {
+        toast({
+          message: "That sign-in has expired. Please start again.",
+          state: "error",
+        });
+        return;
+      }
+
+      verifyLogin(
+        { sessionToken, otp: code },
+        {
+          onSuccess: () => {
+            clearLoginSession();
+            router.push(redirectTo ?? "/home");
+          },
+        },
+      );
+      return;
+    }
+
     const onboardUid = readOnboardUid();
 
     if (!onboardUid) {
@@ -61,6 +93,29 @@ export function VerifyEmailForm({
             return;
           }
           setVerified(true);
+        },
+      },
+    );
+  }
+
+  /** The handle the service needs differs per flow, the button does not. */
+  function handleResend() {
+    const handle = flow === "login" ? readLoginSession() : readOnboardUid();
+
+    if (!handle) {
+      toast({
+        message: "That session has expired. Please start again.",
+        state: "error",
+      });
+      return;
+    }
+
+    resendOtp(
+      { flow, handle },
+      {
+        onSuccess: () => {
+          setDigits(Array(CODE_LENGTH).fill(""));
+          inputs.current[0]?.focus();
         },
       },
     );
@@ -108,8 +163,9 @@ export function VerifyEmailForm({
             Didn&rsquo;t receive the code?{" "}
             <button
               type="button"
-              className="font-medium text-evergreen-600"
-              onClick={() => setDigits(Array(CODE_LENGTH).fill(""))}
+              disabled={resending}
+              onClick={handleResend}
+              className="font-medium text-evergreen-600 disabled:text-evergreen-600/40"
             >
               Resend code
             </button>
@@ -121,7 +177,7 @@ export function VerifyEmailForm({
             variant="primary"
             size="lg"
             loading={isPending}
-            disabled={!canSubmit}
+            disabled={!canSubmit || isPending}
             className="w-77"
             onClick={handleVerify}
           >

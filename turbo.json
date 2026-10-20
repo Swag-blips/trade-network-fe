@@ -17,5 +17,6 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": ["TRADE_NETWORK_API_ORIGIN", "NODE_ENV"]
 }
