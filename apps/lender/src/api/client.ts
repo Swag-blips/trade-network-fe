@@ -39,13 +39,21 @@ function assertOk<T>(res: ApplicationResponse<T>): ApplicationResponse<T> {
   return res;
 }
 
+/** The whole envelope, as `mutationResponse` is for writes. */
+export async function queryResponse<T>(
+  url: string,
+  params?: Record<string, unknown>,
+): Promise<ApplicationResponse<T>> {
+  const res = await axiosInstance.get<ApplicationResponse<T>>(url, { params });
+  return assertOk(res.data);
+}
+
 /** `T` is the payload inside the envelope, not the envelope itself. */
 export async function query<T>(
   url: string,
   params?: Record<string, unknown>,
 ): Promise<T> {
-  const res = await axiosInstance.get<ApplicationResponse<T>>(url, { params });
-  return assertOk(res.data).data;
+  return (await queryResponse<T>(url, params)).data;
 }
 
 export function extractErrorMessage(err: unknown, fallback: string): string {
