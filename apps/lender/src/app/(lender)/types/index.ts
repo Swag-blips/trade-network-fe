@@ -8,3 +8,8 @@ export interface DashboardProfile {
   companyLogo: string | null;
   accountType: "LENDER";
 }
+
+/** `GET /dashboard/new-for-you` — counts of things waiting on the lender. */
+export interface NewForYou {
+  fundingOpportunities: number;
+}

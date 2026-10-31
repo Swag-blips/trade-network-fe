@@ -13,7 +13,8 @@ export interface SidebarItem {
   label: string;
   href: string;
   icon: IconSvgElement;
-  hasUpdates?: boolean;
+  /** Shown as a red pill when above zero; anything past 99 reads "+99". */
+  count?: number;
 }
 
 export interface SidebarSection {
@@ -40,11 +41,14 @@ function Tab({ item, active }: { item: SidebarItem; active: boolean }) {
     >
       <HugeiconsIcon icon={item.icon} size={20} className="flex-none" />
       <span className="min-w-0 flex-1">{item.label}</span>
-      {item.hasUpdates ? (
+      {item.count ? (
+        // 10px: below the type scale, as drawn in Figma (node 2883-3886).
         <span
-          className="size-2 flex-none rounded-full bg-evergreen-500"
-          aria-label="Has updates"
-        />
+          className="flex-none rounded-full bg-red-error-500 px-1 py-0.5 text-[10px]/[normal] font-medium text-white"
+          aria-label={`${item.count} new`}
+        >
+          {item.count > 99 ? "+99" : item.count}
+        </span>
       ) : null}
     </Link>
   );
@@ -86,7 +90,7 @@ export function Sidebar({ sections, footer }: SidebarProps) {
           ))}
         </nav>
 
-        <div className="flex flex-col gap-md border-t border-grey-100 px-md pt-md">
+        <div className="flex flex-col gap-md border-t border-grey-100 px-xs pt-md">
           {footer}
         </div>
       </div>

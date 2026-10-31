@@ -30,7 +30,7 @@ export function WelcomeBanner() {
           size={64}
         />
         <div className="flex min-w-0 flex-1 flex-col justify-center">
-          <p className="font-brand text-2xl/normal font-medium text-grey-900">
+          <p className="font-brand text-2xl/[1.5] font-medium text-grey-900">
             {isPending ? (
               <>
                 Welcome, <TextPlaceholder className="w-24" />
