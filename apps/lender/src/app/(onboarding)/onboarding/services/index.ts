@@ -11,6 +11,9 @@ const toAmount = (value: string) => Number(value.replace(/[^0-9]/g, ""));
 
 function toRequest({ data }: CompleteOnboardingDto): CompleteOnboardingRequest {
   return {
+    // Without it the business profile is saved untyped, and the lender
+    // service rejects it as "not an active lender profile".
+    accountType: "LENDER",
     companyName: data.companyName,
     countryName: countryName(data.countryCode),
     countryCode: data.countryCode,

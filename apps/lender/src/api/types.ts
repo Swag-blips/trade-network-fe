@@ -1,4 +1,4 @@
-/** Every JSON response from the access service arrives in this envelope. */
+/** Every JSON response from the access and lender services arrives in this envelope. */
 export interface ApplicationResponse<T> {
   /** `ERROR` is the 500 path; anything but `SUCCESSFUL` is a failure. */
   status: "SUCCESSFUL" | "FAILED" | "ERROR";

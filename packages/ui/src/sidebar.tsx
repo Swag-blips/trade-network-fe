@@ -101,7 +101,8 @@ export function SidebarFooter({
   action,
 }: {
   avatar: ReactNode;
-  title: string;
+  /** A node rather than a string so a loading placeholder can stand in. */
+  title: ReactNode;
   subtitle: string;
   action?: ReactNode;
 }) {

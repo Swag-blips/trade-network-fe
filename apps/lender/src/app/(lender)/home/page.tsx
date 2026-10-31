@@ -10,8 +10,6 @@ import {
 } from "./components/new-for-you-card";
 import { WelcomeModalHost } from "./components/welcome-modal-host";
 
-const LENDER = { firstName: "Shile" };
-
 const STATS = [
   {
     label: "Available capital",
@@ -43,7 +41,7 @@ export default function LenderHomePage() {
     <>
       <Topbar title="Home" />
       <div className="min-h-px flex-1 overflow-y-auto pb-lg">
-        <WelcomeBanner firstName={LENDER.firstName} />
+        <WelcomeBanner />
 
         <div className="mt-xl grid grid-cols-[minmax(0,1fr)_375px] items-start gap-xl px-lg">
           <section id="dashboard-overview" className="flex flex-col">

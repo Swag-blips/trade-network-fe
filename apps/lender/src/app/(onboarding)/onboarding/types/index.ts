@@ -9,6 +9,7 @@ export interface CompleteOnboardingDto {
 
 /** The subset of `SignUpDto` this flow collects; the rest is already on the record. */
 export interface CompleteOnboardingRequest {
+  accountType: "LENDER";
   companyName: string;
   countryName: string;
   countryCode: string;

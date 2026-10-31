@@ -1,4 +1,4 @@
-import { mutationResponse, queryResponse } from "@/api/client";
+import { mutationResponse } from "@/api/client";
 import type {
   LoginSessionData,
   ValidateLoginOtpDto,
@@ -28,11 +28,15 @@ export const verifyEmailService = {
 
   /** Re-issues the sign-up code; the onboardUid survives, so nothing is restored. */
   resendSignupOtp(onboardUid: string) {
-    return queryResponse<null>(`/onboard/signup/resend/otp/${onboardUid}`);
+    return mutationResponse<null>("/onboard/signup/resend/otp", "post", {
+      onboardUid,
+    });
   },
 
   /** Throttled to one a minute by the service. */
   resendLoginOtp(sessionToken: string) {
-    return mutationResponse<null>(`/access/otp/resend/${sessionToken}`, "post");
+    return mutationResponse<null>("/access/resend/otp", "post", {
+      sessionToken,
+    });
   },
 };

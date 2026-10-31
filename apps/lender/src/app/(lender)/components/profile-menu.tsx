@@ -9,8 +9,14 @@ import {
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { UserAvatar } from "@repo/ui/avatars";
+import { useDashboardProfile } from "../hooks/use-dashboard-profile";
+import { TextPlaceholder } from "./text-placeholder";
 
-export function ProfileMenu({ name, email }: { name: string; email: string }) {
+export function ProfileMenu() {
+  const { data: profile, isPending } = useDashboardProfile();
+  const name = profile ? `${profile.firstName} ${profile.lastName}` : "";
+  const picture = profile?.profilePictureUrl ?? undefined;
+
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -42,7 +48,7 @@ export function ProfileMenu({ name, email }: { name: string; email: string }) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-xs rounded-full focus-visible:outline-2 focus-visible:outline-evergreen-600 focus-visible:outline-offset-2"
       >
-        <UserAvatar name={name} size={24} />
+        <UserAvatar src={picture} name={name} size={24} />
         <HugeiconsIcon
           icon={ArrowDown01Icon}
           size={16}
@@ -56,12 +62,13 @@ export function ProfileMenu({ name, email }: { name: string; email: string }) {
           className="absolute right-0 z-10 mt-xs w-69.5 overflow-hidden rounded-md border border-grey-200 bg-white shadow-small-thick"
         >
           <div className="flex items-center gap-sm border-b border-grey-100 p-md">
-            <UserAvatar name={name} size={32} />
+            <UserAvatar src={picture} name={name} size={32} />
+            {/* The comp has the email under the name, but /dashboard/profile
+                doesn't return one yet. */}
             <div className="flex min-w-0 flex-col">
               <p className="truncate font-sans text-body-sm/[normal] font-medium text-grey-900">
-                {name}
+                {isPending ? <TextPlaceholder className="w-28" /> : name}
               </p>
-              <p className="truncate text-caption text-grey-500">{email}</p>
             </div>
           </div>
           <div className="flex flex-col p-xs">

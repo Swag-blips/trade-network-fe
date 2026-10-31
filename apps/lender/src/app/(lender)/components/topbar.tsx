@@ -16,7 +16,7 @@ export function Topbar({ title }: { title: string }) {
         >
           Update mandate
         </Button>
-        <ProfileMenu name="Shile Owoka" email="ceo@hoptool.co" />
+        <ProfileMenu />
       </div>
     </header>
   );

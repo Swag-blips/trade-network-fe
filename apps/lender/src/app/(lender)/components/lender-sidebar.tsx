@@ -1,15 +1,12 @@
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
   AlmsIcon,
   ChartRingIcon,
   Home03Icon,
   Mailbox01Icon,
   PeerToPeer02Icon,
-  Settings01Icon,
 } from "@hugeicons/core-free-icons";
-import { Sidebar, SidebarFooter, type SidebarSection } from "@repo/ui/sidebar";
-import { IconButton } from "@repo/ui/icon-button";
-import { OrgAvatar } from "@repo/ui/avatars";
+import { Sidebar, type SidebarSection } from "@repo/ui/sidebar";
+import { OrgFooter } from "./org-footer";
 
 const SECTIONS: SidebarSection[] = [
   {
@@ -34,24 +31,6 @@ const SECTIONS: SidebarSection[] = [
   },
 ];
 
-const ORG = { name: "Owoka Investment Limited", role: "Capital provider" };
-
 export function LenderSidebar() {
-  return (
-    <Sidebar
-      sections={SECTIONS}
-      footer={
-        <SidebarFooter
-          avatar={<OrgAvatar name={ORG.name} />}
-          title={ORG.name}
-          subtitle={ORG.role}
-          action={
-            <IconButton label="Organisation settings" size="sm">
-              <HugeiconsIcon icon={Settings01Icon} />
-            </IconButton>
-          }
-        />
-      }
-    />
-  );
+  return <Sidebar sections={SECTIONS} footer={<OrgFooter />} />;
 }
