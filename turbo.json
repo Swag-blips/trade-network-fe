@@ -18,5 +18,9 @@
       "persistent": true
     }
   },
-  "globalEnv": ["TRADE_NETWORK_API_ORIGIN", "NODE_ENV"]
+  "globalEnv": [
+    "TRADE_NETWORK_API_ORIGIN",
+    "TRADE_NETWORK_LENDER_API_ORIGIN",
+    "NODE_ENV"
+  ]
 }

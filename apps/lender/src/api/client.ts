@@ -1,5 +1,5 @@
 import { AppConfig } from "@/lib";
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
 import type { ApplicationResponse } from "./types";
 
 export type HttpMethod = "post" | "put" | "patch" | "delete";
@@ -8,6 +8,75 @@ export const axiosInstance = axios.create({
   baseURL: AppConfig.apiUrl,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
+});
+
+const REFRESH_URL = "/access/refresh-token";
+
+/**
+ * A 401 from these means "wrong code" or "no such account", not "session
+ * expired" — refreshing would be pointless, and on the refresh call itself it
+ * would recurse.
+ */
+const UNAUTHENTICATED_PATHS = ["/access/login", "/onboard/signup", REFRESH_URL];
+
+type RetriedConfig = InternalAxiosRequestConfig & { retried?: boolean };
+
+let refreshing: Promise<unknown> | null = null;
+
+/** Where an expired session lands, and the routes it should not bounce out of. */
+const LOGIN_PATH = "/login";
+const SIGNED_OUT_ROUTES = [LOGIN_PATH, "/create-account", "/verify-email"];
+
+function signOut() {
+  if (typeof window === "undefined") return;
+
+  const { pathname } = window.location;
+  if (SIGNED_OUT_ROUTES.some((route) => pathname.startsWith(route))) return;
+
+  // A hard navigation on purpose: it drops any cached client state along with
+  // the session, which a router push would leave behind.
+  window.location.assign(LOGIN_PATH);
+}
+
+/** Single-flight: ten requests failing at once share one refresh, not ten. */
+function refreshSession() {
+  refreshing ??= axiosInstance.post(REFRESH_URL).finally(() => {
+    refreshing = null;
+  });
+
+  return refreshing;
+}
+
+/**
+ * The access token lasts an hour and the refresh cookie twelve, so an expired
+ * access token should be invisible: refresh once, replay the request.
+ */
+axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
+  if (!axios.isAxiosError(error) || error.response?.status !== 401) throw error;
+
+  const request = error.config as RetriedConfig | undefined;
+  const url = request?.url ?? "";
+
+  if (
+    !request ||
+    request.retried ||
+    UNAUTHENTICATED_PATHS.some((path) => url.startsWith(path))
+  ) {
+    throw error;
+  }
+
+  request.retried = true;
+
+  try {
+    await refreshSession();
+  } catch {
+    // The refresh cookie is gone or spent: the session is over, so send them
+    // to sign in again rather than leaving a half-dead page behind a toast.
+    signOut();
+    throw error;
+  }
+
+  return axiosInstance(request);
 });
 
 /** A rejected call still arrives as HTTP 200, so `status` is the real result. */
@@ -39,21 +108,40 @@ function assertOk<T>(res: ApplicationResponse<T>): ApplicationResponse<T> {
   return res;
 }
 
+/**
+ * Which backend a call goes to. They share one session: the refresh above
+ * always goes to the access service, and a replayed request keeps its baseURL.
+ */
+export type ApiService = "access" | "lender";
+
+const BASE_URLS: Record<ApiService, string> = {
+  access: AppConfig.apiUrl,
+  lender: AppConfig.lenderApiUrl,
+};
+
+interface QueryOptions {
+  params?: Record<string, unknown>;
+  service?: ApiService;
+}
+
 /** The whole envelope, as `mutationResponse` is for writes. */
 export async function queryResponse<T>(
   url: string,
-  params?: Record<string, unknown>,
+  { params, service = "access" }: QueryOptions = {},
 ): Promise<ApplicationResponse<T>> {
-  const res = await axiosInstance.get<ApplicationResponse<T>>(url, { params });
+  const res = await axiosInstance.get<ApplicationResponse<T>>(url, {
+    params,
+    baseURL: BASE_URLS[service],
+  });
   return assertOk(res.data);
 }
 
 /** `T` is the payload inside the envelope, not the envelope itself. */
 export async function query<T>(
   url: string,
-  params?: Record<string, unknown>,
+  options?: QueryOptions,
 ): Promise<T> {
-  return (await queryResponse<T>(url, params)).data;
+  return (await queryResponse<T>(url, options)).data;
 }
 
 export function extractErrorMessage(err: unknown, fallback: string): string {

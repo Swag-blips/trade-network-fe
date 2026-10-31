@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 
 export interface StatCardProps {
   label: string;
-  value: string;
+  /** A node so a loading placeholder can stand in for the figure. */
+  value: ReactNode;
   caption: string;
   icon: IconSvgElement;
 

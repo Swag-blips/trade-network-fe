@@ -10,6 +10,7 @@ import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { PartyCard, type Party } from "@/components/party-card";
 import { TaiAgent } from "@repo/ui/tai-agent";
+import { naira } from "@/utils/naira";
 
 type Step = "form" | "review" | "sent";
 
@@ -21,8 +22,6 @@ export interface OfferDraft {
 }
 
 const TENORS = ["30 days", "45 days", "60 days", "90 days"];
-const naira = (value: number) =>
-  `₦${Math.round(value).toLocaleString("en-NG")}`;
 const parse = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0;
 
 export function OfferModal({

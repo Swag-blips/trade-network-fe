@@ -391,8 +391,9 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 - **The lender dashboard uses values that are off the design system**, kept verbatim
   from Figma and marked with comments at each site: the 24px greeting and 20px stat
   figures are not on the type scale (which jumps 18 → 22), `#e0f2fe` behind the update
-  icon is off-palette (nearest is `azure-100`), and the sidebar org avatar's gradient
-  stops sit just off the ocean ramp.
+  icon is off-palette (nearest is `azure-100`), the sidebar org avatar's gradient
+  stops sit just off the ocean ramp, and the capital-deployed ring's two category
+  colours (`#7be7fc`, `#005894`) match no ramp stop.
 - **Tailwind pitfalls this repo has already hit** (all three cost real debugging time):
   - **`next/font` variables must go on `<html>`, not `<body>`.** `@theme` declares
     `--font-sans` on `:root`; a `:root` variable cannot read one defined on a

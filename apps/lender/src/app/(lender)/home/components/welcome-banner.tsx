@@ -1,4 +1,8 @@
+"use client";
+
 import { UserAvatar } from "@repo/ui/avatars";
+import { useDashboardProfile } from "../../hooks/use-dashboard-profile";
+import { TextPlaceholder } from "../../components/text-placeholder";
 
 function Glow() {
   return (
@@ -12,15 +16,31 @@ function Glow() {
   );
 }
 
-export function WelcomeBanner({ firstName }: { firstName: string }) {
+export function WelcomeBanner() {
+  const { data: profile, isPending } = useDashboardProfile();
+  const firstName = profile?.firstName ?? "";
+
   return (
     <div className="relative">
       <Glow />
       <div className="relative flex items-center gap-md px-lg pt-lg">
-        <UserAvatar name={firstName} size={64} />
+        <UserAvatar
+          src={profile?.profilePictureUrl ?? undefined}
+          name={firstName}
+          size={64}
+        />
         <div className="flex min-w-0 flex-1 flex-col justify-center">
-          <p className="font-brand text-2xl/normal font-medium text-grey-900">
-            Welcome, {firstName}.
+          <p className="font-brand text-2xl/[1.5] font-medium text-grey-900">
+            {isPending ? (
+              <>
+                Welcome, <TextPlaceholder className="w-24" />
+              </>
+            ) : firstName ? (
+              `Welcome, ${firstName}.`
+            ) : (
+              // The profile failed to load; greet without a name rather than "Welcome, ."
+              "Welcome."
+            )}
           </p>
           <p className="text-body-sm text-grey-600">
             Here&rsquo;s what&rsquo;s happening across your dashboard.

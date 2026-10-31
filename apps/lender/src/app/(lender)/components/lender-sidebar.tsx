@@ -1,57 +1,41 @@
-import { HugeiconsIcon } from "@hugeicons/react";
+"use client";
+
 import {
   AlmsIcon,
   ChartRingIcon,
   Home03Icon,
   Mailbox01Icon,
   PeerToPeer02Icon,
-  Settings01Icon,
 } from "@hugeicons/core-free-icons";
-import { Sidebar, SidebarFooter, type SidebarSection } from "@repo/ui/sidebar";
-import { IconButton } from "@repo/ui/icon-button";
-import { OrgAvatar } from "@repo/ui/avatars";
-
-const SECTIONS: SidebarSection[] = [
-  {
-    items: [
-      { label: "Home", href: "/home", icon: Home03Icon },
-      { label: "Portfolio", href: "/portfolio", icon: ChartRingIcon },
-      { label: "Inbox", href: "/inbox", icon: Mailbox01Icon },
-    ],
-  },
-  {
-    label: "Opportunities",
-    id: "sidebar-opportunities",
-    items: [
-      {
-        label: "Matched",
-        href: "/matched",
-        icon: PeerToPeer02Icon,
-        hasUpdates: true,
-      },
-      { label: "Offers", href: "/offers", icon: AlmsIcon },
-    ],
-  },
-];
-
-const ORG = { name: "Owoka Investment Limited", role: "Capital provider" };
+import { Sidebar, type SidebarSection } from "@repo/ui/sidebar";
+import { useNewForYou } from "../hooks/use-new-for-you";
+import { OrgMenu } from "./org-menu";
 
 export function LenderSidebar() {
-  return (
-    <Sidebar
-      sections={SECTIONS}
-      footer={
-        <SidebarFooter
-          avatar={<OrgAvatar name={ORG.name} />}
-          title={ORG.name}
-          subtitle={ORG.role}
-          action={
-            <IconButton label="Organisation settings" size="sm">
-              <HugeiconsIcon icon={Settings01Icon} />
-            </IconButton>
-          }
-        />
-      }
-    />
-  );
+  const { data } = useNewForYou();
+
+  const sections: SidebarSection[] = [
+    {
+      items: [
+        { label: "Home", href: "/home", icon: Home03Icon },
+        { label: "Portfolio", href: "/portfolio", icon: ChartRingIcon },
+        { label: "Inbox", href: "/inbox", icon: Mailbox01Icon },
+      ],
+    },
+    {
+      label: "Opportunities",
+      id: "sidebar-opportunities",
+      items: [
+        {
+          label: "Matched",
+          href: "/matched",
+          icon: PeerToPeer02Icon,
+          count: data?.fundingOpportunities,
+        },
+        { label: "Offers", href: "/offers", icon: AlmsIcon },
+      ],
+    },
+  ];
+
+  return <Sidebar sections={sections} footer={<OrgMenu />} />;
 }

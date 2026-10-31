@@ -7,7 +7,7 @@ export default function LenderLayout({ children }: { children: ReactNode }) {
     <div className="flex h-screen bg-grey-50">
       <LenderSidebar />
       <div className="flex min-w-0 flex-1 flex-col pt-sm pr-xs">
-        <div className="flex min-h-px flex-1 flex-col overflow-hidden rounded-xl border border-grey-200 bg-white shadow-soft-section">
+        <div className="flex min-h-px flex-1 flex-col overflow-hidden rounded-t-lg border border-b-0 border-grey-100 bg-white shadow-soft-section">
           {children}
         </div>
       </div>
