@@ -1,65 +1,9 @@
 import type { Opportunity, OpportunityDetail } from "./types/opportunity";
 
-// Placeholder content matching the Figma frames. Replace once the API exists.
+// Placeholder detail until the detail and trade-room endpoints are wired:
+// the list is live, but what the modal shows is still generated from the card.
 
-export const OPPORTUNITIES: Opportunity[] = [
-  {
-    id: "titan",
-    name: "Titan Suppliers",
-    kind: "Supplier",
-    initials: "TI",
-    match: 92,
-    advance: "₦8,500,000",
-    counterparty: "Unilever",
-    counterpartyInitials: "UN",
-    tenor: "30 days",
-    expires: "Sept 16, 2026",
-    href: "/matched/titan",
-    unread: true,
-  },
-  {
-    id: "northline",
-    name: "Northline Stores",
-    kind: "Distributor",
-    initials: "NL",
-    match: 86,
-    advance: "₦6,250,000",
-    counterparty: "Emzor Pharmaceuticals",
-    counterpartyInitials: "EM",
-    tenor: "30 days",
-    expires: "Sept 16, 2026",
-    href: "/matched/northline",
-    unread: true,
-  },
-  {
-    id: "averra",
-    name: "Averra Limited",
-    kind: "Supplier",
-    initials: "AV",
-    match: 65,
-    advance: "₦12,400,000",
-    counterparty: "AgroTrade Co.",
-    counterpartyInitials: "AG",
-    tenor: "45 days",
-    expires: "Oct 12, 2026",
-    href: "/matched/averra",
-  },
-  {
-    id: "riverview",
-    name: "Riverview Logistics",
-    kind: "Supplier",
-    initials: "RI",
-    match: 42,
-    advance: "₦5,200,000",
-    counterparty: "Delta Foods",
-    counterpartyInitials: "DE",
-    tenor: "21 days",
-    expires: "Oct 28, 2026",
-    href: "/matched/riverview",
-  },
-];
-
-function detailFor(item: Opportunity): OpportunityDetail {
+export function detailFor(item: Opportunity): OpportunityDetail {
   return {
     metrics: [
       { id: "advance", label: "Requested advance", value: item.advance },
@@ -126,6 +70,3 @@ function detailFor(item: Opportunity): OpportunityDetail {
     ],
   };
 }
-
-export const OPPORTUNITY_DETAILS: Record<string, OpportunityDetail> =
-  Object.fromEntries(OPPORTUNITIES.map((item) => [item.id, detailFor(item)]));

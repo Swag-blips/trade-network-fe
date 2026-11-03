@@ -20,12 +20,12 @@ import {
 import type { IconSvgElement } from "@hugeicons/react";
 import { Button } from "@repo/ui/button";
 import { IconButton } from "@repo/ui/icon-button";
-import { useToast } from "@repo/ui/toast";
 import { InitialsAvatar } from "@repo/ui/avatars";
 import { TaiAgent } from "@repo/ui/tai-agent";
 import { Tabs } from "@repo/ui/tabs";
 import { TradeRoom } from "@/components/trade-room";
 import { OfferModal } from "@/components/offer-modal";
+import { useNotInterested } from "../hooks/use-not-interested";
 import type { Opportunity, OpportunityDetail } from "../types/opportunity";
 
 const METRIC_ICONS: IconSvgElement[] = [
@@ -110,7 +110,7 @@ export function OpportunityDetailModal({
   const [offerOpen, setOfferOpen] = useState(false);
   const [offerSent, setOfferSent] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const { mutate: notInterested, isPending: dismissing } = useNotInterested();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -269,13 +269,10 @@ export function OpportunityDetailModal({
                   variant="outline"
                   size="form"
                   className="w-full"
-                  onClick={() => {
-                    onDismissOpportunity();
-                    toast({
-                      state: "success",
-                      message: "Opportunity has been removed from your list",
-                    });
-                  }}
+                  loading={dismissing}
+                  onClick={() =>
+                    notInterested(item.id, { onSuccess: onDismissOpportunity })
+                  }
                   leadingIcon={<HugeiconsIcon icon={UnavailableIcon} />}
                 >
                   Not interested

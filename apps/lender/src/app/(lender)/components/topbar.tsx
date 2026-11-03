@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { LicenseDraftIcon } from "@hugeicons/core-free-icons";
-import { Button } from "@repo/ui/button";
+import { ButtonLink } from "@repo/ui/button-link";
 
 export function Topbar({ title }: { title: string }) {
   return (
@@ -8,12 +8,13 @@ export function Topbar({ title }: { title: string }) {
       <h1 className="min-w-0 flex-1 font-sans text-body font-medium text-grey-900">
         {title}
       </h1>
-      <Button
+      <ButtonLink
+        href="/settings/funding-mandate"
         variant="outline"
         leadingIcon={<HugeiconsIcon icon={LicenseDraftIcon} />}
       >
         Update mandate
-      </Button>
+      </ButtonLink>
     </header>
   );
 }

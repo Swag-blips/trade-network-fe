@@ -156,11 +156,16 @@ export function extractErrorMessage(err: unknown, fallback: string): string {
  * The whole envelope, with failures already thrown — for the few flows that
  * surface the service's own `message` rather than copy of our own.
  */
+interface MutationOptions {
+  contentType?: string;
+  service?: ApiService;
+}
+
 export async function mutationResponse<T>(
   url: string,
   method: HttpMethod,
   payload?: unknown,
-  contentType?: string,
+  { contentType, service = "access" }: MutationOptions = {},
 ): Promise<ApplicationResponse<T>> {
   type Envelope = ApplicationResponse<T>;
 
@@ -168,6 +173,7 @@ export async function mutationResponse<T>(
     typeof FormData !== "undefined" && payload instanceof FormData;
 
   const config = {
+    baseURL: BASE_URLS[service],
     headers: {
       ...(contentType || !isFormData
         ? { "Content-Type": contentType ?? "application/json" }
@@ -205,7 +211,7 @@ export async function mutation<T>(
   url: string,
   method: HttpMethod,
   payload?: unknown,
-  contentType?: string,
+  options?: MutationOptions,
 ): Promise<T> {
-  return (await mutationResponse<T>(url, method, payload, contentType)).data;
+  return (await mutationResponse<T>(url, method, payload, options)).data;
 }

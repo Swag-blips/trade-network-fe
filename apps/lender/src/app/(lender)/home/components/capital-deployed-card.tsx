@@ -9,7 +9,8 @@ import {
 import { naira } from "@/utils/naira";
 import { TextPlaceholder } from "../../components/text-placeholder";
 import { useCapitalDeployed } from "../hooks/use-capital-deployed";
-import type { BorrowerCategory, CapitalDeployed } from "../types";
+import type { BorrowerCategory } from "../../types";
+import type { CapitalDeployed } from "../types";
 import { DonutChart } from "./donut-chart";
 
 // Off-palette, kept verbatim from Figma (node 2883-3937): the nearest ramp

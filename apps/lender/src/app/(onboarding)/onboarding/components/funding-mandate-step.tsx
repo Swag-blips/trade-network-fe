@@ -11,25 +11,9 @@ import { Select } from "@repo/ui/select";
 import { useToast } from "@repo/ui/toast";
 import { TicketRange } from "@/components/ticket-range";
 import { clearOnboarding, readOnboarding } from "@/lib/onboarding-storage";
+import { FUNDING_TYPES, SECTORS, TENORS } from "@/utils/mandate-options";
 import { useOnboarding } from "../../components/onboarding-provider";
 import { useCompleteOnboarding } from "../hooks/use-complete-onboarding";
-
-const TENORS = ["30-90 days", "90-180 days", "180-365 days"];
-const FUNDING_TYPES = [
-  "Any",
-  "Invoice financing",
-  "Purchase order",
-  "Working capital",
-];
-const SECTORS = [
-  "Manufacturing",
-  "Agriculture",
-  "Healthcare",
-  "Technology",
-  "Finance",
-  "Energy",
-  "Retail",
-];
 
 export function FundingMandateStep() {
   const router = useRouter();

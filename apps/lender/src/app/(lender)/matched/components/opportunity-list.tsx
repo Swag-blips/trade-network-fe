@@ -1,48 +1,69 @@
 "use client";
 
 import { useState } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { FilterMailCircleIcon } from "@hugeicons/core-free-icons";
+import { Button } from "@repo/ui/button";
 import { Select } from "@repo/ui/select";
 import { FilterBar } from "@repo/ui/filter-bar";
+import { TextPlaceholder } from "../../components/text-placeholder";
 import { OpportunityCard } from "./opportunity-card";
 import { OpportunityDetailModal } from "./opportunity-detail";
-import type {
-  Opportunity,
-  OpportunityDetail,
-  OpportunityFilter,
-} from "../types/opportunity";
+import { detailFor } from "../data";
+import { useOpportunities } from "../hooks/use-opportunities";
+import { toOpportunity } from "../utils/to-opportunity";
+import type { OpportunityFilter, OpportunityPage } from "../types/opportunity";
 
-const TABS: { id: OpportunityFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "Supplier", label: "Suppliers" },
-  { id: "Distributor", label: "Distributors" },
+const TABS: {
+  id: OpportunityFilter;
+  label: string;
+  count: keyof Pick<
+    OpportunityPage,
+    "allCount" | "supplierCount" | "distributorCount"
+  >;
+}[] = [
+  { id: "all", label: "All", count: "allCount" },
+  { id: "Supplier", label: "Suppliers", count: "supplierCount" },
+  { id: "Distributor", label: "Distributors", count: "distributorCount" },
 ];
+
+const ROLES = { Supplier: "SUPPLIER", Distributor: "DISTRIBUTOR" } as const;
 
 const SORTS = ["All matches", "Strong matches", "Expiring soonest"];
 
-export function OpportunityList({
-  items,
-  details,
-}: {
-  items: Opportunity[];
-  details: Record<string, OpportunityDetail>;
-}) {
+function CardPlaceholder() {
+  return (
+    <div
+      aria-hidden
+      className="h-37 w-full max-w-166.5 animate-pulse rounded-xl bg-grey-100"
+    />
+  );
+}
+
+export function OpportunityList() {
   const [tab, setTab] = useState<OpportunityFilter>("all");
   const [sort, setSort] = useState(SORTS[0]!);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [dismissed, setDismissed] = useState<string[]>([]);
 
-  const remaining = items.filter((item) => !dismissed.includes(item.id));
-  const countFor = (id: OpportunityFilter) =>
-    id === "all"
-      ? remaining.length
-      : remaining.filter((i) => i.kind === id).length;
+  const {
+    data,
+    isPending,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useOpportunities({
+    borrowerRole: tab === "all" ? undefined : ROLES[tab],
+    matchLevel: sort === "Strong matches" ? "STRONG" : undefined,
+  });
 
-  const visible = items
-    .filter((item) => !dismissed.includes(item.id))
-    .filter((item) => tab === "all" || item.kind === tab)
-    .filter((item) => sort !== "Strong matches" || item.match >= 80);
+  const counts = data?.pages[0];
+  const items = (data?.pages ?? []).flatMap((page) =>
+    page.opportunities.payload.map(toOpportunity),
+  );
+  // The service has no sort parameter, so this orders only what has loaded.
+  const visible =
+    sort === "Expiring soonest"
+      ? [...items].sort((a, b) => a.expiresAt.localeCompare(b.expiresAt))
+      : items;
 
   return (
     <>
@@ -71,7 +92,11 @@ export function OpportunityList({
               ) : null}
               <span className="text-body text-grey-800">{item.label}</span>
               <span className="font-sans text-xl/normal font-medium text-grey-900">
-                {countFor(item.id)}
+                {counts ? (
+                  counts[item.count]
+                ) : (
+                  <TextPlaceholder className="w-6" />
+                )}
               </span>
             </button>
           );
@@ -95,9 +120,21 @@ export function OpportunityList({
       </div>
 
       <div className="flex flex-col gap-md pt-md">
-        {visible.length === 0 ? (
+        {isPending ? (
+          <>
+            <CardPlaceholder />
+            <CardPlaceholder />
+          </>
+        ) : isError ? (
           <p className="text-body-sm text-grey-500">
-            No opportunities match this filter.
+            We couldn&rsquo;t load your matched opportunities. Please refresh to
+            try again.
+          </p>
+        ) : visible.length === 0 ? (
+          <p className="text-body-sm text-grey-500">
+            {tab === "all" && sort === SORTS[0]
+              ? "No matched opportunities yet. We’ll list them here as soon as one fits your mandate."
+              : "No opportunities match this filter."}
           </p>
         ) : (
           visible.map((item, index) => (
@@ -108,18 +145,29 @@ export function OpportunityList({
             />
           ))
         )}
+
+        {hasNextPage ? (
+          <div>
+            <Button
+              variant="outline"
+              size="form"
+              loading={isFetchingNextPage}
+              onClick={() => void fetchNextPage()}
+            >
+              Load more
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {openIndex !== null && visible[openIndex] ? (
         <OpportunityDetailModal
           key={visible[openIndex].id}
           item={visible[openIndex]}
-          detail={details[visible[openIndex].id]!}
+          detail={detailFor(visible[openIndex])}
           onClose={() => setOpenIndex(null)}
-          onDismissOpportunity={() => {
-            setDismissed([...dismissed, visible[openIndex]!.id]);
-            setOpenIndex(null);
-          }}
+          // The list refetches without it, so there is nothing to step to.
+          onDismissOpportunity={() => setOpenIndex(null)}
           onPrev={openIndex > 0 ? () => setOpenIndex(openIndex - 1) : undefined}
           onNext={
             openIndex < visible.length - 1

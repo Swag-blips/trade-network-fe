@@ -18,7 +18,9 @@ const THUMB =
   "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 " +
   "[&::-moz-range-thumb]:border-evergreen-600 [&::-moz-range-thumb]:bg-white";
 
-const format = (value: number) => value.toLocaleString("en-NG");
+// `parse` keeps only digits, so a decimal from the service (e.g. 2000000.00)
+// would otherwise have its "." read as another digit. Round at display.
+const format = (value: number) => Math.round(value).toLocaleString("en-NG");
 const parse = (value: string) => Number(value.replace(/[^0-9]/g, ""));
 
 export function TicketRange({
