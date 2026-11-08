@@ -7,8 +7,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 import { usePermission } from "@/hooks/use-permission";
-import { SYSTEM_ROLES } from "../utils/roles";
-import type { Member, Role } from "../types/team";
+import { useRoles } from "@/hooks/use-roles";
+import type { Member, Role } from "@/types/team";
 
 function RoleCard({ role, memberCount }: { role: Role; memberCount: number }) {
   return (
@@ -23,7 +23,7 @@ function RoleCard({ role, memberCount }: { role: Role; memberCount: number }) {
       <div className="flex items-center gap-sm text-body-sm/[normal] text-grey-600">
         <span className="flex items-center gap-xs">
           <HugeiconsIcon icon={Key01Icon} size={16} aria-label="Permissions" />
-          {role.permissionCount}
+          {role.permissions.length}
         </span>
         <span className="flex flex-1 items-center gap-xs">
           <HugeiconsIcon icon={User03Icon} size={16} aria-label="Members" />
@@ -42,6 +42,7 @@ function RoleCard({ role, memberCount }: { role: Role; memberCount: number }) {
 
 export function RolesPanel({ members }: { members: Member[] }) {
   const canManage = usePermission("team:manage");
+  const { data: roles = [], isPending, isError } = useRoles();
 
   return (
     <div className="flex flex-col gap-lg">
@@ -66,19 +67,27 @@ export function RolesPanel({ members }: { members: Member[] }) {
 
       <section className="flex flex-col">
         <h3 className="type-overline border-b border-grey-100 pb-md font-sans tracking-[0.24px] text-grey-600">
-          System roles ({SYSTEM_ROLES.length})
+          System roles ({roles.length})
         </h3>
-        <div className="grid grid-cols-2 gap-md py-md">
-          {SYSTEM_ROLES.map((role) => (
-            <RoleCard
-              key={role.name}
-              role={role}
-              memberCount={
-                members.filter((member) => member.role === role.name).length
-              }
-            />
-          ))}
-        </div>
+        {isPending || isError ? (
+          <p className="py-md text-body-sm text-grey-500">
+            {isPending ? "Loading roles…" : "We couldn't load the roles."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-md py-md">
+            {roles.map((role) => (
+              <RoleCard
+                key={role.id}
+                role={role}
+                memberCount={
+                  members.filter(
+                    (member) => !member.invitation && member.role === role.name,
+                  ).length
+                }
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

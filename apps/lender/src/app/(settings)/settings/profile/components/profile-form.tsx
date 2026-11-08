@@ -10,10 +10,9 @@ import { Select } from "@repo/ui/select";
 import { UserAvatar } from "@repo/ui/avatars";
 import { useFieldErrors } from "@/hooks/use-field-errors";
 import { useMe } from "@/hooks/use-me";
+import { DEFAULT_PHOTO } from "@/utils/avatar";
 import { useUpdateMe } from "../hooks/use-update-me";
 import { DIAL_CODES, joinPhone, splitPhone } from "../utils/phone";
-
-const DEFAULT_PHOTO = "/settings/profile-avatar.png";
 
 export function ProfileForm() {
   const { data: me } = useMe();

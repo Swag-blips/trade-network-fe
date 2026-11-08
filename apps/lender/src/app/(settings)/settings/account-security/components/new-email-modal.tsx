@@ -1,22 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { FormDialog } from "@/components/form-dialog";
+import { formatWait } from "../utils/wait";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** No email-change endpoint yet, so Save only closes the dialog. */
 export function NewEmailModal({
-  onClose,
+  email,
+  onEmailChange,
+  error,
+  saving,
+  retryIn,
   onSave,
+  onClose,
 }: {
-  onClose: () => void;
+  email: string;
+  onEmailChange: (email: string) => void;
+  error?: string;
+  saving: boolean;
+  retryIn: number;
   onSave: (email: string) => void;
+  onClose: () => void;
 }) {
-  const [email, setEmail] = useState("");
   const valid = EMAIL.test(email.trim());
 
   return (
@@ -25,7 +33,7 @@ export function NewEmailModal({
       className="w-110.5"
       onClose={onClose}
       onSubmit={() => {
-        if (valid) onSave(email.trim());
+        if (valid && !saving && retryIn === 0) onSave(email.trim());
       }}
       footer={
         <>
@@ -42,7 +50,8 @@ export function NewEmailModal({
             type="submit"
             size="form"
             className="w-27.5"
-            disabled={!valid}
+            loading={saving}
+            disabled={!valid || retryIn > 0}
           >
             Save
           </Button>
@@ -52,7 +61,17 @@ export function NewEmailModal({
       <p className="text-body/[1.5] text-grey-600">
         Enter the new email you want to change your old email.
       </p>
-      <Field label="New email" htmlFor="new-email" variant="auth">
+      <Field
+        label="New email"
+        htmlFor="new-email"
+        variant="auth"
+        error={
+          error ??
+          (retryIn > 0
+            ? `Too many requests. Try again in ${formatWait(retryIn)}.`
+            : undefined)
+        }
+      >
         <Input
           id="new-email"
           type="email"
@@ -60,7 +79,7 @@ export function NewEmailModal({
           autoComplete="email"
           placeholder="Enter new email"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) => onEmailChange(event.target.value)}
         />
       </Field>
     </FormDialog>

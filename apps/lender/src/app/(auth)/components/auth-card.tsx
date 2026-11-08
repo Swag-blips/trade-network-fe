@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 const WIDTH = {
   sm: "max-w-96.5",
   md: "max-w-122.75",
+  lg: "max-w-140",
 };
 
 export function AuthCard({

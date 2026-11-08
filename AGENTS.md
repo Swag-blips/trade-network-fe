@@ -48,6 +48,7 @@ All of these live in `apps/lender`. `apps/business` has none yet.
 /create-account            sign-up                 → app/(auth)/…
 /login
 /verify-email              OTP, then on to /onboarding
+/join                      accept a team invitation (public) → app/(auth)/join
 /onboarding                organisation + mandate  → app/(onboarding)/onboarding
 /home                      lender dashboard        → app/(dashboard)/home
 /opportunities             financing opportunities + negotiations → app/(dashboard)/opportunities
@@ -58,7 +59,7 @@ All of these live in `apps/lender`. `apps/business` has none yet.
 /settings/account-security email change + delete account
 /settings/company          company details
 /settings/funding-mandate  funding preference: the onboarding mandate questions, editable once per 30 days
-/settings/teams            members and system roles (no API yet)
+/settings/teams            members, invitations and system roles
 /settings/login-activity   sessions, sign out one or all other devices```
 
 **Four route groups, four shells.** `(auth)` and `(onboarding)` are the signed-out and
@@ -97,9 +98,12 @@ Shared helpers to check before writing your own:
   ("250,000,000.00"), and `toMinorUnits` / `fromMinorUnits` for kobo.
 - `@/utils/otp`: `OTP_LENGTH` and `emptyOtp`.
 - `@/utils/date`: `shortDate` ("Nov 05, 2026") and `longDate` ("November 05, 2026").
+- `@/utils/avatar`: `DEFAULT_PHOTO`, the illustrated person every member shows until
+  photo upload exists (profile, the teams list and the nav account menu).
 - `@/utils/financing-purpose`: the `FinancingPurpose` codes and `purposeLabel`.
 - `@/api/client`: `readProblemType(err)` returns the problem `type` without its URN
   prefix, so compare it to `"validation-failed"` rather than declaring URN constants.
+  `readRetryAfter(err)` gives a `429`'s `Retry-After` in seconds.
 
 - Import shared code via the `@/*` alias: `@/components/…`, `@/hooks/…`, `@/utils/…`
   (mapped to each app's own `src/*` in its `tsconfig.json`). Colocated siblings use relative
@@ -302,17 +306,18 @@ app. `packages/ui` lists `next` as a peer dependency, so it may use `next/link` 
 **Lender-only components** live in `apps/lender/src/components/` — they render lender
 content, so they stay in the app until business genuinely needs one:
 
-| Component                               | Notes                                                                                                                                                                                                                                                                            |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TradeRoom`                             | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                                                                                                          |
-| `MatchBadge`                            | Match-score pill on matched opportunities                                                                                                                                                                                                                                        |
-| `MandateFields`                         | The mandate questions (allocation, rate, tenure, ticket range, industries) over a `MandateDraft`; onboarding step 2 and `/settings/funding-mandate` both render it. `disabled` locks every field                                                                                 |
-| `FinancingRange`                        | The ticket range: Min/Max fields and a log-scale slider from ₦50k up to the allocation (`ceiling`, at most ₦1B). With no allocation yet the whole card is "Set your capital allocation first". `disabled` hides the slider |
-| `IndustryPicker` / `SelectedIndustries` | Industry search and its chips. Without `onRemove` the chips render grey and read-only                                                                                                                                                                                            |
-| `FormDialog`                            | Grey-header `<dialog>` wrapping a `<form>`: title, close (`dismissible={false}` hides the X when the footer has its own Close), body, optional `footer` slot (no footer, no form submit); width via `className`. The body scrolls once the dialog hits the viewport, so a `Select` inside would clip. The account-security dialogs, Not interested and Request for info on `/opportunities` |
-| `ConfirmDialog`                         | `FormDialog` with Cancel, a divider and one confirm button over a sentence of body copy: Sign out and Withdraw offer                                                                                                                                                              |
-| `ScheduleTable`                         | Installment rows (dot, label, due date, amount), an optional Status column, an optional per-row `action` column (Mark as paid) and an optional Total repayment row. The trade page on `/portfolio` and the repayment schedule modal on `/opportunities` |
-| `ProviderLockup`                        | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                                                                                                                                             |
+| Component                               | Notes                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TradeRoom`                             | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                                                                                                                                                                                                                           |
+| `MatchBadge`                            | Match-score pill on matched opportunities                                                                                                                                                                                                                                                                                                                                                         |
+| `MandateFields`                         | The mandate questions (allocation, rate, tenure, ticket range, industries) over a `MandateDraft`; onboarding step 2 and `/settings/funding-mandate` both render it. `disabled` locks every field                                                                                                                                                                                                  |
+| `FinancingRange`                        | The ticket range: Min/Max fields and a log-scale slider from ₦50k up to the allocation (`ceiling`, at most ₦1B). With no allocation yet the whole card is "Set your capital allocation first". `disabled` hides the slider                                                                                                                                                                        |
+| `IndustryPicker` / `SelectedIndustries` | Industry search and its chips. Without `onRemove` the chips render grey and read-only                                                                                                                                                                                                                                                                                                             |
+| `FormDialog`                            | Grey-header `<dialog>` wrapping a `<form>`: title, close (`dismissible={false}` hides the X when the footer has its own Close), body, optional `footer` slot (no footer, no form submit); width via `className`. The body scrolls once the dialog hits the viewport; a `Select` inside still opens over it. The account-security dialogs, Not interested and Request for info on `/opportunities` |
+| `ConfirmDialog`                         | `FormDialog` with Cancel, a divider and one confirm button over a sentence of body copy, with an optional `notice` under it (a `Notice`, `tone`: `warning` / `success`): Sign out, Withdraw offer, Activate / Deactivate member, Remove invitation                                                                                                                                                |
+| `ScheduleTable`                         | Installment rows (dot, label, due date, amount), an optional Status column, an optional per-row `action` column (Mark as paid) and an optional Total repayment row. The trade page on `/portfolio` and the repayment schedule modal on `/opportunities`                                                                                                                                           |
+| `InviteDialog`                          | Invite team members: email + role rows, up to 10, sent in one `POST /invitations`. Reads `useMembers` itself to block emails of people already on the team. Opened from Invite member on `/settings/teams` and Invite team members in the account menu, both behind `team:manage` |
+| `ProviderLockup`                        | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                                                                                                                                                                                                                                                              |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -340,6 +345,109 @@ Two pieces of wiring make this work across the workspace boundary:
 as variants because Figma has no interaction model. In code those are `:hover` and
 `:active`; only application state (`disabled`, `loading`) becomes a prop. Don't mirror a
 Figma variant axis into the TypeScript API without asking what it actually represents.
+
+## Page patterns
+
+Every signed-in screen is one of a handful of shapes. Copy the frame from the route named
+here rather than inventing one; a screen that fits none of them is a question for the
+designer, not a layout to improvise.
+
+**The page scrolls, not the window.** Both shells are `h-screen` with the overflow
+clipped, so a page's outermost element is always `min-h-px flex-1 overflow-y-auto`.
+Without it the page can't scroll, or it pushes the nav off screen.
+
+**The dashboard frame** wraps every `(dashboard)` page except `/home`:
+
+```tsx
+<div className="min-h-px flex-1 overflow-y-auto bg-grey-50">
+  <div className="mx-auto flex w-full max-w-content flex-col gap-xl px-xl py-xl">
+```
+
+`max-w-content` is the comps' 1280px frame (`--container-content`). The page ground is
+`grey-50` and content sits on white cards over it. `/home` is the one exception: white,
+`PageGlow` behind, a narrower `max-w-252` column. Don't copy it onto other pages.
+
+**The page header** is an `h1` in `font-brand text-2xl/[1.24] font-medium text-grey-900`
+with an optional one-line description in `text-body/[normal] text-grey-600`, `gap-xs`
+apart. Section headings below it are app chrome, so they say `font-sans`.
+
+**Vertical rhythm:** `gap-xl` between page sections, `gap-lg` between blocks inside a
+section, `gap-2.5` between cards in a row (the comps' 10px). `/portfolio` puts 40px
+(`gap-10`) under its header because its comp does.
+
+| Shape         | Copy from                                      | Anatomy                                                                                                                                                                                                                                                                                  |
+| ------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| List          | `/portfolio`                                   | Header, a row of `StatCard`s, then a toolbar (`TablePanel`: `SearchInput` + `Select variant="filter"`) over `DataTable variant="cards"`. Rows link to the detail page with `rowHref`                                                                                                     |
+| Master–detail | `/opportunities`                               | One fixed-height box (`rounded-lg border border-grey-100 shadow-card`) with the list on the left and the selected record on the right. Selection is state, not URL. Use it when the user works through items one by one without leaving the list                                         |
+| Detail        | `/portfolio/[id]`, `/portfolio/[id]/[tradeId]` | `Breadcrumb` (unknown labels read `…` until the record loads), then an identity header (64px square `Avatar`, `h1`, a meta line of icon + facts joined by `·`), then `Tabs` or panels. The page awaits `params` and hands the id to one client leaf, which calls `notFound()` on a `404` |
+| Settings      | any `/settings/*`                              | `<SettingsPage title description>` around one client component. `SettingsPage` owns the padding and header, so don't restate them                                                                                                                                                        |
+
+**Overlays: pick by what the user is doing.**
+
+- Saying yes or no to one action → `ConfirmDialog`.
+- Entering a few fields without losing their place → `FormDialog`.
+- Reading more about a list item without leaving the list → a modal
+  (`OpportunityDetailsModal`).
+- Anything with its own tabs, its own actions, or worth linking to → a page. That's why a
+  funded trade is `/portfolio/[id]/[tradeId]`.
+
+`Sheet` exists in `packages/ui`, but no screen uses it. Ask before introducing a side panel.
+
+**Desktop only, for now.** The comps are drawn at 1280px and the app has almost no
+breakpoints. Build for that frame and don't invent mobile layouts until a designer
+draws one.
+
+`TablePanel`, `Breadcrumb`, `StatCard` and `EmptyState` are still colocated in
+`portfolio/components/`. The second route that needs one promotes it.
+
+## States
+
+A comp usually draws only the full screen. Every view that reads data also has a loading,
+an empty and a failed state, and every action has a pending one. Decide all four before
+calling a screen done.
+
+**Loading holds the final shape.**
+
+- A value inside text (a name, a figure) is a `TextPlaceholder`
+  (`@/components/text-placeholder`), a pulsing bar one line tall, given a `w-*` close to
+  the real text. The `/home` greeting and metrics do this.
+- A list shows 2–3 placeholder rows built from the real row's layout: `session-list.tsx`,
+  or `CardPlaceholder` in `requests-pane.tsx`. Placeholders are `aria-hidden`,
+  `bg-grey-100` and `animate-pulse`.
+- No spinner for a page or a section. `Button`'s `loading` is the only one.
+- The detail pages still say "Loading…" in text. New pages use placeholders.
+
+**Empty says which empty.**
+
+- _Nothing yet_ (no data, no filter applied): replace the whole block, toolbar included,
+  with an empty state that says what will appear here and how it gets there. Title in
+  `text-body/[1.5] font-medium text-grey-600`, body in `text-body-sm/[1.5] text-grey-500`,
+  centred, the body about 367px wide (`w-91.75`). See `EmptyState` in
+  `portfolio/components/empty-state.tsx` and Recent updates on `/home`.
+- _Nothing matches_: keep the toolbar so the user can undo the filter, and let
+  `DataTable`'s `empty` say it: "No companies match these filters."
+- An empty pane inside a split view is a centred 32px icon over one line (`EmptyState` in
+  `requests-pane.tsx`).
+
+**Failed shows where the content would have been.**
+
+- A read that fails and leaves a block empty: a sentence in that slot, in the empty
+  state's type, so the layout doesn't jump. "We couldn't load your portfolio." with
+  "Refresh the page to try again."
+- A single figure that failed, or a value the API doesn't have yet: `—` (an em dash).
+  Never `N/A`, never a blank, and never `0` unless it really is zero.
+- A record that doesn't exist (`404`): `notFound()`.
+- A failed action: a toast, or field errors for a `422`. See "Bad input is shown on the
+  field" under Gotchas.
+
+**Pending actions.** Pass `loading` to the `Button` while its mutation runs, and guard the
+submit (`if (isPending) return`) so a double click can't send twice. When the action ends
+in navigation, stay pending through it (`VerifyingOverlay` holds through the route change
+with `useTransition`).
+
+**Copy.** Sentence case for headings, buttons and labels. Failures speak as the product
+("We couldn't …"). An empty state names what will appear, not just that nothing is there:
+"New financing opportunities and portfolio signals will appear here."
 
 ## Icons
 
@@ -471,9 +579,10 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   outside-click and scroll-into-view. Do not regress those when editing it. An option's
   `label` shows in the list and `display` in the closed control, which is how the trade
   picker shows a rich row but a bare `FT-0001` once chosen.
-  The popup is absolutely positioned, so a scroll container it opens inside clips it.
-  Opening scrolls the popup into view, which is enough inside a scrolling dialog body
-  (the offer modal); otherwise the dialog keeps `overflow-visible`.
+  The popup is a `popover="manual"` list in the top layer, `fixed` to the control's
+  rect: re-measured on every scroll and resize, flipped above the control when there is
+  no room below, and capped to the space it has. So no dialog or scroll container clips
+  it, and a dialog body can keep `overflow-y-auto` with a `Select` inside.
 - **A funded trade is a page, `/portfolio/[id]/[tradeId]`.** An overdue trade adds the
   orange notice and shows the remaining repayment in `red-error-300` with the oldest
   overdue date. Mark as paid is not in the design: each unpaid installment gets one for
@@ -482,12 +591,42 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 - **The lender dashboard uses values that are off the design system**, kept verbatim
   from Figma: the 24px greeting and metric figures are not on the type scale (which jumps
   18 → 22), and the org avatar's gradient stops sit just off the ocean ramp.
-- **Teams & permissions has no API.** `/settings/teams` lists only
-  the signed-in user (from `/users/me`) as Owner, because an organisation is created with
-  its Owner and nobody can be invited yet. The six system roles are static in
-  `teams/utils/roles.ts`, with permission counts copied from the backend's
-  `LENDER_ROLE_PERMISSIONS`; keep them in step until a roles endpoint exists. Invite member
-  and Create custom role need `team:manage` and do nothing.
+- **Teams reads members, roles and invitations; member status is still a stub.**
+  `useRoles`, `useMembers`, `useInvitations` and `useInviteMembers` live in `@/hooks` and
+  the team types in `@/types/team`, because `InviteDialog` (`@/components`) also opens from
+  the account menu; the status and revoke hooks stay in `teams/hooks/`.
+  `GET /roles` (`useRoles`, `["roles"]`, cached for the session) feeds the Roles tab,
+  which counts `permissions.length`, and the invite dialog's picker, which offers every
+  role but Owner and sends its `id`. The members list is `GET /members` (`MEMBERS_KEY`,
+  not paged, Owner first, the signed-in user included; keyed by membership `id`, and the
+  own row is the one whose `userId` is `useMe().id`, which gets no status menu), then
+  `GET /invitations` (`useInvitations`, `["invitations"]`, never trusted from cache:
+  the API works out `EXPIRED` at request time). `PENDING` shows as Pending, `EXPIRED` as
+  Expired, both with a clock instead of a dot; their only action is Remove (behind a
+  `ConfirmDialog`, `POST …/revocation`; Figma has no Resend), and every invitation
+  change invalidates `["invitations"]`. `POST /invitations` sends every row at once and is
+  all or nothing: a `422` lands under `invitations/N/email` / `roleId`, and a `422` or
+  `429` keeps the dialog open. Inviting someone already pending is allowed (the API
+  renews it), so the dialog only blocks emails of joined members. The API has no
+  member status yet, so every member is Active, and `useSetMemberStatus` is marked `STUB`
+  and writes straight into `MEMBERS_KEY`: activate/deactivate lasts only until the next
+  refetch. The real routes will be `/members/:id`. Inviting,
+  removing and the status menus need `team:manage`; Create custom role does
+  nothing.
+- **`/join` keeps the invitation token out of every URL.** The email links to
+  `/join#token=…`; `JoinFlow` reads the fragment once, `replaceState`s it away and holds
+  the token in state, sending it only in request bodies. Load only previews
+  (`POST /auth/invitation/preview`); the code is sent by Join, never on load, because
+  email scanners open links and run the page. The code screen is `CodeStep`
+  (`app/(auth)/components/`, shared with `/verify-email`) and shows a wrong code under the
+  input. `invitation-invalid` at any step is the dead-link card, `challenge-expired` goes
+  back to Continue. Verify either signs them in (`onboardingRequired: false`) or asks for
+  a name (`POST /onboarding/member`); both end in a full `location.assign("/home")`, so no
+  cache from a previous account survives. `/auth/invitation*` and `/onboarding/member`
+  are in the client's no-refresh list, and `/join` is a signed-out route. The invitation
+  step is a full-bleed evergreen screen over the auth shell (`fixed inset-0`, the arcs in
+  `public/brand/arcs-pattern.svg`), and the shell drops its Login button on `/join`. The
+  org row shows the role where the comp has a member count, which the preview lacks.
 - **`/settings/login-activity` lists every login, ended ones included.** It pages
   `GET /users/me/sessions` by cursor under `["sessions"]`, and the count above it is the
   active sessions loaded so far, not every login ever. Only an `active` row has the `⋯`
@@ -570,8 +709,23 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   onboarding step 1 alike, matching `OrganizationDetailsDto`, which requires it only for `NG`. Both pick it
   from `NIGERIAN_STATES`, whose values are ISO 3166-2 codes (`NG-LA`) — the code is what the
   API takes, the name is only the label. Company shows a saved state that isn't a known code
-  as an extra option but won't save it until a real state is picked. Photo and logo upload, email change and account deletion
+  as an extra option but won't save it until a real state is picked. Photo and logo upload and account deletion
   have no API yet.
+- **Changing email is three codes' worth of steps, run by `ChangeEmail`**
+  (`account-security/components/change-email.tsx`). Change posts `/auth/step-up` (a code
+  to the current address), Verify posts `/auth/step-up/verify`, Save posts
+  `/users/me/email-change { stepUpChallengeId, email }` (a code to the new address), and
+  the second Verify posts `/users/me/email-change/confirm`, then refetches `ME_KEY` and
+  `["sessions"]` (every other session ends). The step-up is started from the click, not
+  the modal's mount effect, so Strict Mode's double effect can't send two codes and trip
+  the one-a-minute limit. `invalid-code` shows under the OTP input; `challenge-expired` on
+  Save, a resend or a verify restarts from the step-up; `422 #/email` goes under the field;
+  `409 email-taken` on confirm goes back to Save with the address kept and the message
+  under it. `429` starts a countdown from `Retry-After` (`readRetryAfter` in
+  `@/api/client`, 60s when the header isn't exposed cross-origin): sending and verifying
+  count down separately, so a resend limit doesn't block typing in the code you have.
+  Step 2 answers the same whether or not the address is taken, so don't check
+  availability before confirm.
 - **Bad input is shown on the field; every other failure is a toast.** A 422
   `validation-failed` with `errors[]` puts each `detail` under the field its `pointer`
   names: the form calls `useFieldErrors([...pointer paths])` (`@/hooks/use-field-errors`)

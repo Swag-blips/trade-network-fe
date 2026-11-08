@@ -11,6 +11,7 @@ export function ConfirmDialog({
   loading = false,
   onConfirm,
   onClose,
+  notice,
   children,
 }: {
   title: string;
@@ -19,6 +20,8 @@ export function ConfirmDialog({
   loading?: boolean;
   onConfirm: () => void;
   onClose: () => void;
+  /** Shown under the body copy, e.g. a `Notice`. */
+  notice?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -50,6 +53,7 @@ export function ConfirmDialog({
       }
     >
       <p className="text-body/[1.5] text-grey-600">{children}</p>
+      {notice}
     </FormDialog>
   );
 }

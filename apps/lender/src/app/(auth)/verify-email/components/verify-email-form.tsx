@@ -2,23 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowLeft01Icon,
-  MailValidation02Icon,
-} from "@hugeicons/core-free-icons";
-import { Button } from "@repo/ui/button";
-import { IconButton } from "@repo/ui/icon-button";
-import { OtpInput } from "@repo/ui/otp-input";
 import { useToast } from "@repo/ui/toast";
 import { readChallengeId, saveChallengeId } from "@/lib/onboarding-storage";
 import { clearLoginChallenge, readLoginChallenge } from "@/lib/login-storage";
 import { useVerifyEmail } from "../hooks/use-verify-email";
 import { useVerifyLogin } from "../hooks/use-verify-login";
 import { useResendOtp } from "../hooks/use-resend-otp";
-import { VerifyingOverlay } from "./verifying-overlay";
-import { AuthCard } from "../../components/auth-card";
-import { emptyOtp, OTP_LENGTH } from "@/utils/otp";
+import { VerifyingOverlay } from "../../components/verifying-overlay";
+import { CodeStep } from "../../components/code-step";
+import { emptyOtp } from "@/utils/otp";
 
 export function VerifyEmailForm({
   email,
@@ -42,7 +34,6 @@ export function VerifyEmailForm({
   const firstDigit = useRef<HTMLInputElement>(null);
 
   const code = digits.join("");
-  const canSubmit = code.length === OTP_LENGTH;
 
   function handleVerify() {
     if (flow === "login") {
@@ -122,64 +113,17 @@ export function VerifyEmailForm({
       {isPending ? <VerifyingOverlay /> : null}
 
       <div inert={isPending} className="contents">
-        <AuthCard width="sm" className="items-start gap-lg">
-          <HugeiconsIcon
-            icon={MailValidation02Icon}
-            size={32}
-            className="text-grey-900"
-          />
-
-          <div className="flex w-full flex-col items-center gap-lg">
-            <div className="flex w-full flex-col items-start gap-xs">
-              <p className="w-full font-brand text-[24px] leading-normal font-medium text-grey-900">
-                Verify your email
-              </p>
-              <p className="w-full text-body text-grey-600">
-                We&rsquo;ve sent an email with a verification code to{" "}
-                <span className="font-medium text-grey-800">{email}</span>
-              </p>
-            </div>
-
-            <div className="flex w-full flex-col items-start gap-xl">
-              <div className="flex w-full flex-col items-start gap-md">
-                <OtpInput
-                  ref={firstDigit}
-                  value={digits}
-                  onChange={setDigits}
-                />
-                <p className="flex items-center gap-xs text-body-sm text-grey-900">
-                  Didn&rsquo;t receive the code?{" "}
-                  <button
-                    type="button"
-                    disabled={resending}
-                    onClick={handleResend}
-                    className="font-medium text-evergreen-600 disabled:text-evergreen-600/40"
-                  >
-                    Resend code
-                  </button>
-                </p>
-              </div>
-
-              <div className="flex w-full items-center justify-between">
-                <IconButton
-                  label="Back"
-                  variant="tertiary"
-                  size="lg"
-                  onClick={() => router.back()}
-                >
-                  <HugeiconsIcon icon={ArrowLeft01Icon} />
-                </IconButton>
-                <Button
-                  variant="primary"
-                  disabled={!canSubmit || isPending}
-                  onClick={handleVerify}
-                >
-                  Verify
-                </Button>
-              </div>
-            </div>
-          </div>
-        </AuthCard>
+        <CodeStep
+          email={email}
+          value={digits}
+          onChange={setDigits}
+          inputRef={firstDigit}
+          busy={isPending}
+          resending={resending}
+          onResend={handleResend}
+          onBack={() => router.back()}
+          onVerify={handleVerify}
+        />
       </div>
     </>
   );

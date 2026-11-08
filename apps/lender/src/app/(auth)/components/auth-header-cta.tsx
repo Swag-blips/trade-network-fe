@@ -4,7 +4,10 @@ import { usePathname } from "next/navigation";
 import { ButtonLink } from "@repo/ui/button-link";
 
 export function AuthHeaderCta() {
-  const isLoginFlow = usePathname().startsWith("/login");
+  const pathname = usePathname();
+  const isLoginFlow = pathname.startsWith("/login");
+
+  if (pathname.startsWith("/join")) return null;
 
   return (
     <ButtonLink

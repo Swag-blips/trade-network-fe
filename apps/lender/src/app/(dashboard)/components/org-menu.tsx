@@ -16,7 +16,10 @@ import { UserAvatar } from "@repo/ui/avatars";
 import { useMe } from "@/hooks/use-me";
 import { useLogout } from "@/hooks/use-logout";
 import { useOrganization } from "@/hooks/use-organization";
+import { usePermission } from "@/hooks/use-permission";
+import { InviteDialog } from "@/components/invite-dialog";
 import { TextPlaceholder } from "@/components/text-placeholder";
+import { DEFAULT_PHOTO } from "@/utils/avatar";
 
 const MENU_ITEM =
   "flex w-full cursor-pointer items-center gap-xs rounded-md px-xs py-1 text-left text-body-sm/[1.5] font-medium hover:bg-grey-100 [&>svg]:flex-none";
@@ -28,7 +31,10 @@ export function OrgMenu() {
   const firstName = profile?.firstName ?? "";
   const orgName = organization?.name ?? "";
 
+  const canInvite = usePermission("team:manage");
+
   const [open, setOpen] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,7 +66,7 @@ export function OrgMenu() {
         className="flex cursor-pointer items-center gap-sm rounded-md bg-white px-xs py-1 transition-colors hover:bg-grey-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 aria-expanded:bg-grey-100"
       >
         <span className="flex items-center gap-xs">
-          <UserAvatar src={undefined} name={firstName} size={32} />
+          <UserAvatar src={DEFAULT_PHOTO} name={firstName} size={32} />
           <span className="flex max-w-40 flex-col items-start">
             <span className="text-body-sm/[1.5] font-medium whitespace-nowrap text-grey-800">
               {isPending ? (
@@ -93,15 +99,20 @@ export function OrgMenu() {
           role="menu"
           className="absolute top-full right-0 z-20 mt-xs flex w-74 flex-col gap-xs overflow-hidden rounded-lg border border-grey-200 bg-white p-xs shadow-thick"
         >
-          {/* Invite and help have no destination yet. */}
-          <button
-            type="button"
-            role="menuitem"
-            className={`${MENU_ITEM} text-grey-800`}
-          >
-            <HugeiconsIcon icon={UserAdd01Icon} size={20} />
-            Invite team members
-          </button>
+          {canInvite ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                setInviting(true);
+              }}
+              className={`${MENU_ITEM} text-grey-800`}
+            >
+              <HugeiconsIcon icon={UserAdd01Icon} size={20} />
+              Invite team members
+            </button>
+          ) : null}
           <Link
             href="/settings/profile"
             role="menuitem"
@@ -111,6 +122,7 @@ export function OrgMenu() {
             <HugeiconsIcon icon={Settings01Icon} size={20} />
             Settings
           </Link>
+          {/* Help has no destination yet. */}
           <button
             type="button"
             role="menuitem"
@@ -137,6 +149,8 @@ export function OrgMenu() {
           </button>
         </div>
       ) : null}
+
+      {inviting ? <InviteDialog onClose={() => setInviting(false)} /> : null}
     </div>
   );
 }

@@ -5,11 +5,15 @@ import {
   useId,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
+
+const GAP = 4;
+const MAX_HEIGHT = 280;
 
 /** `size` is a real form-control attribute (a number), so the prop is `variant`. */
 export type SelectVariant =
@@ -88,28 +92,66 @@ export function Select({
   const items = normalise(options);
   const listId = useId();
 
-  const [open, setOpen] = useState(false);
+  const [place, setPlace] = useState<CSSProperties | null>(null);
   const [active, setActive] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const typed = useRef({ term: "", at: 0 });
+  const open = place !== null;
 
   const selected = items.findIndex((item) => item.value === value);
   const chosen = selected >= 0 ? items[selected]! : null;
   const label = chosen ? (chosen.display ?? chosen.label) : (placeholder ?? "");
 
+  function measure(): CSSProperties | null {
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+
+    const viewport = document.documentElement;
+    const below = viewport.clientHeight - rect.bottom - GAP * 2;
+    const above = rect.top - GAP * 2;
+    const up = below < MAX_HEIGHT && above > below;
+
+    return {
+      minWidth: rect.width,
+      maxHeight: Math.min(MAX_HEIGHT, up ? above : below),
+      ...(up
+        ? { bottom: viewport.clientHeight - rect.top + GAP }
+        : { top: rect.bottom + GAP }),
+      ...(align === "end"
+        ? { right: viewport.clientWidth - rect.right }
+        : { left: rect.left }),
+    };
+  }
+
+  function setOpen(next: boolean) {
+    setPlace(next ? measure() : null);
+  }
+
   useEffect(() => {
     if (!open) return;
 
     function onPointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(event.target as Node)) setPlace(null);
+    }
+    function follow() {
+      setPlace(measure());
     }
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
+    window.addEventListener("scroll", follow, true);
+    window.addEventListener("resize", follow);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll", follow, true);
+      window.removeEventListener("resize", follow);
+    };
+  });
 
   useEffect(() => {
-    if (open) listRef.current?.scrollIntoView({ block: "nearest" });
+    const list = listRef.current;
+    if (open && list?.showPopover && !list.matches(":popover-open")) {
+      list.showPopover();
+    }
   }, [open]);
 
   useEffect(() => {
@@ -119,7 +161,7 @@ export function Select({
 
   function show(index: number) {
     setActive(Math.max(0, Math.min(index, items.length - 1)));
-    setOpen(true);
+    if (!open) setOpen(true);
   }
 
   function choose(index: number) {
@@ -211,13 +253,16 @@ export function Select({
         />
       </button>
 
-      {open ? (
+      {place ? (
+        // A top-layer popover fixed to the control, so no dialog or scroll container clips it.
         <ul
           ref={listRef}
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          className={`absolute top-[calc(100%+4px)] ${align === "end" ? "right-0" : "left-0"} z-50 flex max-h-70 w-max min-w-full flex-col gap-1 overflow-y-auto rounded-lg border border-grey-200 bg-white p-xs shadow-thick`}
+          popover="manual"
+          style={place}
+          className="fixed inset-auto z-50 m-0 flex w-max flex-col gap-1 overflow-y-auto rounded-lg border border-grey-200 bg-white p-xs shadow-thick"
         >
           {items.map((item, index) => (
             <li

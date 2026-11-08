@@ -1,17 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { AppConfig } from "@/lib";
 
-const FILTERS = ["All", "Opportunity", "Portfolio"] as const;
+const FILTERS = [
+  "All",
+  "Opportunities",
+  "Signals",
+  ...(AppConfig.features.verifyBusiness ? ["Verification"] : []),
+];
 
 /** No updates endpoint yet, so every filter shows the empty state. */
 export function RecentUpdates() {
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const [filter, setFilter] = useState("All");
 
   return (
-    <section className="flex flex-col">
-      <div className="flex flex-col gap-md border-b border-grey-100 pb-md">
-        <h2 className="font-sans text-[1.25rem]/[1.5] font-medium text-grey-800">
+    <section className="flex flex-col rounded-xl border border-grey-100 bg-white">
+      <div className="flex flex-col gap-md border-b border-grey-100 px-md py-2.5">
+        <h2 className="font-sans text-body/[1.5] font-medium text-grey-900">
           Recent updates
         </h2>
         <div className="flex items-start gap-xs">
@@ -23,7 +29,7 @@ export function RecentUpdates() {
                 type="button"
                 aria-pressed={active}
                 onClick={() => setFilter(label)}
-                className={`cursor-pointer px-sm py-xs text-body-sm/[normal] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 ${
+                className={`cursor-pointer px-sm py-xxs text-body-sm/[normal] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 ${
                   active
                     ? "rounded-md bg-grey-100 text-grey-800"
                     : "rounded-full bg-white text-grey-600 hover:text-grey-900"

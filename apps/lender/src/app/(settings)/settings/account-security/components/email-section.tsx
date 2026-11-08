@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Mail02Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
-import { Button } from "@repo/ui/button";
+import { Mail02Icon } from "@hugeicons/core-free-icons";
 import { TextPlaceholder } from "@/components/text-placeholder";
 import { useMe } from "@/hooks/use-me";
-import { NewEmailModal } from "./new-email-modal";
-import { VerifyEmailModal } from "./verify-email-modal";
-
-type Step = "verify" | "new-email" | null;
+import { ChangeEmail } from "./change-email";
 
 export function EmailSection() {
   const { data: me, isPending } = useMe();
-  const [step, setStep] = useState<Step>(null);
 
   return (
     <div className="flex h-21.75 items-center gap-md p-md">
@@ -31,30 +25,7 @@ export function EmailSection() {
         </div>
       </div>
 
-      <Button
-        variant="tertiary"
-        size="pill"
-        disabled={!me}
-        leadingIcon={<HugeiconsIcon icon={PencilEdit02Icon} />}
-        onClick={() => setStep("verify")}
-      >
-        Change
-      </Button>
-
-      {step === "verify" && me ? (
-        <VerifyEmailModal
-          email={me.email}
-          onClose={() => setStep(null)}
-          onVerified={() => setStep("new-email")}
-        />
-      ) : null}
-
-      {step === "new-email" ? (
-        <NewEmailModal
-          onClose={() => setStep(null)}
-          onSave={() => setStep(null)}
-        />
-      ) : null}
+      <ChangeEmail email={me?.email} />
     </div>
   );
 }

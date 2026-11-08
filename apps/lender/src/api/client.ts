@@ -20,7 +20,9 @@ const UNAUTHENTICATED_PATHS = [
   "/auth/login",
   "/auth/signup",
   "/auth/logout",
+  "/auth/invitation",
   "/onboarding/lender",
+  "/onboarding/member",
   REFRESH_URL,
 ];
 
@@ -29,7 +31,12 @@ type RetriedConfig = InternalAxiosRequestConfig & { retried?: boolean };
 let refreshing: Promise<unknown> | null = null;
 
 const LOGIN_PATH = "/login";
-const SIGNED_OUT_ROUTES = [LOGIN_PATH, "/create-account", "/verify-email"];
+const SIGNED_OUT_ROUTES = [
+  LOGIN_PATH,
+  "/create-account",
+  "/verify-email",
+  "/join",
+];
 
 function signOut() {
   if (typeof window === "undefined") return;
@@ -100,6 +107,26 @@ export function readProblemType(err: unknown) {
 
 export function readStatus(err: unknown) {
   return axios.isAxiosError(err) ? err.response?.status : undefined;
+}
+
+/**
+ * Seconds a 429's `Retry-After` asks for. Cross-origin, the header is only
+ * readable if the API lists it in `Access-Control-Expose-Headers`.
+ */
+export function readRetryAfter(err: unknown) {
+  if (!axios.isAxiosError(err)) return undefined;
+  const header: unknown = err.response?.headers["retry-after"];
+  if (typeof header !== "string" && typeof header !== "number") {
+    return undefined;
+  }
+
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return Math.max(0, Math.ceil(seconds));
+
+  const at = Date.parse(String(header));
+  return Number.isNaN(at)
+    ? undefined
+    : Math.max(0, Math.ceil((at - Date.now()) / 1000));
 }
 
 /** A 422's field messages, each with its pointer as a path: `organization/name`. */

@@ -2,27 +2,41 @@
 
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, UserAdd01Icon } from "@hugeicons/core-free-icons";
+import { User03Icon, UserAdd01Icon } from "@hugeicons/core-free-icons";
 import { UserAvatar } from "@repo/ui/avatars";
 import { Button } from "@repo/ui/button";
 import { DataTable } from "@repo/ui/data-table";
 import { SearchInput } from "@repo/ui/search-input";
 import { Select } from "@repo/ui/select";
+import { useMe } from "@/hooks/use-me";
 import { usePermission } from "@/hooks/use-permission";
-import type { Member, MemberStatus } from "../types/team";
+import { DEFAULT_PHOTO } from "@/utils/avatar";
+import { InvitationStatus } from "./invitation-status";
+import { InviteDialog } from "@/components/invite-dialog";
+import { MemberStatus } from "./member-status";
+import type { Member, MemberStatus as Status } from "@/types/team";
 
 const ANY = "Any Status";
-const STATUSES: (MemberStatus | typeof ANY)[] = [ANY, "Active", "Invited"];
+const STATUSES: (Status | typeof ANY)[] = [
+  ANY,
+  "Active",
+  "Pending",
+  "Expired",
+  "Deactivated",
+];
 
-const DOT: Record<MemberStatus, string> = {
-  Active: "bg-green-500",
-  Invited: "bg-ochre-500",
-};
-
-export function MembersPanel({ members }: { members: Member[] }) {
+export function MembersPanel({
+  members,
+  empty,
+}: {
+  members: Member[];
+  empty: string;
+}) {
   const canManage = usePermission("team:manage");
+  const { data: me } = useMe();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string>(ANY);
+  const [inviting, setInviting] = useState(false);
 
   const needle = query.trim().toLowerCase();
   const visible = members.filter(
@@ -55,6 +69,7 @@ export function MembersPanel({ members }: { members: Member[] }) {
               <Button
                 size="form"
                 leadingIcon={<HugeiconsIcon icon={UserAdd01Icon} />}
+                onClick={() => setInviting(true)}
               >
                 Invite member
               </Button>
@@ -68,36 +83,66 @@ export function MembersPanel({ members }: { members: Member[] }) {
         rows={visible}
         gap={32}
         rowKey={(member) => member.id}
-        empty="No members match these filters."
+        empty={empty}
         columns={[
           {
             header: `Member (${visible.length})`,
-            cell: (member) => (
-              <span className="flex min-w-0 items-center gap-md">
-                <UserAvatar name={member.name} size={40} />
-                <span className="flex min-w-0 flex-col gap-1">
-                  <span className="truncate text-body/[normal] font-medium text-grey-900">
-                    {member.name}
+            cell: (member) =>
+              member.invitation ? (
+                <span className="flex min-w-0 items-center gap-md">
+                  <span className="flex size-10 flex-none items-center justify-center rounded-full border border-dashed border-grey-400 bg-white text-grey-500">
+                    <HugeiconsIcon icon={User03Icon} />
                   </span>
-                  <span className="truncate text-grey-600">{member.email}</span>
+                  <span className="truncate text-grey-800">{member.email}</span>
                 </span>
-              </span>
-            ),
+              ) : (
+                <span className="flex min-w-0 items-center gap-md">
+                  <UserAvatar
+                    src={DEFAULT_PHOTO}
+                    name={member.name || member.email}
+                    size={40}
+                  />
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <span className="truncate text-body/[normal] font-medium text-grey-900">
+                      {member.name || member.email}
+                    </span>
+                    {member.name ? (
+                      <span className="truncate text-grey-600">
+                        {member.email}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              ),
           },
           { header: "Role", width: 200, cell: (member) => member.role },
           {
             header: "Status",
             width: 124,
-            cell: (member) => (
-              <span className="flex items-center gap-xs">
-                <span className={`size-2 rounded-full ${DOT[member.status]}`} />
-                {member.status}
-                <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
-              </span>
-            ),
+            cell: (member) =>
+              member.invitation ? (
+                <InvitationStatus
+                  invitation={member.invitation}
+                  status={member.status}
+                  editable={canManage}
+                />
+              ) : (
+                <MemberStatus
+                  member={member}
+                  editable={
+                    canManage &&
+                    member.role !== "Owner" &&
+                    member.userId !== me?.id
+                  }
+                />
+              ),
           },
         ]}
       />
+
+      {inviting ? (
+        <InviteDialog onClose={() => setInviting(false)} />
+      ) : null}
     </div>
   );
 }

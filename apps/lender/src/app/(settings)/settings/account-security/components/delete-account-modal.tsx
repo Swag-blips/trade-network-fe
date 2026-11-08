@@ -10,7 +10,6 @@ const DELETED = [
   "Your account settings and preferences",
 ];
 
-
 export function DeleteAccountModal({
   onClose,
   onConfirm,

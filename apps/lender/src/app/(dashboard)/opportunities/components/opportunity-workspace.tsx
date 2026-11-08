@@ -103,7 +103,7 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
 
   return (
     <>
-      {searching ? <OpportunityBanner /> : null}
+      <OpportunityBanner />
 
       <section className="flex flex-col gap-lg">
         <div className="flex items-center gap-2.5">
