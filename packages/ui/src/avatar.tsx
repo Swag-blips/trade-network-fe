@@ -1,9 +1,17 @@
 import type { ReactNode } from "react";
 
+export type AvatarShape = "circle" | "square";
+
+const SHAPES: Record<AvatarShape, string> = {
+  circle: "rounded-full",
+  square: "rounded-md",
+};
+
 export interface AvatarProps {
   src?: string;
   name: string;
   size?: number;
+  shape?: AvatarShape;
   fallback?: ReactNode;
   className?: string;
 }
@@ -22,12 +30,13 @@ export function Avatar({
   src,
   name,
   size = 24,
+  shape = "circle",
   fallback,
   className,
 }: AvatarProps) {
   return (
     <span
-      className={`inline-flex flex-none items-center justify-center overflow-hidden rounded-full ${className ?? ""}`}
+      className={`inline-flex flex-none items-center justify-center overflow-hidden ${SHAPES[shape]} ${className ?? ""}`}
       style={{ width: size, height: size }}
     >
       {src ? (

@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { BankIcon } from "@hugeicons/core-free-icons";
-import { Avatar } from "./avatar";
+import { Avatar, type AvatarShape } from "./avatar";
 
 function PersonPlaceholder() {
   return (
@@ -41,14 +41,17 @@ export function UserAvatar({
 export function OrgAvatar({
   name,
   size = 32,
+  shape,
 }: {
   name: string;
   size?: number;
+  shape?: AvatarShape;
 }) {
   return (
     <Avatar
       name={name}
       size={size}
+      shape={shape}
       className="bg-linear-to-b from-[#53b8d8] to-ocean-500 text-white"
       fallback={
         <HugeiconsIcon

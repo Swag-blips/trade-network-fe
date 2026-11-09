@@ -2,7 +2,7 @@ export type ButtonVariant =
   "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "destructive";
 
 export type ButtonSize =
-  "sm" | "md" | "lg" | "form" | "auth" | "compact" | "inline" | "flush";
+  "sm" | "pill" | "md" | "lg" | "form" | "auth" | "compact" | "inline" | "flush";
 
 const BASE =
   "group relative inline-flex cursor-pointer items-center justify-center " +
@@ -42,6 +42,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
 const SIZES: Record<ButtonSize, { button: string; content: string }> = {
   sm: {
     button: "px-1.5 py-1 text-body-sm/[normal]",
+    content: "gap-xxs [&_svg]:size-4",
+  },
+  pill: {
+    button: "px-sm py-xs text-body-sm/[normal]",
     content: "gap-xxs [&_svg]:size-4",
   },
   md: {

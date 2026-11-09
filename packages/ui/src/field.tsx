@@ -9,19 +9,32 @@ const VARIANTS: Record<FieldVariant, { root: string; label: string }> = {
   caption: { root: "gap-xs", label: "text-caption/[normal]" },
 };
 
+export function FieldError({ children }: { children: ReactNode }) {
+  return (
+    <p role="alert" className="text-caption text-red-error-500">
+      {children}
+    </p>
+  );
+}
+
 export function Field({
   label,
   required = false,
+  optional = false,
   htmlFor,
   hint,
+  error,
   variant = "form",
   children,
   className = "",
 }: {
   label: string;
   required?: boolean;
+  /** Appends a muted "(Optional)". */
+  optional?: boolean;
   htmlFor?: string;
   hint?: string;
+  error?: string;
   variant?: FieldVariant;
   children: ReactNode;
   className?: string;
@@ -36,9 +49,11 @@ export function Field({
       >
         {label}
         {required ? "*" : ""}
+        {optional ? <span className="text-grey-500"> (Optional)</span> : null}
       </label>
       {children}
       {hint ? <p className="text-caption text-grey-600">{hint}</p> : null}
+      {error ? <FieldError>{error}</FieldError> : null}
     </div>
   );
 }

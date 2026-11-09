@@ -3,7 +3,7 @@
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
 export type IconButtonSize = "2xs" | "xs" | "sm" | "md" | "lg";
-export type IconButtonVariant = "ghost" | "tertiary";
+export type IconButtonVariant = "ghost" | "tertiary" | "inverse";
 
 /*
  * The visual box is the `size` prop, but the hit target is always at least
@@ -25,6 +25,11 @@ const VARIANTS: Record<IconButtonVariant, string> = {
   tertiary:
     "inset-ring inset-ring-grey-200 bg-white text-grey-900 " +
     "hover:bg-grey-50 disabled:inset-ring-grey-200 disabled:bg-white disabled:text-grey-900/40",
+  // Ghost on a dark surface, e.g. the dismiss on the opportunities banner.
+  inverse:
+    "text-white " +
+    "after:absolute after:top-1/2 after:left-1/2 after:size-8 after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] " +
+    "hover:bg-white/10 disabled:text-white/40 disabled:hover:bg-transparent",
 };
 
 const SIZES: Record<IconButtonSize, string> = {

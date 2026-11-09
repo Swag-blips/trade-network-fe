@@ -214,6 +214,10 @@
     0 0 1px 0 #6b6b6b1a, 0 1px 1px 0 #6b6b6b17, 0 3px 2px 0 #6b6b6b0d,
     0 5px 2px 0 #6b6b6b03, 0 8px 2px 0 #6b6b6b00;
   --shadow-soft-section: 0 1px 3px 0 #22252408;
+  --shadow-card: 0 1px 2px 0 #0222211a;
+
+  /* The comps' 1280px frame: 1216px of content inside 32px gutters. */
+  --container-content: 80rem;
   --shadow-container-modal:
     0 -1px 3px 0 #b3b3b31a, 0 -5px 5px 0 #b3b3b317, 0 -12px 7px 0 #b3b3b30d,
     0 -21px 8px 0 #b3b3b303, 0 -33px 9px 0 #b3b3b300;

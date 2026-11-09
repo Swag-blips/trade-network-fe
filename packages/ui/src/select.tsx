@@ -12,7 +12,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
 /** `size` is a real form-control attribute (a number), so the prop is `variant`. */
-export type SelectVariant = "field" | "auth" | "chip";
+export type SelectVariant = "field" | "auth" | "strong" | "chip";
 
 export interface SelectOption {
   value: string;
@@ -30,6 +30,10 @@ const VARIANTS: Record<SelectVariant, { root: string; field: string }> = {
   auth: {
     root: "h-10 w-full border-grey-200",
     field: "px-sm pr-9 text-body/[normal] text-grey-900",
+  },
+  strong: {
+    root: "h-10 w-full border-grey-300",
+    field: "px-sm pr-9 text-body/[normal] text-grey-800",
   },
   chip: {
     root: "h-7.25 border-grey-200 shadow-small-thick",
