@@ -12,7 +12,7 @@ export function AuthHeaderCta() {
       variant="tertiary"
       size="compact"
     >
-      {isLoginFlow ? "Create a new account" : "Login"}
+      {isLoginFlow ? "Create account" : "Login"}
     </ButtonLink>
   );
 }

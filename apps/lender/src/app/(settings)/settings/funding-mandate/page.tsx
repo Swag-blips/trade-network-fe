@@ -4,7 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { SettingsPage, SectionHeading } from "../../components/settings-page";
 import { MandateForm } from "./components/mandate-form";
-import { useMandate } from "./hooks/use-mandate";
+import { useMandate } from "@/hooks/use-mandate";
 
 function FormPlaceholder() {
   return (

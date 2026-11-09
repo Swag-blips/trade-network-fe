@@ -1,81 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CloudUploadIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
+import { Select } from "@repo/ui/select";
 import { UserAvatar } from "@repo/ui/avatars";
-import { SettingsPage, SectionHeading } from "../../components/settings-page";
-import { UploadRow } from "../../components/upload-row";
+import { useDashboardProfile } from "@/hooks/use-dashboard-profile";
+import { useMe } from "@/hooks/use-me";
 
-export default function ProfileSettingsPage() {
-  const [firstName, setFirstName] = useState("Shile");
-  const [lastName, setLastName] = useState("Owoka");
-  const [email, setEmail] = useState("ceo@hoptool.co");
-  const dirty = false;
+const DIAL_CODES = ["+234"];
+const DEFAULT_PHOTO = "/settings/profile-avatar.png";
+
+export default function PersonalDetailsPage() {
+  const { data: me } = useMe();
+  const { data: profile } = useDashboardProfile();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dialCode, setDialCode] = useState(DIAL_CODES[0]!);
+  const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    if (!me) return;
+    setFirstName(me.firstName);
+    setLastName(me.lastName);
+  }, [me]);
+
+  const dirty =
+    !!me &&
+    (firstName !== me.firstName || lastName !== me.lastName || phone !== "");
 
   return (
-    <SettingsPage title="My profile">
-      <div className="flex max-w-158 flex-col gap-lg">
-        <SectionHeading
-          title="Profile details"
-          description="Edit your account profile details."
-        />
-
-        <UploadRow
-          label="Profile photo"
-          action="Upload photo"
-          hint="Max. image size: 5MB (JPG or PNG)"
-          preview={<UserAvatar name={firstName} size={64} />}
-        />
-
-        <div className="flex gap-md">
-          <Field
-            label="First name"
-            required
-            htmlFor="first-name"
-            className="flex-1"
-          >
-            <Input
-              id="first-name"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-            />
-          </Field>
-          <Field
-            label="Last name"
-            required
-            htmlFor="last-name"
-            className="flex-1"
-          >
-            <Input
-              id="last-name"
-              value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
-            />
-          </Field>
+    <div className="min-h-px flex-1 overflow-y-auto">
+      <div className="flex flex-col gap-lg px-xl pt-xl pb-lg">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-brand text-2xl/[1.5] font-medium text-grey-900">
+            Personal details
+          </h1>
+          <p className="text-body/[normal] text-grey-600">
+            Edit your account profile details.
+          </p>
         </div>
 
-        <Field
-          label="Email address"
-          required
-          htmlFor="email"
-          className="w-tour-card"
-        >
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </Field>
+        <div className="flex w-158 max-w-full flex-col rounded-xl border border-grey-200 bg-white px-lg py-md">
+          <div className="flex flex-col gap-lg pb-md">
+            <div className="flex items-center gap-md py-xs">
+              <UserAvatar
+                src={profile?.profilePictureUrl ?? DEFAULT_PHOTO}
+                name={firstName}
+                size={64}
+              />
+              <div className="flex min-w-0 flex-1 flex-col items-start">
+                {/* No upload endpoint yet. */}
+                <div className="py-1.5">
+                  <Button
+                    variant="ghost"
+                    size="inline"
+                    leadingIcon={<HugeiconsIcon icon={CloudUploadIcon} />}
+                  >
+                    Upload photo
+                  </Button>
+                </div>
+                <p className="text-body-sm/[normal] text-grey-600">
+                  Max. image size: 5MB (JPG or PNG)
+                </p>
+              </div>
+            </div>
 
-        <div>
-          <Button size="form" disabled={!dirty}>
-            Save
-          </Button>
+            <div className="flex gap-md">
+              <Field
+                label="First name"
+                htmlFor="first-name"
+                variant="auth"
+                className="flex-1"
+              >
+                <Input
+                  id="first-name"
+                  variant="strong"
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                />
+              </Field>
+              <Field
+                label="Last name"
+                htmlFor="last-name"
+                variant="auth"
+                className="flex-1"
+              >
+                <Input
+                  id="last-name"
+                  variant="strong"
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                />
+              </Field>
+            </div>
+
+            <Field
+              label="Phone number"
+              optional
+              htmlFor="phone"
+              variant="auth"
+              className="w-70.75"
+            >
+              <div className="flex gap-xs">
+                <div className="w-25.75 flex-none">
+                  <Select
+                    variant="strong"
+                    aria-label="Country code"
+                    value={dialCode}
+                    onValueChange={setDialCode}
+                    options={DIAL_CODES}
+                  />
+                </div>
+                <Input
+                  id="phone"
+                  type="tel"
+                  variant="auth"
+                  placeholder="1234567890"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                />
+              </div>
+            </Field>
+          </div>
+
+          <div className="py-md">
+            {/* No profile update endpoint yet. */}
+            <Button size="form" disabled={!dirty}>
+              Save
+            </Button>
+          </div>
         </div>
       </div>
-    </SettingsPage>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ import {
   withSaved,
 } from "@/utils/mandate-options";
 import { useUpdateMandate } from "../hooks/use-update-mandate";
-import type { Mandate } from "../types";
+import type { Mandate } from "@/types/mandate";
 
 // The service stores and returns decimals (e.g. 2000000.00), but `parse` only
 // keeps digits — so a rendered "." would be read as another digit and multiply

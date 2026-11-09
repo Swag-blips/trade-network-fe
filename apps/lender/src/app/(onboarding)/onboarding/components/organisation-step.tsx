@@ -9,7 +9,7 @@ import { LogoUpload } from "./logo-upload";
 import { StepFrame } from "./step-frame";
 
 export function OrganisationStep() {
-  const { data, update, next } = useOnboarding();
+  const { data, update, next, errors } = useOnboarding();
 
   const canSubmit =
     data.companyName.trim() !== "" &&
@@ -27,7 +27,12 @@ export function OrganisationStep() {
       <LogoUpload />
 
       <div className="grid gap-x-md gap-y-5.5 sm:grid-cols-2">
-        <Field label="Company name" htmlFor="company-name" variant="auth">
+        <Field
+          label="Company name"
+          htmlFor="company-name"
+          variant="auth"
+          error={errors.companyName}
+        >
           <Input
             id="company-name"
             variant="auth"
@@ -36,7 +41,12 @@ export function OrganisationStep() {
             onChange={(event) => update({ companyName: event.target.value })}
           />
         </Field>
-        <Field label="Country" htmlFor="country" variant="auth">
+        <Field
+          label="Country"
+          htmlFor="country"
+          variant="auth"
+          error={errors.countryCode}
+        >
           <Select
             id="country"
             variant="auth"
@@ -46,7 +56,12 @@ export function OrganisationStep() {
             options={COUNTRIES}
           />
         </Field>
-        <Field label="State" htmlFor="state" variant="auth">
+        <Field
+          label="State"
+          htmlFor="state"
+          variant="auth"
+          error={errors.state}
+        >
           <Input
             id="state"
             variant="auth"
@@ -55,7 +70,12 @@ export function OrganisationStep() {
             onChange={(event) => update({ state: event.target.value })}
           />
         </Field>
-        <Field label="Street address" htmlFor="street-address" variant="auth">
+        <Field
+          label="Street address"
+          htmlFor="street-address"
+          variant="auth"
+          error={errors.streetAddress}
+        >
           <Input
             id="street-address"
             variant="auth"

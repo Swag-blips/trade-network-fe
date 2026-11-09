@@ -13,7 +13,7 @@ export const verifyEmailService = {
     });
   },
 
-  /** Re-issues the sign-up code; the challengeId survives, so nothing is restored. */
+ 
   resendSignupOtp(challengeId: string) {
     return mutation("/auth/signup/resend", "post", { challengeId });
   },

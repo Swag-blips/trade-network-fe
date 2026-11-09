@@ -19,7 +19,7 @@ const REFRESH_URL = "/auth/refresh";
 const UNAUTHENTICATED_PATHS = [
   "/auth/login",
   "/auth/signup",
-  "/onboard/signup",
+  "/onboarding/lender",
   REFRESH_URL,
 ];
 
@@ -74,8 +74,7 @@ axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
   try {
     await refreshSession();
   } catch {
-    // The refresh cookie is gone or spent: the session is over, so send them
-    // to sign in again rather than leaving a half-dead page behind a toast.
+
     signOut();
     throw error;
   }
@@ -83,49 +82,29 @@ axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
   return axiosInstance(request);
 });
 
-/**
- * One backend now — access and lender are the same service. `service` stays
- * on every call site rather than being ripped out with the split, since
- * nothing here depends on it meaning two different base URLs anymore.
- */
-export type ApiService = "access" | "lender";
-
-const BASE_URLS: Record<ApiService, string> = {
-  access: AppConfig.apiUrl,
-  lender: AppConfig.apiUrl,
-};
-
-interface QueryOptions {
-  params?: Record<string, unknown>;
-  service?: ApiService;
-}
-
 export async function query<T>(
   url: string,
-  { params, service = "access" }: QueryOptions = {},
+  params?: Record<string, unknown>,
 ): Promise<T> {
-  const res = await axiosInstance.get<T>(url, {
-    params,
-    baseURL: BASE_URLS[service],
-  });
+  const res = await axiosInstance.get<T>(url, { params });
   return res.data;
 }
 
-export function extractErrorMessage(err: unknown, fallback: string): string {
-  if (!axios.isAxiosError<Partial<ProblemDetails>>(err)) return fallback;
-  return err.response?.data?.detail ?? fallback;
+export function readProblem(err: unknown) {
+  return axios.isAxiosError<Partial<ProblemDetails>>(err)
+    ? err.response?.data
+    : undefined;
 }
 
-interface MutationOptions {
-  contentType?: string;
-  service?: ApiService;
+export function extractErrorMessage(err: unknown, fallback: string): string {
+  return readProblem(err)?.detail ?? fallback;
 }
 
 export async function mutation<T = undefined>(
   url: string,
   method: HttpMethod,
   payload?: unknown,
-  { contentType, service = "access" }: MutationOptions = {},
+  contentType?: string,
 ): Promise<T> {
   const isFormData =
     typeof FormData !== "undefined" && payload instanceof FormData;
@@ -134,7 +113,6 @@ export async function mutation<T = undefined>(
     url,
     method,
     data: payload,
-    baseURL: BASE_URLS[service],
     headers: {
       "Content-Type":
         contentType ?? (isFormData ? undefined : "application/json"),

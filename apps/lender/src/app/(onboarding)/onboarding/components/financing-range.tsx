@@ -36,10 +36,14 @@ const thumbCentre = (value: number) => {
 export function FinancingRange({
   min,
   max,
+  minError,
+  maxError,
   onChange,
 }: {
   min: number;
   max: number;
+  minError?: string;
+  maxError?: string;
   onChange: (range: { min: number; max: number }) => void;
 }) {
   const setMin = (value: number) => onChange({ min: value, max });
@@ -67,6 +71,7 @@ export function FinancingRange({
           htmlFor="financing-min"
           variant="caption"
           className="flex-1"
+          error={minError}
         >
           <Input
             id="financing-min"
@@ -90,6 +95,7 @@ export function FinancingRange({
           htmlFor="financing-max"
           variant="caption"
           className="flex-1"
+          error={maxError}
         >
           <Input
             id="financing-max"

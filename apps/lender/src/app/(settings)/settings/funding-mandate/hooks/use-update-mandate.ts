@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage } from "@/api/client";
-import { mandateService } from "../services";
-import type { Mandate } from "../types";
-import { MANDATE_KEY } from "./use-mandate";
+import { mandateService } from "@/services/mandate";
+import type { Mandate } from "@/types/mandate";
+import { MANDATE_KEY } from "@/hooks/use-mandate";
 
 export function useUpdateMandate() {
   const { toast } = useToast();
@@ -23,7 +23,7 @@ export function useUpdateMandate() {
       void queryClient.invalidateQueries({
         queryKey: ["dashboard", "new-for-you"],
       });
-      toast({ message: "Funding mandate updated." });
+      toast({ message: "Your financing preference was updated" });
     },
     onError: (error) =>
       toast({

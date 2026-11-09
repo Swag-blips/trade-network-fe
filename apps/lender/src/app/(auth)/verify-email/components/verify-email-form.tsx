@@ -10,13 +10,12 @@ import {
 import { Button } from "@repo/ui/button";
 import { IconButton } from "@repo/ui/icon-button";
 import { useToast } from "@repo/ui/toast";
-import { readChallengeId, saveOnboarding } from "@/lib/onboarding-storage";
+import { readChallengeId, saveChallengeId } from "@/lib/onboarding-storage";
 import { clearLoginChallenge, readLoginChallenge } from "@/lib/login-storage";
 import { useVerifyEmail } from "../hooks/use-verify-email";
 import { useVerifyLogin } from "../hooks/use-verify-login";
 import { useResendOtp } from "../hooks/use-resend-otp";
 import { VerifyingOverlay } from "./verifying-overlay";
-import { WelcomeMessage } from "./welcome-message";
 import { AuthCard } from "../../components/auth-card";
 
 const CODE_LENGTH = 6;
@@ -36,11 +35,9 @@ export function VerifyEmailForm({
   const { mutate: verifyEmail, isPending: verifying } = useVerifyEmail();
   const { mutate: verifyLogin, isPending: signingIn } = useVerifyLogin();
   const { mutate: resendOtp, isPending: resending } = useResendOtp();
-  // A successful check still has a route to load, so the overlay stays up
-  // through the navigation rather than flashing the form back in between.
+
   const [navigating, startNavigation] = useTransition();
   const isPending = verifying || signingIn || navigating;
-  const [verified, setVerified] = useState(false);
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -78,7 +75,7 @@ export function VerifyEmailForm({
             clearLoginChallenge();
 
             if (result.onboardingRequired) {
-              saveOnboarding({ challengeId: result.challengeId });
+              saveChallengeId(result.challengeId);
               startNavigation(() => router.push("/onboarding"));
               return;
             }
@@ -103,13 +100,8 @@ export function VerifyEmailForm({
     verifyEmail(
       { challengeId, code },
       {
-        onSuccess: () => {
-          if (redirectTo) {
-            startNavigation(() => router.push(redirectTo));
-            return;
-          }
-          setVerified(true);
-        },
+        onSuccess: () =>
+          startNavigation(() => router.push(redirectTo ?? "/onboarding")),
       },
     );
   }
@@ -143,14 +135,10 @@ export function VerifyEmailForm({
     }
   }
 
-  if (verified) return <WelcomeMessage />;
-
   return (
     <>
       {isPending ? <VerifyingOverlay /> : null}
 
-      {/* The overlay only blocks the pointer; inert stops the keyboard reaching
-          the form behind it. */}
       <div inert={isPending} className="contents">
         <AuthCard width="sm" className="items-start gap-lg">
           <HugeiconsIcon
@@ -161,8 +149,7 @@ export function VerifyEmailForm({
 
           <div className="flex w-full flex-col items-center gap-lg">
             <div className="flex w-full flex-col items-start gap-xs">
-              {/* 24px is off the type scale — matches the Figma comp verbatim. */}
-              <p className="w-full font-brand text-[24px] leading-[1.5] font-medium text-grey-900">
+              <p className="w-full font-brand text-[24px] leading-normal font-medium text-grey-900">
                 Verify your email
               </p>
               <p className="w-full text-body text-grey-600">
@@ -186,8 +173,7 @@ export function VerifyEmailForm({
                       onKeyDown={(event) => handleKeyDown(index, event)}
                       inputMode="numeric"
                       maxLength={1}
-                      // The focus ring is evergreen-500 at 8% opacity — no
-                      // named token matches, kept verbatim from Figma.
+
                       className="h-10 min-w-0 flex-1 rounded-md border border-grey-300 bg-white text-center font-sans text-body-sm text-grey-900 outline-none focus:border-evergreen-500 focus:shadow-[0px_0px_1px_4px_rgba(47,138,122,0.08)]"
                     />
                   ))}

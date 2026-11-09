@@ -9,7 +9,7 @@ import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { useToast } from "@repo/ui/toast";
-import { saveOnboarding } from "@/lib/onboarding-storage";
+import { saveChallengeId } from "@/lib/onboarding-storage";
 import { useCreateAccount } from "../hooks/use-create-account";
 import { AuthCard } from "../../components/auth-card";
 
@@ -42,7 +42,7 @@ export function CreateAccountForm() {
       { email, firstName, lastName },
       {
         onSuccess: ({ challengeId }) => {
-          saveOnboarding({ challengeId, firstName });
+          saveChallengeId(challengeId);
           router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         },
       },

@@ -1,8 +1,4 @@
-/**
- * The choices the mandate form offers, in onboarding and in settings. The
- * service stores whatever string it is sent — it has no enum for these — so
- * these lists are the only thing keeping the values consistent.
- */
+/** The choices the mandate form offers, in onboarding and in settings. */
 export const TENORS = ["30-90 days", "90-180 days", "180-365 days"];
 
 export const ONBOARDING_TENORS = [

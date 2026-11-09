@@ -8,7 +8,3 @@ export const COUNTRIES = [
   { value: "GB", label: "United Kingdom" },
   { value: "US", label: "United States" },
 ];
-
-export function countryName(code: string) {
-  return COUNTRIES.find((country) => country.value === code)?.label ?? "";
-}

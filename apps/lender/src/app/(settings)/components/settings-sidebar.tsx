@@ -10,10 +10,14 @@ import {
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
+import { OrgAvatar } from "@repo/ui/avatars";
+import { useDashboardProfile } from "@/hooks/use-dashboard-profile";
+import { useMe } from "@/hooks/use-me";
 
 interface SettingsItem {
   label: string;
-  href: string;
+  /** Left off for a page that doesn't exist yet; it renders inert. */
+  href?: string;
 }
 
 interface SettingsGroup {
@@ -27,26 +31,57 @@ const GROUPS: SettingsGroup[] = [
     label: "Account",
     icon: UserCircleIcon,
     items: [
-      { label: "My profile", href: "/settings/profile" },
-      { label: "Preferences", href: "/settings/preferences" },
-      { label: "Delete account", href: "/settings/delete-account" },
+      { label: "Personal details", href: "/settings/profile" },
+      { label: "Account security" },
     ],
   },
   {
     label: "Organisation",
     icon: CorporateIcon,
     items: [
+      { label: "Funding preference", href: "/settings/funding-mandate" },
       { label: "Company details", href: "/settings/company" },
-      { label: "Funding mandate", href: "/settings/funding-mandate" },
+      { label: "Team & Permissions" },
+      { label: "Login activity" },
     ],
   },
 ];
 
-export function SettingsSidebar() {
-  const pathname = usePathname();
+const ITEM =
+  "flex w-57.5 items-center gap-xs rounded-full py-xs pr-xs pl-lg text-body/[normal] transition-colors motion-reduce:transition-none";
+
+function Item({ item, active }: { item: SettingsItem; active: boolean }) {
+  if (!item.href) {
+    return (
+      <span aria-disabled="true" className={`${ITEM} text-grey-900`}>
+        {item.label}
+      </span>
+    );
+  }
 
   return (
-    <aside className="flex w-65.5 flex-none flex-col gap-md bg-grey-50 pt-xxs pb-lg">
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={`${ITEM} ${
+        active
+          ? "bg-evergreen-100 font-medium text-evergreen-700"
+          : "text-grey-900 hover:bg-grey-100"
+      }`}
+    >
+      {item.label}
+    </Link>
+  );
+}
+
+export function SettingsSidebar() {
+  const pathname = usePathname();
+  const { data: profile } = useDashboardProfile();
+  const { data: me } = useMe();
+  const orgName = profile?.profileName ?? "";
+
+  return (
+    <aside className="flex w-65.5 flex-none flex-col gap-sm bg-grey-50 pt-xxs pb-lg">
       <div className="flex h-12 items-center px-md py-2.5">
         <Link
           href="/home"
@@ -58,42 +93,37 @@ export function SettingsSidebar() {
       </div>
 
       <div className="flex min-h-px flex-1 flex-col">
-        <nav className="flex min-h-px flex-1 flex-col gap-lg px-md">
-          <h2 className="font-sans text-body font-medium text-grey-900">
-            Settings
-          </h2>
+        <nav className="flex min-h-px flex-1 flex-col gap-xl px-md">
+          <div className="flex flex-col gap-sm">
+            <OrgAvatar name={orgName} size={40} shape="square" />
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <p className="truncate text-body/[1.5] font-medium text-grey-900">
+                {orgName}
+              </p>
+              <p className="truncate text-body-sm/[normal] text-grey-600">
+                {me?.email}
+              </p>
+            </div>
+          </div>
 
           {GROUPS.map((group) => (
             <div key={group.label} className="flex flex-col gap-sm">
-              <div className="flex items-center gap-xs">
+              <div className="flex items-center gap-xs text-grey-600">
                 <HugeiconsIcon
                   icon={group.icon}
                   size={16}
-                  className="flex-none text-grey-500"
+                  className="flex-none"
                 />
-                <span className="text-caption/[normal] font-medium text-grey-500 uppercase">
+                <span className="text-caption/[normal] font-medium uppercase">
                   {group.label}
                 </span>
               </div>
               <ul className="flex flex-col gap-xs">
-                {group.items.map((item) => {
-                  const active = pathname === item.href;
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        aria-current={active ? "page" : undefined}
-                        className={`flex w-57.5 items-center gap-xs rounded-full py-xs pr-xs pl-lg text-body-sm/[normal] transition-colors motion-reduce:transition-none ${
-                          active
-                            ? "bg-evergreen-100 font-medium text-evergreen-700"
-                            : "text-grey-900 hover:bg-grey-100"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  );
-                })}
+                {group.items.map((item) => (
+                  <li key={item.label}>
+                    <Item item={item} active={pathname === item.href} />
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -102,7 +132,7 @@ export function SettingsSidebar() {
         <div className="flex flex-col gap-md border-t border-grey-100 px-md pt-md">
           <button
             type="button"
-            className="flex items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900"
+            className="flex cursor-pointer items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900"
           >
             <HugeiconsIcon icon={Logout01Icon} size={20} />
             Sign out
