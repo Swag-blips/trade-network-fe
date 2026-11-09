@@ -1,17 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowLeft01Icon,
+  MailValidation02Icon,
+} from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
+import { IconButton } from "@repo/ui/icon-button";
 import { useToast } from "@repo/ui/toast";
-import { readOnboardUid } from "@/lib/onboarding-storage";
-import { clearLoginSession, readLoginSession } from "@/lib/login-storage";
+import { readChallengeId, saveOnboarding } from "@/lib/onboarding-storage";
+import { clearLoginChallenge, readLoginChallenge } from "@/lib/login-storage";
 import { useVerifyEmail } from "../hooks/use-verify-email";
 import { useVerifyLogin } from "../hooks/use-verify-login";
 import { useResendOtp } from "../hooks/use-resend-otp";
+import { VerifyingOverlay } from "./verifying-overlay";
 import { WelcomeMessage } from "./welcome-message";
+import { AuthCard } from "../../components/auth-card";
 
 const CODE_LENGTH = 6;
 
@@ -30,7 +36,10 @@ export function VerifyEmailForm({
   const { mutate: verifyEmail, isPending: verifying } = useVerifyEmail();
   const { mutate: verifyLogin, isPending: signingIn } = useVerifyLogin();
   const { mutate: resendOtp, isPending: resending } = useResendOtp();
-  const isPending = verifying || signingIn;
+  // A successful check still has a route to load, so the overlay stays up
+  // through the navigation rather than flashing the form back in between.
+  const [navigating, startNavigation] = useTransition();
+  const isPending = verifying || signingIn || navigating;
   const [verified, setVerified] = useState(false);
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -52,9 +61,9 @@ export function VerifyEmailForm({
 
   function handleVerify() {
     if (flow === "login") {
-      const sessionToken = readLoginSession();
+      const challengeId = readLoginChallenge();
 
-      if (!sessionToken) {
+      if (!challengeId) {
         toast({
           message: "That sign-in has expired. Please start again.",
           state: "error",
@@ -63,20 +72,27 @@ export function VerifyEmailForm({
       }
 
       verifyLogin(
-        { sessionToken, otp: code },
+        { challengeId, code },
         {
-          onSuccess: () => {
-            clearLoginSession();
-            router.push(redirectTo ?? "/home");
+          onSuccess: (result) => {
+            clearLoginChallenge();
+
+            if (result.onboardingRequired) {
+              saveOnboarding({ challengeId: result.challengeId });
+              startNavigation(() => router.push("/onboarding"));
+              return;
+            }
+
+            startNavigation(() => router.push(redirectTo ?? "/home"));
           },
         },
       );
       return;
     }
 
-    const onboardUid = readOnboardUid();
+    const challengeId = readChallengeId();
 
-    if (!onboardUid) {
+    if (!challengeId) {
       toast({
         message: "We've lost track of that sign-up. Please start again.",
         state: "error",
@@ -85,11 +101,11 @@ export function VerifyEmailForm({
     }
 
     verifyEmail(
-      { onboardUid, otp: code },
+      { challengeId, code },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           if (redirectTo) {
-            router.push(redirectTo);
+            startNavigation(() => router.push(redirectTo));
             return;
           }
           setVerified(true);
@@ -98,11 +114,11 @@ export function VerifyEmailForm({
     );
   }
 
-  /** The handle the service needs differs per flow, the button does not. */
   function handleResend() {
-    const handle = flow === "login" ? readLoginSession() : readOnboardUid();
+    const challengeId =
+      flow === "login" ? readLoginChallenge() : readChallengeId();
 
-    if (!handle) {
+    if (!challengeId) {
       toast({
         message: "That session has expired. Please start again.",
         state: "error",
@@ -111,7 +127,7 @@ export function VerifyEmailForm({
     }
 
     resendOtp(
-      { flow, handle },
+      { flow, challengeId },
       {
         onSuccess: () => {
           setDigits(Array(CODE_LENGTH).fill(""));
@@ -130,70 +146,86 @@ export function VerifyEmailForm({
   if (verified) return <WelcomeMessage />;
 
   return (
-    <div className="flex w-full flex-col items-center gap-2xl">
-      <div className="flex w-full flex-col items-start gap-xs text-center">
-        <p className="w-full font-brand text-h4 font-medium text-grey-900">
-          Verify your identity
-        </p>
-        <p className="w-full text-body text-grey-800">
-          We&rsquo;ve sent an email with a verification code to {email}
-        </p>
-      </div>
+    <>
+      {isPending ? <VerifyingOverlay /> : null}
 
-      <div className="flex flex-col items-start gap-lg">
-        <div className="flex flex-col items-start gap-md">
-          <div className="flex w-77 items-start gap-xs">
-            {digits.map((digit, index) => (
-              <input
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                ref={(el) => {
-                  inputs.current[index] = el;
-                }}
-                value={digit}
-                onChange={(event) => setDigit(index, event.target.value)}
-                onKeyDown={(event) => handleKeyDown(index, event)}
-                inputMode="numeric"
-                maxLength={1}
-                className="h-10 min-w-0 flex-1 rounded-md border border-grey-300 bg-white text-center font-sans text-body-sm text-grey-900 outline-none focus:border-evergreen-600"
-              />
-            ))}
+      {/* The overlay only blocks the pointer; inert stops the keyboard reaching
+          the form behind it. */}
+      <div inert={isPending} className="contents">
+        <AuthCard width="sm" className="items-start gap-lg">
+          <HugeiconsIcon
+            icon={MailValidation02Icon}
+            size={32}
+            className="text-grey-900"
+          />
+
+          <div className="flex w-full flex-col items-center gap-lg">
+            <div className="flex w-full flex-col items-start gap-xs">
+              {/* 24px is off the type scale — matches the Figma comp verbatim. */}
+              <p className="w-full font-brand text-[24px] leading-[1.5] font-medium text-grey-900">
+                Verify your email
+              </p>
+              <p className="w-full text-body text-grey-600">
+                We&rsquo;ve sent an email with a verification code to{" "}
+                <span className="font-medium text-grey-800">{email}</span>
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col items-start gap-xl">
+              <div className="flex w-full flex-col items-start gap-md">
+                <div className="flex w-full items-center gap-xs">
+                  {digits.map((digit, index) => (
+                    <input
+                      // eslint-disable-next-line react/no-array-index-key
+                      key={index}
+                      ref={(el) => {
+                        inputs.current[index] = el;
+                      }}
+                      value={digit}
+                      onChange={(event) => setDigit(index, event.target.value)}
+                      onKeyDown={(event) => handleKeyDown(index, event)}
+                      inputMode="numeric"
+                      maxLength={1}
+                      // The focus ring is evergreen-500 at 8% opacity — no
+                      // named token matches, kept verbatim from Figma.
+                      className="h-10 min-w-0 flex-1 rounded-md border border-grey-300 bg-white text-center font-sans text-body-sm text-grey-900 outline-none focus:border-evergreen-500 focus:shadow-[0px_0px_1px_4px_rgba(47,138,122,0.08)]"
+                    />
+                  ))}
+                </div>
+                <p className="flex items-center gap-xs text-body-sm text-grey-900">
+                  Didn&rsquo;t receive the code?{" "}
+                  <button
+                    type="button"
+                    disabled={resending}
+                    onClick={handleResend}
+                    className="font-medium text-evergreen-600 disabled:text-evergreen-600/40"
+                  >
+                    Resend code
+                  </button>
+                </p>
+              </div>
+
+              <div className="flex w-full items-center justify-between">
+                <IconButton
+                  label="Back"
+                  variant="tertiary"
+                  size="lg"
+                  onClick={() => router.back()}
+                >
+                  <HugeiconsIcon icon={ArrowLeft01Icon} />
+                </IconButton>
+                <Button
+                  variant="primary"
+                  disabled={!canSubmit || isPending}
+                  onClick={handleVerify}
+                >
+                  Verify
+                </Button>
+              </div>
+            </div>
           </div>
-          <p className="flex items-center gap-xs text-body-sm text-grey-900">
-            Didn&rsquo;t receive the code?{" "}
-            <button
-              type="button"
-              disabled={resending}
-              onClick={handleResend}
-              className="font-medium text-evergreen-600 disabled:text-evergreen-600/40"
-            >
-              Resend code
-            </button>
-          </p>
-        </div>
-
-        <div className="flex flex-col items-start gap-md">
-          <Button
-            variant="primary"
-            size="lg"
-            loading={isPending}
-            disabled={!canSubmit || isPending}
-            className="w-77"
-            onClick={handleVerify}
-          >
-            Continue
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            className="w-77"
-            leadingIcon={<HugeiconsIcon icon={ArrowLeft01Icon} />}
-            onClick={() => router.back()}
-          >
-            Back
-          </Button>
-        </div>
+        </AuthCard>
       </div>
-    </div>
+    </>
   );
 }

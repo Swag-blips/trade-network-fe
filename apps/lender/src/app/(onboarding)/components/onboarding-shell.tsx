@@ -1,79 +1,66 @@
 import type { ReactNode } from "react";
-import { Wordmark } from "@repo/ui/wordmark";
-import { OrgAvatar } from "@repo/ui/avatars";
-import { SidebarFooter } from "@repo/ui/sidebar";
-import { Steps } from "./steps";
+import Image from "next/image";
+import { BrandMark } from "@repo/ui/brand-mark";
+import { ProviderLockup } from "@/components/provider-lockup";
+import { StepCount, StepProgress } from "./steps";
 
-/** Until the company is saved the shell shows the same placeholder the comp does. */
-const ORG_NAME = "Mycompany";
-
-function Placeholder({ className }: { className: string }) {
+function OnboardingAside() {
   return (
-    <span
-      aria-hidden="true"
-      className={`rounded-full bg-grey-100 ${className}`}
-    />
-  );
-}
+    <aside className="relative hidden w-119.5 flex-none overflow-hidden lg:block">
+      <div className="absolute top-[-7.53%] left-0 h-[118.74%] w-[108.58%]">
+        <Image
+          src="/brand/onboarding-photo.webp"
+          alt=""
+          fill
+          priority
+          sizes="520px"
+          className="object-cover"
+        />
+      </div>
+      {/* Off-palette stops, verbatim from Figma. */}
+      <div className="absolute inset-0 bg-linear-to-b from-[rgba(13,47,43,0)] from-[6.856%] to-[#0d2f2b] to-[79.861%]" />
 
-/** Nav destinations don't exist this early in onboarding, so they stand in as bars. */
-function NavRow() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <Placeholder className="size-5" />
-      <Placeholder className="h-3 w-42.25" />
-    </div>
+      <div className="absolute bottom-[-506.74px] left-48 flex h-[1116.742px] w-[1108.912px] items-center justify-center">
+        <Image
+          src="/onboarding/aside-polygon.svg"
+          alt=""
+          width={994}
+          height={984}
+          unoptimized
+          className="h-[984.396px] w-[993.536px] max-w-none flex-none rotate-[-97.72deg]"
+        />
+      </div>
+
+      <div className="absolute right-3.5 bottom-31 left-8.5 flex flex-col gap-md text-evergreen-50">
+        <p className="font-brand text-[32px]/[1.24] font-medium">
+          Where capital meets opportunity.
+        </p>
+        <p className="max-w-[403px] text-[20px]/[1.5] opacity-80">
+          Connect with businesses seeking trade financing and unlock new
+          opportunities to grow your portfolio.
+        </p>
+      </div>
+
+      <BrandMark className="absolute right-7 bottom-7.5 h-10 w-13.25 text-evergreen-50" />
+    </aside>
   );
 }
 
 export function OnboardingShell({ children }: { children: ReactNode }) {
-  // The card owns the scrolling, so the page itself never does. `dvh` because
+  // Each step owns its scrolling, so the page itself never does. `dvh` because
   // mobile browser chrome makes `100vh` taller than what you can actually see.
   return (
-    <div className="flex h-dvh overflow-hidden bg-grey-50">
-      <aside className="hidden w-65.5 flex-none flex-col gap-md pt-md pb-lg lg:flex">
-        <div className="flex h-12 items-center justify-between px-md py-2.5">
-          <Wordmark className="h-[13.435px] w-37.25 text-evergreen-900" />
-          <Placeholder className="size-5" />
-        </div>
-
-        <div className="flex min-h-px flex-1 flex-col">
-          <nav className="flex min-h-px flex-1 flex-col gap-lg px-md">
-            <div className="flex flex-col gap-md">
-              <NavRow />
-              <NavRow />
-            </div>
-            <div className="flex flex-col gap-md">
-              <Placeholder className="h-3 w-31.25" />
-              <div className="flex flex-col gap-md">
-                <NavRow />
-                <NavRow />
-              </div>
-            </div>
-          </nav>
-
-          <div className="border-t border-grey-100 px-md pt-md">
-            <SidebarFooter
-              avatar={<OrgAvatar name={ORG_NAME} />}
-              title={ORG_NAME}
-              subtitle="Capital provider"
-              action={<Placeholder className="size-5" />}
-            />
-          </div>
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col pt-3 lg:pr-2">
-        <div className="flex min-h-px flex-1 flex-col overflow-hidden rounded-t-lg border border-grey-100 bg-white shadow-soft-section">
-          <header className="flex h-15 flex-none items-center border-b border-grey-100 px-lg py-sm">
-            <Steps />
-          </header>
-
-          <div className="min-h-px flex-1 overflow-y-auto px-4 py-lg sm:px-20">
-            <div className="flex max-w-177.5 flex-col gap-xl">{children}</div>
-          </div>
-        </div>
+    <div className="flex h-dvh overflow-hidden bg-white">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex flex-none items-center justify-between border-b border-grey-100 px-4 py-md sm:px-lg">
+          <ProviderLockup />
+          <StepCount />
+        </header>
+        <StepProgress />
+        {children}
       </div>
+
+      <OnboardingAside />
     </div>
   );
 }

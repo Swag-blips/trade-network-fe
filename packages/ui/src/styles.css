@@ -214,6 +214,9 @@
     0 0 1px 0 #6b6b6b1a, 0 1px 1px 0 #6b6b6b17, 0 3px 2px 0 #6b6b6b0d,
     0 5px 2px 0 #6b6b6b03, 0 8px 2px 0 #6b6b6b00;
   --shadow-soft-section: 0 1px 3px 0 #22252408;
+  --shadow-container-modal:
+    0 -1px 3px 0 #b3b3b31a, 0 -5px 5px 0 #b3b3b317, 0 -12px 7px 0 #b3b3b30d,
+    0 -21px 8px 0 #b3b3b303, 0 -33px 9px 0 #b3b3b300;
   --shadow-elevated:
     0 5px 11px 0 #00000029, 0 20px 20px 0 #00000024, 0 45px 27px 0 #00000014,
     0 80px 32px 0 #00000005;
@@ -223,10 +226,17 @@
 
   --animate-dot-pulse: dot-pulse 1.2s ease-in-out infinite;
   --animate-spinner-chase: spinner-chase 0.9s steps(8) infinite;
+  --animate-brand-spin: brand-spin 2s linear infinite;
 
   @keyframes spinner-chase {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes brand-spin {
+    to {
+      transform: rotate(-360deg);
     }
   }
 

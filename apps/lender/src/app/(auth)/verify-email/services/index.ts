@@ -1,42 +1,24 @@
-import { mutationResponse } from "@/api/client";
-import type {
-  LoginSessionData,
-  ValidateLoginOtpDto,
-  ValidateOtpData,
-  ValidateOtpDto,
-  ValidateOtpRequest,
-} from "../types";
+import { mutation } from "@/api/client";
+import type { VerifyCodeDto, VerifyLoginData } from "../types";
 
 export const verifyEmailService = {
-  validateOtp({ onboardUid, otp }: ValidateOtpDto) {
-    const body: ValidateOtpRequest = { onboardUid, onboardOTP: otp };
-
-    return mutationResponse<ValidateOtpData>(
-      "/onboard/signup/validate/otp",
-      "post",
-      body,
-    );
+  verifySignup({ challengeId, code }: VerifyCodeDto) {
+    return mutation("/auth/signup/verify", "post", { challengeId, code });
   },
 
-  validateLoginOtp(fields: ValidateLoginOtpDto) {
-    return mutationResponse<LoginSessionData>(
-      "/access/login/validate/otp",
-      "post",
-      fields,
-    );
-  },
-
-  /** Re-issues the sign-up code; the onboardUid survives, so nothing is restored. */
-  resendSignupOtp(onboardUid: string) {
-    return mutationResponse<null>("/onboard/signup/resend/otp", "post", {
-      onboardUid,
+  verifyLogin({ challengeId, code }: VerifyCodeDto) {
+    return mutation<VerifyLoginData>("/auth/login/verify", "post", {
+      challengeId,
+      code,
     });
   },
 
-  /** Throttled to one a minute by the service. */
-  resendLoginOtp(sessionToken: string) {
-    return mutationResponse<null>("/access/resend/otp", "post", {
-      sessionToken,
-    });
+  /** Re-issues the sign-up code; the challengeId survives, so nothing is restored. */
+  resendSignupOtp(challengeId: string) {
+    return mutation("/auth/signup/resend", "post", { challengeId });
+  },
+
+  resendLoginOtp(challengeId: string) {
+    return mutation("/auth/login/resend", "post", { challengeId });
   },
 };

@@ -1,7 +1,8 @@
 export type ButtonVariant =
   "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "destructive";
 
-export type ButtonSize = "sm" | "md" | "lg" | "form" | "auth" | "flush";
+export type ButtonSize =
+  "sm" | "md" | "lg" | "form" | "auth" | "compact" | "inline" | "flush";
 
 const BASE =
   "group relative inline-flex cursor-pointer items-center justify-center " +
@@ -57,6 +58,16 @@ const SIZES: Record<ButtonSize, { button: string; content: string }> = {
   },
   auth: {
     button: "px-md py-2.5 text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  // A fixed 37px: Figma gets there with 8px padding, a 1px border and a 19px
+  // line, but the ring here is inset and Chrome rounds that line up to 20px.
+  compact: {
+    button: "h-9.25 px-md text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  inline: {
+    button: "py-0.5 text-body/[normal]",
     content: "gap-xs [&_svg]:size-5",
   },
   flush: {

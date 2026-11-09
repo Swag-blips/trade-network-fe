@@ -1,6 +1,6 @@
 import { AppConfig } from "@/lib";
 import axios, { type InternalAxiosRequestConfig } from "axios";
-import type { ApplicationResponse } from "./types";
+import type { ProblemDetails } from "./types";
 
 export type HttpMethod = "post" | "put" | "patch" | "delete";
 
@@ -10,14 +10,18 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-const REFRESH_URL = "/access/refresh-token";
+const REFRESH_URL = "/auth/refresh";
 
 /**
- * A 401 from these means "wrong code" or "no such account", not "session
- * expired" — refreshing would be pointless, and on the refresh call itself it
- * would recurse.
+ * These run before a session exists, so refreshing can't help them, and on the
+ * refresh call itself it would recurse.
  */
-const UNAUTHENTICATED_PATHS = ["/access/login", "/onboard/signup", REFRESH_URL];
+const UNAUTHENTICATED_PATHS = [
+  "/auth/login",
+  "/auth/signup",
+  "/onboard/signup",
+  REFRESH_URL,
+];
 
 type RetriedConfig = InternalAxiosRequestConfig & { retried?: boolean };
 
@@ -48,7 +52,7 @@ function refreshSession() {
 }
 
 /**
- * The access token lasts an hour and the refresh cookie twelve, so an expired
+ * The access token lasts 15 minutes and the session twelve hours, so an expired
  * access token should be invisible: refresh once, replay the request.
  */
 axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
@@ -79,44 +83,16 @@ axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
   return axiosInstance(request);
 });
 
-/** A rejected call still arrives as HTTP 200, so `status` is the real result. */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly statusCode: string,
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
 /**
- * The service shouts — "Email verified!!!", "Internal Server error !!". Strip
- * the trailing exclamations before any of it reaches a toast.
- */
-export function serverMessage(message: string | null | undefined) {
-  return message?.replace(/\s*!+$/, "").trim() || null;
-}
-
-function assertOk<T>(res: ApplicationResponse<T>): ApplicationResponse<T> {
-  if (res.status !== "SUCCESSFUL") {
-    throw new ApiError(
-      serverMessage(res.message) ?? serverMessage(res.statusMessage) ?? "",
-      res.statusCode,
-    );
-  }
-  return res;
-}
-
-/**
- * Which backend a call goes to. They share one session: the refresh above
- * always goes to the access service, and a replayed request keeps its baseURL.
+ * One backend now — access and lender are the same service. `service` stays
+ * on every call site rather than being ripped out with the split, since
+ * nothing here depends on it meaning two different base URLs anymore.
  */
 export type ApiService = "access" | "lender";
 
 const BASE_URLS: Record<ApiService, string> = {
   access: AppConfig.apiUrl,
-  lender: AppConfig.lenderApiUrl,
+  lender: AppConfig.apiUrl,
 };
 
 interface QueryOptions {
@@ -124,94 +100,45 @@ interface QueryOptions {
   service?: ApiService;
 }
 
-/** The whole envelope, as `mutationResponse` is for writes. */
-export async function queryResponse<T>(
+export async function query<T>(
   url: string,
   { params, service = "access" }: QueryOptions = {},
-): Promise<ApplicationResponse<T>> {
-  const res = await axiosInstance.get<ApplicationResponse<T>>(url, {
+): Promise<T> {
+  const res = await axiosInstance.get<T>(url, {
     params,
     baseURL: BASE_URLS[service],
   });
-  return assertOk(res.data);
-}
-
-/** `T` is the payload inside the envelope, not the envelope itself. */
-export async function query<T>(
-  url: string,
-  options?: QueryOptions,
-): Promise<T> {
-  return (await queryResponse<T>(url, options)).data;
+  return res.data;
 }
 
 export function extractErrorMessage(err: unknown, fallback: string): string {
-  if (axios.isAxiosError(err)) {
-    const data = err.response?.data as ApplicationResponse<unknown> | undefined;
-    return serverMessage(data?.message) ?? err.message ?? fallback;
-  }
-  return err instanceof Error ? err.message : fallback;
+  if (!axios.isAxiosError<Partial<ProblemDetails>>(err)) return fallback;
+  return err.response?.data?.detail ?? fallback;
 }
 
-/**
- * The whole envelope, with failures already thrown — for the few flows that
- * surface the service's own `message` rather than copy of our own.
- */
 interface MutationOptions {
   contentType?: string;
   service?: ApiService;
 }
 
-export async function mutationResponse<T>(
+export async function mutation<T = undefined>(
   url: string,
   method: HttpMethod,
   payload?: unknown,
   { contentType, service = "access" }: MutationOptions = {},
-): Promise<ApplicationResponse<T>> {
-  type Envelope = ApplicationResponse<T>;
-
+): Promise<T> {
   const isFormData =
     typeof FormData !== "undefined" && payload instanceof FormData;
 
-  const config = {
+  const res = await axiosInstance.request<T>({
+    url,
+    method,
+    data: payload,
     baseURL: BASE_URLS[service],
     headers: {
-      ...(contentType || !isFormData
-        ? { "Content-Type": contentType ?? "application/json" }
-        : { "Content-Type": undefined }),
+      "Content-Type":
+        contentType ?? (isFormData ? undefined : "application/json"),
     },
-  };
-
-  switch (method) {
-    case "post":
-      return assertOk(
-        (await axiosInstance.post<Envelope>(url, payload, config)).data,
-      );
-    case "put":
-      return assertOk(
-        (await axiosInstance.put<Envelope>(url, payload, config)).data,
-      );
-    case "patch":
-      return assertOk(
-        (await axiosInstance.patch<Envelope>(url, payload, config)).data,
-      );
-    case "delete":
-      return assertOk(
-        (
-          await axiosInstance.delete<Envelope>(url, {
-            ...config,
-            data: payload,
-          })
-        ).data,
-      );
-  }
-}
-
-/** `T` is the payload inside the envelope, not the envelope itself. */
-export async function mutation<T>(
-  url: string,
-  method: HttpMethod,
-  payload?: unknown,
-  options?: MutationOptions,
-): Promise<T> {
-  return (await mutationResponse<T>(url, method, payload, options)).data;
+  });
+  return res.data;
 }

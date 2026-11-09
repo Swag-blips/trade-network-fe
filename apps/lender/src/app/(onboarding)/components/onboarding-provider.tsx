@@ -17,6 +17,8 @@ export const STEP_COUNT = 2;
 export interface OnboardingData {
   companyName: string;
   countryCode: string;
+  state: string;
+  streetAddress: string;
   capitalAllocation: string;
   tenor: string;
   fundingType: string;
@@ -28,12 +30,14 @@ export interface OnboardingData {
 const INITIAL: OnboardingData = {
   companyName: "",
   countryCode: "",
-  capitalAllocation: "700,000,000",
-  tenor: "30-90 days",
+  state: "",
+  streetAddress: "",
+  capitalAllocation: "",
+  tenor: "",
   fundingType: "Any",
-  fundingMin: 8_000_000,
+  fundingMin: 0,
   fundingMax: 50_000_000,
-  sectors: ["Manufacturing", "Agriculture", "Healthcare", "Technology"],
+  sectors: [],
 };
 
 /** What session storage holds — everything optional, it is last session's shape. */
@@ -45,8 +49,12 @@ interface StoredProgress {
 interface OnboardingValue {
   step: number;
   next: () => void;
+  back: () => void;
   data: OnboardingData;
   update: (patch: Partial<OnboardingData>) => void;
+  /** Held apart from `data`: a File can't survive the session-storage mirror. */
+  logo: File | null;
+  setLogo: (logo: File | null) => void;
 }
 
 const OnboardingContext = createContext<OnboardingValue | null>(null);
@@ -54,6 +62,7 @@ const OnboardingContext = createContext<OnboardingValue | null>(null);
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [step, setStep] = useState(1);
   const [data, setData] = useState(INITIAL);
+  const [logo, setLogo] = useState<File | null>(null);
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {
@@ -81,11 +90,17 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setStep((current) => Math.min(current + 1, STEP_COUNT));
   }
 
+  function back() {
+    setStep((current) => Math.max(current - 1, 1));
+  }
+
   function update(patch: Partial<OnboardingData>) {
     setData((current) => ({ ...current, ...patch }));
   }
   return (
-    <OnboardingContext.Provider value={{ step, next, data, update }}>
+    <OnboardingContext.Provider
+      value={{ step, next, back, data, update, logo, setLogo }}
+    >
       {children}
     </OnboardingContext.Provider>
   );

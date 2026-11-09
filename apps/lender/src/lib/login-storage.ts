@@ -1,16 +1,15 @@
 import { storage } from "@repo/utils/storage";
 
-const SESSION_TOKEN = "tn.loginSession";
+const CHALLENGE_ID = "tn.loginChallenge";
 
-
-export function saveLoginSession(sessionToken: string) {
-  storage.session.set(SESSION_TOKEN, sessionToken);
+export function saveLoginChallenge(challengeId: string) {
+  storage.session.set(CHALLENGE_ID, challengeId);
 }
 
-export function readLoginSession() {
-  return storage.session.get(SESSION_TOKEN);
+export function readLoginChallenge() {
+  return storage.session.get(CHALLENGE_ID);
 }
 
-export function clearLoginSession() {
-  storage.session.remove(SESSION_TOKEN);
+export function clearLoginChallenge() {
+  storage.session.remove(CHALLENGE_ID);
 }

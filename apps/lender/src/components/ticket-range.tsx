@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
+import { formatAmount, parseAmount } from "@/utils/mandate-options";
 
 const FLOOR = 5_000_000;
 const CEILING = 1_000_000_000;
@@ -17,11 +18,6 @@ const THUMB =
   "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-3 " +
   "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 " +
   "[&::-moz-range-thumb]:border-evergreen-600 [&::-moz-range-thumb]:bg-white";
-
-// `parse` keeps only digits, so a decimal from the service (e.g. 2000000.00)
-// would otherwise have its "." read as another digit. Round at display.
-const format = (value: number) => Math.round(value).toLocaleString("en-NG");
-const parse = (value: string) => Number(value.replace(/[^0-9]/g, ""));
 
 export function TicketRange({
   icon,
@@ -97,8 +93,10 @@ export function TicketRange({
           <Input
             id="ticket-min"
             leading="₦"
-            value={format(min)}
-            onChange={(event) => setMin(parse(event.target.value) || FLOOR)}
+            value={formatAmount(min)}
+            onChange={(event) =>
+              setMin(parseAmount(event.target.value) || FLOOR)
+            }
           />
         </Field>
         <span aria-hidden="true" className="pb-2.5">
@@ -108,8 +106,10 @@ export function TicketRange({
           <Input
             id="ticket-max"
             leading="₦"
-            value={format(max)}
-            onChange={(event) => setMax(parse(event.target.value) || CEILING)}
+            value={formatAmount(max)}
+            onChange={(event) =>
+              setMax(parseAmount(event.target.value) || CEILING)
+            }
           />
         </Field>
       </div>

@@ -5,8 +5,9 @@ const PROGRESS = "tn.onboardingProgress";
 
 /** What sign-up collects and the later steps still need. */
 export interface OnboardingSession {
-  onboardUid: string;
-  firstName: string;
+  challengeId: string;
+  /** Absent when a pending account arrives through login, which skips the welcome screen. */
+  firstName?: string;
 }
 
 function read<T>(key: string): T | null {
@@ -22,9 +23,9 @@ function read<T>(key: string): T | null {
 }
 
 /**
- * Onboarding happens in one sitting, so this lives in session storage: the uid
- * is a handle whose OTP expires in 5 minutes, and a stale one is worse than
- * none. Every re-signup issues a new uid, so this always overwrites.
+ * Onboarding happens in one sitting, so this lives in session storage: the id
+ * is a handle whose code expires in 10 minutes, and a stale one is worse than
+ * none. Every re-signup issues a new id, so this always overwrites.
  */
 export function saveOnboarding(session: OnboardingSession) {
   storage.session.set(SESSION, JSON.stringify(session));
@@ -34,8 +35,8 @@ export function readOnboarding() {
   return read<OnboardingSession>(SESSION);
 }
 
-export function readOnboardUid() {
-  return readOnboarding()?.onboardUid ?? null;
+export function readChallengeId() {
+  return readOnboarding()?.challengeId ?? null;
 }
 
 /** Only the welcome screen's greeting needs this. */
