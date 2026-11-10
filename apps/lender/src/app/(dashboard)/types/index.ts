@@ -1,11 +1,13 @@
-/** `GET /dashboard/new-for-you` — counts of things waiting on the lender. */
 export interface NewForYou {
   fundingOpportunities: number;
 }
 
-/**
- * A borrower's role. Matches the lender service's `BorrowerCategory` enum
- * (published in its OpenAPI schema at /hoplender/q/openapi). Used by the
- * capital-deployed breakdown and the matched-opportunities filter.
- */
+/** `GET /dashboard/overview`. Amounts are naira, sent as numbers. */
+export interface DashboardOverview {
+  capitalAllocation: number;
+  availableCapital: number;
+  outstandingAmount: number;
+}
+
+/** The lender service's `BorrowerCategory` enum (OpenAPI at /hoplender/q/openapi). */
 export type BorrowerCategory = "DISTRIBUTOR" | "SUPPLIER";

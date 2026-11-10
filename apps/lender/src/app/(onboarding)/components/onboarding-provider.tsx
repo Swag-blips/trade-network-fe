@@ -87,7 +87,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    console.log("DATA IN EFFECT", data);
+  
     if (restored) saveOnboardingProgress({ step, data });
   }, [restored, step, data]);
 

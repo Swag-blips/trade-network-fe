@@ -87,3 +87,13 @@ export const HEALTH: Record<
   "at-risk": { label: "At risk", filled: 2, className: "bg-orange-500" },
   critical: { label: "Critical", filled: 1, className: "bg-red-error-500" },
 };
+
+export const PORTFOLIO_HEALTH: Record<
+  HealthLevel,
+  { label: string; className: string }
+> = {
+  healthy: { label: "On track", className: "text-green-500" },
+  watch: { label: "Need attention", className: "text-orange-500" },
+  "at-risk": { label: "At risk", className: "text-red-error-500" },
+  critical: { label: "At risk", className: "text-red-error-500" },
+};

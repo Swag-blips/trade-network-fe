@@ -2,9 +2,9 @@
 
 import { Alert02Icon, MoneySafeIcon } from "@hugeicons/core-free-icons";
 import { naira } from "@/utils/naira";
-import { TextPlaceholder } from "../../components/text-placeholder";
-import { useDashboardOverview } from "../hooks/use-dashboard-overview";
-import { StatCard } from "./stat-card";
+import { TextPlaceholder } from "@/components/text-placeholder";
+import { useDashboardOverview } from "../../hooks/use-dashboard-overview";
+import { StatCard } from "@/components/stat-card";
 
 export function OverviewStats() {
   const { data: overview, isPending, isError } = useDashboardOverview();
@@ -28,7 +28,6 @@ export function OverviewStats() {
         value={figure(overview?.outstandingAmount)}
         caption="balance receivable"
         icon={Alert02Icon}
-        // The comp greys the figure out while nothing is owed.
         muted={!overview?.outstandingAmount}
       />
     </div>

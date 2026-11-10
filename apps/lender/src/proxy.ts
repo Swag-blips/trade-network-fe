@@ -9,7 +9,7 @@ export function proxy(request: NextRequest) {
   const signedIn = request.cookies.has(SESSION_COOKIE);
 
   // Onboarding runs before a session exists, so a session means it's done.
-  if (request.nextUrl.pathname.startsWith("/onboarding")) {
+  if (request.nextUrl.pathname === "/onboarding") {
     return signedIn
       ? NextResponse.redirect(new URL("/home", request.url))
       : NextResponse.next();
@@ -22,10 +22,9 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/onboarding/:path*",
+    "/onboarding",
     "/home/:path*",
     "/opportunities/:path*",
-    "/offers/:path*",
     "/portfolio/:path*",
     "/settings/:path*",
   ],

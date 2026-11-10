@@ -1,5 +1,11 @@
 export type ButtonVariant =
-  "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "destructive";
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "outline"
+  | "ghost"
+  | "destructive"
+  | "destructive-outline";
 
 export type ButtonSize =
   "sm" | "pill" | "md" | "lg" | "form" | "auth" | "compact" | "inline" | "flush";
@@ -37,6 +43,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "bg-destructive text-white " +
     "not-disabled:hover:bg-destructive-hover not-disabled:active:bg-destructive " +
     "disabled:bg-destructive-hover/20",
+  "destructive-outline":
+    "inset-ring inset-ring-red-error-400 bg-white text-red-error-400 " +
+    "not-disabled:hover:bg-grey-50 not-disabled:active:bg-grey-100 " +
+    "disabled:inset-ring-red-error-400/40 disabled:text-red-error-400/40",
 };
 
 const SIZES: Record<ButtonSize, { button: string; content: string }> = {
@@ -84,10 +94,6 @@ function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
 
-/**
- * Button styling without the <button> element — for anchors and links, which
- * need the same visuals but cannot be a <button>.
- */
 export function buttonClasses({
   variant = "primary",
   size = "md",

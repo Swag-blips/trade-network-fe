@@ -4,7 +4,7 @@ import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { useOnboarding } from "../../components/onboarding-provider";
-import { COUNTRIES } from "../utils/countries";
+import { COUNTRIES } from "@/utils/countries";
 import { LogoUpload } from "./logo-upload";
 import { StepFrame } from "./step-frame";
 

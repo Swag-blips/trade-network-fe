@@ -20,12 +20,9 @@ const VARIANTS: Record<IconButtonVariant, string> = {
     "text-grey-900 " +
     "after:absolute after:top-1/2 after:left-1/2 after:size-8 after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] " +
     "hover:bg-grey-100 disabled:text-grey-300 disabled:hover:bg-transparent",
-  // The bordered white circle — e.g. the back control beside a form's submit
-  // button. Same ring/fill as Button's tertiary variant, in icon-only form.
   tertiary:
     "inset-ring inset-ring-grey-200 bg-white text-grey-900 " +
     "hover:bg-grey-50 disabled:inset-ring-grey-200 disabled:bg-white disabled:text-grey-900/40",
-  // Ghost on a dark surface, e.g. the dismiss on the opportunities banner.
   inverse:
     "text-white " +
     "after:absolute after:top-1/2 after:left-1/2 after:size-8 after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] " +

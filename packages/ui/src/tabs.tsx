@@ -1,6 +1,6 @@
 "use client";
 
-/** The underlined tab strip. Owns the tablist only — panels stay at the call site. */
+/** Owns the tablist only — panels stay at the call site. */
 export function Tabs<Tab extends string>({
   label,
   tabs,

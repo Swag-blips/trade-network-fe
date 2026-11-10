@@ -10,7 +10,6 @@ interface UpdateItem {
   id: string;
   label: string;
   href: string;
-  /** No badge while loading or at zero; the row itself always shows. */
   count?: number;
   icon: IconSvgElement;
 }

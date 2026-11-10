@@ -1,12 +1,5 @@
 import type { Customer } from "./types/customer";
 
-export const PORTFOLIO_SUMMARY = {
-  availableCapital: "₦700,000,000",
-  outstanding: "₦8,500,000",
-  suppliersFunded: 1,
-  distributorsFunded: 0,
-};
-
 export const CUSTOMERS: Customer[] = [
   {
     id: "titan-suppliers",

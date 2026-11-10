@@ -1,19 +1,15 @@
 import { mutation } from "@/api/client";
+import {
+  parseAllocation,
+  toBps,
+  toMinorUnits,
+  toSectorCode,
+  toTenorCode,
+} from "@/utils/mandate-options";
 import type {
   CompleteOnboardingDto,
   CompleteOnboardingRequest,
 } from "../types";
-
-const TENOR_CODES: Record<string, string> = {
-  "Up to 30 days": "UP_TO_30_DAYS",
-  "30-90 days": "DAYS_30_TO_90",
-  "90-180 days": "DAYS_90_TO_180",
-  Flexible: "FLEXIBLE",
-};
-
-const toKobo = (naira: number) => Math.round(naira * 100);
-
-const parseNaira = (value: string) => Number(value.replace(/[^0-9.]/g, ""));
 
 function toRequest({
   challengeId,
@@ -28,12 +24,13 @@ function toRequest({
       streetAddress: data.streetAddress,
     },
     mandate: {
-      capitalAllocationKobo: toKobo(parseNaira(data.capitalAllocation)),
-      minTicketKobo: toKobo(data.fundingMin),
-      maxTicketKobo: toKobo(data.fundingMax),
-      annualInterestRateBps: Math.round(Number(data.interestRate) * 100),
-      tenor: TENOR_CODES[data.tenor] ?? data.tenor,
-      sectors: data.sectors.map((sector) => sector.toUpperCase()),
+      currency: "NGN",
+      capitalAllocationMinor: toMinorUnits(parseAllocation(data.capitalAllocation)),
+      minTicketMinor: toMinorUnits(data.fundingMin),
+      maxTicketMinor: toMinorUnits(data.fundingMax),
+      annualInterestRateBps: toBps(Number(data.interestRate)),
+      tenor: toTenorCode(data.tenor),
+      sectors: data.sectors.map(toSectorCode),
     },
   };
 }

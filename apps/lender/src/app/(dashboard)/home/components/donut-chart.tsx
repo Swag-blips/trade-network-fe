@@ -17,10 +17,6 @@ const GAP = STROKE + 6;
 /** Server and client disagree on float tails; see the HealthGauge gotcha. */
 const round = (n: number) => Math.round(n * 1000) / 1000;
 
-/**
- * The ring from the capital-deployed comp: segments run clockwise from 12
- * o'clock in the order given, with `children` centred inside.
- */
 export function DonutChart({
   segments,
   children,

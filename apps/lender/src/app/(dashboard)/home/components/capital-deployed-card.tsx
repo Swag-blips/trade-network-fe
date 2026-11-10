@@ -7,7 +7,7 @@ import {
   PieChart06Icon,
 } from "@hugeicons/core-free-icons";
 import { naira } from "@/utils/naira";
-import { TextPlaceholder } from "../../components/text-placeholder";
+import { TextPlaceholder } from "@/components/text-placeholder";
 import { useCapitalDeployed } from "../hooks/use-capital-deployed";
 import type { BorrowerCategory } from "../../types";
 import type { CapitalDeployed } from "../types";
@@ -38,7 +38,7 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-/** "2026-08-01" → "Aug 01, 2026". Read as UTC so no timezone shifts the day. */
+/** Read as UTC so no timezone shifts the day. */
 const formatDate = (date: string) =>
   dateFormat.format(new Date(`${date.slice(0, 10)}T00:00:00Z`));
 

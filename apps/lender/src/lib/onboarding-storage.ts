@@ -15,7 +15,6 @@ export function readChallengeId() {
   return storage.session.get(CHALLENGE_ID);
 }
 
-/** Where the wizard had got to, so a refresh doesn't drop back to step 1. */
 export function saveOnboardingProgress(progress: unknown) {
   storage.session.set(PROGRESS, JSON.stringify(progress));
 }
@@ -33,7 +32,6 @@ export function readOnboardingProgress<T>(): T | null {
   }
 }
 
-/** Call once onboarding completes. */
 export function clearOnboarding() {
   storage.session.remove(CHALLENGE_ID);
   storage.session.remove(PROGRESS);

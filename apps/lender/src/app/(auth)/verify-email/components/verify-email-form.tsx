@@ -9,6 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 import { IconButton } from "@repo/ui/icon-button";
+import { OtpInput } from "@repo/ui/otp-input";
 import { useToast } from "@repo/ui/toast";
 import { readChallengeId, saveChallengeId } from "@/lib/onboarding-storage";
 import { clearLoginChallenge, readLoginChallenge } from "@/lib/login-storage";
@@ -39,22 +40,10 @@ export function VerifyEmailForm({
   const [navigating, startNavigation] = useTransition();
   const isPending = verifying || signingIn || navigating;
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
-  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const firstDigit = useRef<HTMLInputElement>(null);
 
   const code = digits.join("");
   const canSubmit = code.length === CODE_LENGTH;
-
-  function setDigit(index: number, value: string) {
-    const char = value.slice(-1).replace(/[^0-9]/g, "");
-    setDigits((current) => {
-      const next = [...current];
-      next[index] = char;
-      return next;
-    });
-    if (char && index < CODE_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
-    }
-  }
 
   function handleVerify() {
     if (flow === "login") {
@@ -123,16 +112,10 @@ export function VerifyEmailForm({
       {
         onSuccess: () => {
           setDigits(Array(CODE_LENGTH).fill(""));
-          inputs.current[0]?.focus();
+          firstDigit.current?.focus();
         },
       },
     );
-  }
-
-  function handleKeyDown(index: number, event: React.KeyboardEvent) {
-    if (event.key === "Backspace" && !digits[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
-    }
   }
 
   return (
@@ -160,24 +143,7 @@ export function VerifyEmailForm({
 
             <div className="flex w-full flex-col items-start gap-xl">
               <div className="flex w-full flex-col items-start gap-md">
-                <div className="flex w-full items-center gap-xs">
-                  {digits.map((digit, index) => (
-                    <input
-                      // eslint-disable-next-line react/no-array-index-key
-                      key={index}
-                      ref={(el) => {
-                        inputs.current[index] = el;
-                      }}
-                      value={digit}
-                      onChange={(event) => setDigit(index, event.target.value)}
-                      onKeyDown={(event) => handleKeyDown(index, event)}
-                      inputMode="numeric"
-                      maxLength={1}
-
-                      className="h-10 min-w-0 flex-1 rounded-md border border-grey-300 bg-white text-center font-sans text-body-sm text-grey-900 outline-none focus:border-evergreen-500 focus:shadow-[0px_0px_1px_4px_rgba(47,138,122,0.08)]"
-                    />
-                  ))}
-                </div>
+                <OtpInput ref={firstDigit} value={digits} onChange={setDigits} />
                 <p className="flex items-center gap-xs text-body-sm text-grey-900">
                   Didn&rsquo;t receive the code?{" "}
                   <button

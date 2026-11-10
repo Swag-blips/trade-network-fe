@@ -1,96 +1,62 @@
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Store02Icon, WarehouseIcon } from "@hugeicons/core-free-icons";
-import { InitialsAvatar } from "@repo/ui/avatars";
-import { MatchBadge } from "@/components/match-badge";
-import type { Opportunity } from "../types/opportunity";
-
-function Detail({
-  label,
-  children,
-  className = "",
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`flex flex-col gap-xs ${className}`}>
-      <p className="text-caption/[normal] text-grey-600">{label}</p>
-      <div className="text-body-sm/[normal] text-grey-800">{children}</div>
-    </div>
-  );
-}
-
-function Divider() {
-  return <span aria-hidden className="w-px self-stretch bg-grey-100" />;
-}
+import { Avatar } from "@repo/ui/avatar";
+import { SelectableRow } from "./selectable-row";
+import type { OpportunitySummary } from "../types/opportunity";
+import { MATCH, nairaSuffix, shortDate } from "../utils/format";
 
 export function OpportunityCard({
   item,
+  selected,
   onSelect,
 }: {
-  item: Opportunity;
+  item: OpportunitySummary;
+  selected: boolean;
   onSelect: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className="relative flex w-full max-w-166.5 cursor-pointer flex-col gap-md overflow-hidden rounded-xl border border-grey-100 bg-white p-md text-left shadow-small-thick transition-colors hover:border-grey-200 motion-reduce:transition-none"
+    <SelectableRow
+      selected={selected}
+      onSelect={onSelect}
+      className="items-start"
     >
-      {item.unread ? (
-        <span
-          aria-label="New opportunity"
-          className="absolute top-5.25 left-3.75 size-3 rounded-full bg-grey-900"
-        />
-      ) : null}
-
-      <div className="flex w-full items-start gap-lg">
-        <div className="flex min-w-0 flex-1 items-center gap-sm">
-          <InitialsAvatar initials={item.initials} size={56} />
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="font-sans text-body font-medium text-evergreen-600">
+      <span className="flex min-w-0 flex-1 flex-col gap-sm">
+        <span className="flex items-start gap-md">
+          <Avatar
+            name={item.name}
+            size={40}
+            shape="square"
+            className="border border-grey-200 bg-grey-50 text-grey-600"
+          />
+          <span className="flex min-w-0 flex-1 flex-col gap-1 text-body/[normal]">
+            <span className="truncate font-medium text-evergreen-600">
               {item.name}
-            </p>
-            <span className="flex items-center gap-1">
-              <HugeiconsIcon
-                icon={item.kind === "Distributor" ? Store02Icon : WarehouseIcon}
-                size={12}
-                className="flex-none text-grey-800"
-              />
-              <span className="text-caption/[normal] text-grey-800">
-                {item.kind}
-              </span>
             </span>
-          </div>
-        </div>
-        <MatchBadge match={item.match} />
-      </div>
-
-      <div className="flex w-full items-center gap-lg">
-        <Detail label="Requested advance" className="w-29 flex-none">
-          {item.advance}
-        </Detail>
-        <Divider />
-        <Detail label="Counterparty" className="w-35 flex-none">
-          <span className="flex items-center gap-xs">
-            <InitialsAvatar
-              initials={item.counterpartyInitials}
-              size={20}
-              className="border-grey-200 bg-grey-100 text-grey-600"
-            />
-            <span className="min-w-0 flex-1 truncate">{item.counterparty}</span>
+            <span className="text-body-sm/[normal] text-grey-800">
+              {nairaSuffix(item.advance)}
+            </span>
           </span>
-        </Detail>
-        <Divider />
-        <Detail label="Tenor" className="w-21.5 flex-none">
-          {item.tenor}
-        </Detail>
-        <Divider />
-        <Detail label="Expiry date" className="min-w-0 flex-1">
-          {item.expires}
-        </Detail>
-      </div>
-    </button>
+        </span>
+
+        <span className="flex items-center gap-xs text-caption/[normal] font-medium">
+          <span
+            className={`rounded-full px-xs py-1 text-white ${MATCH[item.match].chip}`}
+          >
+            {MATCH[item.match].label}
+          </span>
+          <span className="rounded-full border border-grey-200 bg-white px-xs py-1 text-grey-800">
+            Expires: {shortDate(item.expiresAt)}
+          </span>
+        </span>
+      </span>
+
+      {item.unread ? (
+        <span className="flex-none pt-xs">
+          <span
+            role="img"
+            aria-label="Unread"
+            className="block size-3 rounded-full border-2 border-white bg-red-error-500"
+          />
+        </span>
+      ) : null}
+    </SelectableRow>
   );
 }

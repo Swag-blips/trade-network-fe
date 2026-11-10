@@ -13,12 +13,13 @@ export const axiosInstance = axios.create({
 const REFRESH_URL = "/auth/refresh";
 
 /**
- * These run before a session exists, so refreshing can't help them, and on the
- * refresh call itself it would recurse.
+ * These run before a session exists or end one, so refreshing can't help them,
+ * and on the refresh call itself it would recurse.
  */
 const UNAUTHENTICATED_PATHS = [
   "/auth/login",
   "/auth/signup",
+  "/auth/logout",
   "/onboarding/lender",
   REFRESH_URL,
 ];
@@ -27,7 +28,6 @@ type RetriedConfig = InternalAxiosRequestConfig & { retried?: boolean };
 
 let refreshing: Promise<unknown> | null = null;
 
-/** Where an expired session lands, and the routes it should not bounce out of. */
 const LOGIN_PATH = "/login";
 const SIGNED_OUT_ROUTES = [LOGIN_PATH, "/create-account", "/verify-email"];
 
@@ -51,10 +51,6 @@ function refreshSession() {
   return refreshing;
 }
 
-/**
- * The access token lasts 15 minutes and the session twelve hours, so an expired
- * access token should be invisible: refresh once, replay the request.
- */
 axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
   if (!axios.isAxiosError(error) || error.response?.status !== 401) throw error;
 
@@ -74,7 +70,6 @@ axiosInstance.interceptors.response.use(undefined, async (error: unknown) => {
   try {
     await refreshSession();
   } catch {
-
     signOut();
     throw error;
   }
@@ -94,6 +89,10 @@ export function readProblem(err: unknown) {
   return axios.isAxiosError<Partial<ProblemDetails>>(err)
     ? err.response?.data
     : undefined;
+}
+
+export function readStatus(err: unknown) {
+  return axios.isAxiosError(err) ? err.response?.status : undefined;
 }
 
 export function extractErrorMessage(err: unknown, fallback: string): string {

@@ -1,16 +1,10 @@
 import type { ReactNode } from "react";
 
 const WIDTH = {
-  // 386px / 491px from the comp — both land clean on the 4px spacing scale.
   sm: "max-w-96.5",
   md: "max-w-122.75",
 };
 
-/**
- * The bordered white card every signed-out auth screen sits in. Shared by
- * create-account and verify-email because both comps use the identical
- * shell, differing only in width and their own internal content.
- */
 export function AuthCard({
   width,
   className = "",

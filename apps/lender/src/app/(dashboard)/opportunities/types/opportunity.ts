@@ -1,97 +1,85 @@
 import type { BorrowerCategory } from "../../types";
 
-export type BorrowerKind = "Supplier" | "Distributor";
+export type MatchLevel = "STRONG" | "MODERATE" | "WEAK";
+export type OpportunityStatus = "OPEN" | "DISMISSED" | "WITHDRAWN" | "CLOSED";
+export type DocumentKind = "INVOICE" | "PURCHASE_ORDER" | "DELIVERY_NOTE";
 
-/** What a card renders — built from an `OpportunitySummary` by `toOpportunity`. */
-export interface Opportunity {
+/** `GET /opportunities` query. Leave a filter out for "All". */
+export interface OpportunityQuery {
+  matchLevel?: MatchLevel;
+  unread?: boolean;
+  limit?: number;
+  cursor?: string;
+}
+
+export interface OpportunitySummaryResponse {
+  id: string;
+  score: number;
+  matchLevel: MatchLevel;
+  unread: boolean;
+  expiresAt: string;
+  trade: {
+    id: string;
+    borrowerName: string;
+    currency: "NGN";
+    requestedAdvanceMinor: number;
+  };
+}
+
+export interface OpportunityPageResponse {
+  items: OpportunitySummaryResponse[];
+  nextCursor: string | null;
+}
+
+export interface OpportunityResponse {
+  id: string;
+  score: number;
+  matchLevel: MatchLevel;
+  status: OpportunityStatus;
+  unread: boolean;
+  expiresAt: string;
+  trade: {
+    id: string;
+    borrowerName: string;
+    borrowerRole: BorrowerCategory;
+    counterpartyName: string;
+    sector: string;
+    fundingType: string;
+    financingPurpose: string;
+    currency: "NGN";
+    invoiceValueMinor: number;
+    requestedAdvanceMinor: number;
+    tenorDays: number;
+    creditTermDays: number;
+    paymentDueAt: string;
+    documents: { kind: DocumentKind; fileName: string }[];
+  };
+}
+
+/** A card in the list, in naira. */
+export interface OpportunitySummary {
   id: string;
   name: string;
-  kind: BorrowerKind;
-  initials: string;
-  match: number;
-  advance: string;
-  counterparty: string;
-  counterpartyInitials: string;
-  tenor: string;
-  expires: string;
-  /** ISO date, kept for the "Expiring soonest" sort. */
+  match: MatchLevel;
+  unread: boolean;
+  advance: number;
   expiresAt: string;
-  unread?: boolean;
 }
 
-export type OpportunityFilter = "all" | "Supplier" | "Distributor";
-
-export type EvidenceStatus = "requested" | "pending" | "verified";
-
-export interface EvidenceStep {
-  id: string;
-  label: string;
-  status: EvidenceStatus;
-}
-
-export interface TradeActivity {
-  id: string;
-  title: string;
-  at: string;
-  description: string;
-}
-
-export interface OpportunityDetail {
-  metrics: { id: string; label: string; value: string }[];
-  summary: { verdict: string; body: string };
-  trade: {
-    seller: string;
-    buyer: string;
-    buyerInitials: string;
-    rows: { label: string; value: string; verified?: boolean }[];
-  };
-  evidence: EvidenceStep[];
-  activity: TradeActivity[];
-}
-
-/** The lender service's `MatchLevel` enum. */
-export type MatchLevel = "STRONG" | "MODERATE" | "WEAK";
-
-/** `GET /opportunities` query. `page` is 1-based; omit a filter for "all". */
-export interface OpportunityQuery {
-  borrowerRole?: BorrowerCategory;
-  matchLevel?: MatchLevel;
-  page?: number;
-  size?: number;
-}
-
-/**
- * One matched opportunity in the list. ASSUMED: every account so far returns
- * `payload: []` and the OpenAPI schema omits response bodies, so these field
- * names are a guess from the card — confirm against a real response, then fix
- * only this type and `toOpportunity`.
- */
-export interface OpportunitySummary {
-  opportunityUid: string;
-  borrowerName: string;
-  borrowerRole: BorrowerCategory;
-  matchScore: number;
-  matchLevel: MatchLevel;
-  requestedAmount: number;
-  counterpartyName: string;
-  tenor: string;
-  expiryDate: string;
-}
-
-/**
- * `GET /opportunities`. The three counts drive the tabs; whether they are
- * narrowed by `matchLevel` / `borrowerRole` is unverified (every account is
- * empty), so the tabs show whatever the latest response says.
- */
 export interface OpportunityPage {
-  allCount: number;
-  supplierCount: number;
-  distributorCount: number;
-  opportunities: {
-    totalCount: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-    payload: OpportunitySummary[];
-  };
+  items: OpportunitySummary[];
+  nextCursor: string | null;
+}
+
+/** One request in the detail panel, in naira and labels. */
+export interface Opportunity extends OpportunitySummary {
+  status: OpportunityStatus;
+  kind: "Supplier" | "Distributor";
+  buyer: string;
+  industry: string;
+  purpose: string;
+  tradeValue: number;
+  tenorDays: number;
+  creditTermDays: number;
+  documents: { label: string; file: string }[];
 }

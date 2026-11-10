@@ -1,12 +1,5 @@
 import type { BorrowerCategory } from "../../types";
 
-/** `GET /dashboard/overview`. Amounts are naira, sent as numbers. */
-export interface DashboardOverview {
-  capitalAllocation: number;
-  availableCapital: number;
-  outstandingAmount: number;
-}
-
 /**
  * One slice of deployed capital. ASSUMED: every account so far returns
  * `categories: []` and the OpenAPI schema omits response bodies, so these

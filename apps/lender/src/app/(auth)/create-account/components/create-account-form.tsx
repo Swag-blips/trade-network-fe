@@ -52,7 +52,6 @@ export function CreateAccountForm() {
   return (
     <AuthCard width="md" className="items-center">
       <div className="flex w-full flex-col items-start gap-xl">
-        {/* 42.146px is a sub-pixel Figma export; 32px (h-8) is the clean side. */}
         <BrandMark className="h-8 w-[42.146px] text-evergreen-900" />
 
         <div className="flex w-full flex-col items-center gap-lg">

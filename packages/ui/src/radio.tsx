@@ -21,6 +21,7 @@ export interface RadioProps {
   label: string;
   name: string;
   size?: RadioSize;
+  disabled?: boolean;
 }
 
 export function Radio({
@@ -29,6 +30,7 @@ export function Radio({
   label,
   name,
   size = "md",
+  disabled = false,
 }: RadioProps) {
   const styles = SIZES[size];
 
@@ -41,8 +43,9 @@ export function Radio({
         name={name}
         checked={checked}
         onChange={onSelect}
+        disabled={disabled}
         aria-label={label}
-        className={`peer cursor-pointer appearance-none rounded-full bg-white checked:border-evergreen-600 focus-visible:outline-2 focus-visible:outline-evergreen-600 focus-visible:outline-offset-2 ${styles.input}`}
+        className={`peer cursor-pointer appearance-none rounded-full bg-white checked:border-evergreen-600 focus-visible:outline-2 focus-visible:outline-evergreen-600 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-grey-300 ${styles.input}`}
       />
       <span
         className={`pointer-events-none absolute rounded-full bg-evergreen-600 opacity-0 peer-checked:opacity-100 ${styles.dot}`}

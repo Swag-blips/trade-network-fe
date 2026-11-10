@@ -1,5 +1,3 @@
-/* Trade Network design tokens and base styles. Imported by every app's globals.css. */
-
 @theme {
   --color-evergreen-50: #f0fbfa;
   --color-evergreen-100: #d7f0ee;
@@ -104,11 +102,13 @@
   --color-tai: #4b8df9;
   --color-green-50: #f1f7f4;
   --color-green-200: #b8d7c7;
+  --color-green-400: #4c9a72;
   --color-green-500: #147a45;
   --color-green-600: #0d7d4e;
 
   --color-blue-50: #f2f6fe;
   --color-blue-500: #2563eb;
+  --color-red-error-400: #d66666;
   --color-red-error-500: #c93636;
   --color-orange-50: #fbf5f0;
   --color-orange-100: #f5e8dd;

@@ -12,8 +12,6 @@ export function useUpdateMandate() {
   return useMutation({
     mutationFn: (mandate: Mandate) => mandateService.update(mandate),
     onSuccess: (saved) => {
-      // The response echoes what was stored, so it becomes the new baseline
-      // the form compares against — no refetch needed.
       queryClient.setQueryData(MANDATE_KEY, saved);
       // Available capital follows the allocation, and what counts as a match
       // follows the rest of the mandate.

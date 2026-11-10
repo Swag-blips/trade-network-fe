@@ -16,7 +16,7 @@ export interface AvatarProps {
   className?: string;
 }
 
-function initials(name: string) {
+export function initials(name: string) {
   return name
     .trim()
     .split(/\s+/)

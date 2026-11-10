@@ -2,22 +2,32 @@ import type { ReactNode } from "react";
 
 export function SettingsPage({
   title,
+  description,
+  gap = "lg",
   children,
 }: {
   title: string;
+  description?: string;
+  gap?: "lg" | "xl";
   children: ReactNode;
 }) {
   return (
-    <>
-      <header className="flex h-14.25 flex-none items-center border-b border-grey-100 px-xl">
-        <h1 className="font-sans text-body font-medium text-grey-900">
-          {title}
-        </h1>
-      </header>
-      <div className="min-h-px flex-1 overflow-y-auto px-xl py-lg">
+    <div className="min-h-px flex-1 overflow-y-auto">
+      <div
+        className={`flex flex-col px-xl pt-xl pb-lg ${gap === "xl" ? "gap-xl" : "gap-lg"}`}
+      >
+        <div className="flex flex-col gap-1">
+          <h1 className="font-brand text-2xl/[1.5] font-medium text-grey-900">
+            {title}
+          </h1>
+          {description ? (
+            <p className="text-body/[normal] text-grey-600">{description}</p>
+          ) : null}
+        </div>
+
         {children}
       </div>
-    </>
+    </div>
   );
 }
 

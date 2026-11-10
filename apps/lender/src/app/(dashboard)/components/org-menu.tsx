@@ -13,16 +13,20 @@ import {
   UserAdd01Icon,
 } from "@hugeicons/core-free-icons";
 import { UserAvatar } from "@repo/ui/avatars";
-import { useDashboardProfile } from "@/hooks/use-dashboard-profile";
-import { TextPlaceholder } from "./text-placeholder";
+import { useMe } from "@/hooks/use-me";
+import { useLogout } from "@/hooks/use-logout";
+import { useOrganization } from "@/hooks/use-organization";
+import { TextPlaceholder } from "@/components/text-placeholder";
 
 const MENU_ITEM =
   "flex w-full cursor-pointer items-center gap-xs rounded-md px-xs py-1 text-left text-body-sm/[1.5] font-medium hover:bg-grey-100 [&>svg]:flex-none";
 
 export function OrgMenu() {
-  const { data: profile, isPending } = useDashboardProfile();
+  const { data: profile, isPending } = useMe();
+  const { data: organization, isPending: orgPending } = useOrganization();
+  const { mutate: logout, isPending: signingOut } = useLogout();
   const firstName = profile?.firstName ?? "";
-  const orgName = profile?.profileName ?? "";
+  const orgName = organization?.name ?? "";
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -56,11 +60,7 @@ export function OrgMenu() {
         className="flex cursor-pointer items-center gap-sm rounded-md bg-white px-xs py-1 transition-colors hover:bg-grey-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-evergreen-600 aria-expanded:bg-grey-100"
       >
         <span className="flex items-center gap-xs">
-          <UserAvatar
-            src={profile?.profilePictureUrl ?? undefined}
-            name={firstName}
-            size={32}
-          />
+          <UserAvatar src={undefined} name={firstName} size={32} />
           <span className="flex max-w-40 flex-col items-start">
             <span className="text-body-sm/[1.5] font-medium whitespace-nowrap text-grey-800">
               {isPending ? (
@@ -76,7 +76,7 @@ export function OrgMenu() {
                 className="flex-none"
               />
               <span className="min-w-0 truncate text-caption/[normal]">
-                {isPending ? <TextPlaceholder className="w-16" /> : orgName}
+                {orgPending ? <TextPlaceholder className="w-16" /> : orgName}
               </span>
             </span>
           </span>
@@ -125,11 +125,12 @@ export function OrgMenu() {
             />
           </button>
           <hr className="border-grey-100" />
-          {/* Not wired: logout can't be called from the browser yet. */}
           <button
             type="button"
             role="menuitem"
-            className={`${MENU_ITEM} text-red-error-500`}
+            disabled={signingOut}
+            onClick={() => logout()}
+            className={`${MENU_ITEM} text-red-error-500 disabled:cursor-wait disabled:opacity-60`}
           >
             <HugeiconsIcon icon={Logout01Icon} size={20} />
             Sign out

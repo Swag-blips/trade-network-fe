@@ -4,7 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { ButtonLink } from "@repo/ui/button-link";
 import { useMandate } from "@/hooks/use-mandate";
-import { TextPlaceholder } from "../../components/text-placeholder";
+import { TextPlaceholder } from "@/components/text-placeholder";
 import { compactNaira, fullNaira } from "../utils/format";
 
 export function FinancingPreference() {

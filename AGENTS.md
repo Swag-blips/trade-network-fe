@@ -50,16 +50,14 @@ All of these live in `apps/lender`. `apps/business` has none yet.
 /verify-email              OTP, then on to /onboarding
 /onboarding                organisation + mandate  → app/(onboarding)/onboarding
 /home                      lender dashboard        → app/(dashboard)/home
-/opportunities             financing opportunities → app/(dashboard)/opportunities
-/offers                    offers list             → app/(dashboard)/offers
-/offers/[id]               negotiation timeline    → app/(dashboard)/offers/[id]
+/opportunities             financing opportunities + inbox → app/(dashboard)/opportunities
 /portfolio                 funded customers        → app/(dashboard)/portfolio
 /portfolio/[id]            customer overview / funded trades / repayments
 /settings/profile          personal details        → app/(settings)/settings/…
+/settings/account-security email change + delete account
 /settings/company          company details
-/settings/funding-mandate  funding preference: mandate + ticket range
+/settings/funding-mandate  funding preference: the onboarding mandate questions, editable once per 30 days
 /settings/preferences      notifications + Tai autonomy (not in the sidebar)
-/settings/delete-account   (not in the sidebar)
 ```
 
 **Four route groups, four shells.** `(auth)` and `(onboarding)` are the signed-out and
@@ -73,13 +71,22 @@ shells share nothing but the token system.
 That is the design tokens (`packages/ui/src/styles.css`, imported by each app's
 `globals.css`) and every component with no lender knowledge in it — tables, sheets,
 tabs, the sidebar shell, avatars, the Tai character. What stays in `apps/lender` is
-lender _content_: offers, matched opportunities, the trade room, the ticket-range mandate control. Onboarding is also still in
+lender _content_: matched opportunities, the trade room, the mandate questions. Onboarding is also still in
 lender: business will have a similar flow, but its shape isn't settled, so it stays put
 until there is a second real consumer to extract against.
 
 **The promotion rule:** start colocated. Move something up to `src/` the moment a
 _second_ route imports it — not in anticipation of one. A single consumer means it
 stays in the route folder.
+
+**Don't repeat yourself.** Before writing a hook, type, formatter or component, grep for
+one that already does the job. Two hooks fetching the same endpoint under different query
+keys are two requests and two caches that drift apart — `useMe` is the only reader of
+`/auth/me`, and `useOrganization` of `/organizations/current`. When a second page needs a
+form or check another page already has (the mandate questions in onboarding and
+settings), promote it and give it the props it lacks (`disabled`, an optional
+`onRemove`) rather than copying it. Rules that both sides must agree on, like
+`isCompleteMandate`, live once in `utils/`.
 
 - Import shared code via the `@/*` alias: `@/components/…`, `@/hooks/…`, `@/utils/…`
   (mapped to each app's own `src/*` in its `tsconfig.json`). Colocated siblings use relative
@@ -93,6 +100,14 @@ stays in the route folder.
   `page.tsx` at a level, so the page and its private folders sit together.
 - The `.gitkeep` files are placeholders holding empty directories in git — delete each
   one as soon as its folder has real content.
+- **Pages and layouts are server components.** A `page.tsx` or `layout.tsx` does not say
+  `"use client"`. Move state, effects, handlers and query hooks down into the smallest
+  component that needs them, colocated in the route's `components/` (e.g.
+  `settings/profile/components/profile-form.tsx`), and keep the shell, title and static
+  copy in the page so they never ship as JavaScript. A client component can return a
+  fragment, which drops several children straight into the page's flex layout. The one
+  exception is `/onboarding`: its page is only the step switch over `useOnboarding()`,
+  so it already is the leaf.
 
 ## Commands
 
@@ -197,37 +212,38 @@ covered, extend that component's variant/size union rather than writing a parall
 Current inventory — `ls packages/ui/src/` is the authoritative check, this list will go
 stale:
 
-| Component                                     | Import                                     | Notes                                                                                                                                                                                                                                                                            |
-| --------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Button`                                      | `@repo/ui/button`                          | 6 variants × 8 sizes, `loading` / `disabled` props                                                                                                                                                                                                                               |
-| `buttonClasses`                               | `@repo/ui/button-classes`                  | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                                                                         |
-| `Avatar`                                      | `@repo/ui/avatar`                          | Structure only (size/`shape`: `circle` / `square`/clip); pass the skin via `className`                                                                                                                                                                                           |
-| `IconButton`                                  | `@repo/ui/icon-button`                     | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                                                                     |
-| `Toast`                                       | `@repo/ui/toast`                           | `ToastProvider` in the root layout, pinned **top right**; call `useToast().toast({ message, state })`                                                                                                                                                                            |
-| `Field`                                       | `@repo/ui/field`                           | Label + control wrapper; `required` appends the asterisk, `optional` a muted "(Optional)"; `error` shows below it; `variant`: `form` / `auth` (16px) / `question` (16px, wider gap) / `caption` (12px)                                                                           |
-| `Input`                                       | `@repo/ui/input`                           | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute); `variant`: `form` / `auth` / `strong` (darker border)                                                                                                                                |
-| `Select`                                      | `@repo/ui/select`                          | Custom listbox (not a native `<select>` — Figma styles the popup). `value` + `onValueChange` + `options` (`string[]` or `{value,label,display?}[]`); `variant`: `field` / `auth` / `strong` (40px; `strong` is 16px on grey-300) or `chip` (29px pill); `placeholder`, `leading` |
-| `Switch`                                      | `@repo/ui/switch`                          | `role="switch"`, controlled                                                                                                                                                                                                                                                      |
-| `Radio`                                       | `@repo/ui/radio`                           | Controlled radio dot; `size`: `md` / `lg` (24px)                                                                                                                                                                                                                                 |
-| `CheckboxChip`                                | `@repo/ui/checkbox`                        | Pill-shaped checkbox used for sector picking                                                                                                                                                                                                                                     |
-| `Badge`                                       | `@repo/ui/badge`                           | Small uppercase label (RECOMMENDED); `variant`: `label` / `pill` (fully rounded, OPTIONAL)                                                                                                                                                                                       |
-| `Card`                                        | `@repo/ui/card`                            | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                                                                     |
-| `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows                                                                                  |
-| `Sheet`                                       | `@repo/ui/sheet`                           | 544px right-edge `<dialog>` panel: header with optional icon chip, title and close                                                                                                                                                                                               |
-| `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets. `divided` adds a rule under the heading                                                                                                                                                                             |
-| `DetailRow`                                   | `@repo/ui/detail-row`                      | Label left, value right. `size="sm"` is the 14px summary row, default is 16px                                                                                                                                                                                                    |
-| `Tabs`                                        | `@repo/ui/tabs`                            | Underlined tab strip (tablist only; panels stay at the call site)                                                                                                                                                                                                                |
-| `FilterBar`                                   | `@repo/ui/filter-bar`                      | "Filter by:" and its chips — wrap one or more `<Select variant="chip">`                                                                                                                                                                                                          |
-| `ConfirmModal`                                | `@repo/ui/confirm-modal`                   | Confirm dialog — title, body slot, cancel + confirm footer. `width`: `sm` (453px) or `lg` (613px)                                                                                                                                                                                |
-| `UploadDropzone`                              | `@repo/ui/upload-dropzone`                 | Green dashed evidence dropzone with the attached-file row (click, drag-and-drop, replace, remove)                                                                                                                                                                                |
-| `DetailHeader`                                | `@repo/ui/detail-header`                   | 60px record header: back, avatar, name, status slot, prev/next                                                                                                                                                                                                                   |
-| `ButtonLink`                                  | `@repo/ui/button-link`                     | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                                                                                                                                                   |
-| `TopNav`                                      | `@repo/ui/top-nav`                         | The dashboard header — brand mark, `items` (an item without `href` renders inert) and a `trailing` slot; knows nothing about lenders                                                                                                                                             |
-| `Sidebar`                                     | `@repo/ui/sidebar`                         | Chrome only — takes `sections` and `footer` as props. Unused since the top nav replaced it                                                                                                                                                                                       |
-| `UserAvatar` / `OrgAvatar` / `InitialsAvatar` | `@repo/ui/avatars`                         | `Avatar` skinned with the app's tokens and icons                                                                                                                                                                                                                                 |
-| `TaiAgent`                                    | `@repo/ui/tai-agent`                       | The assistant character, built in DOM; eyes follow the cursor. `size`: `xs` 20 / `avatar` 24 / `sm` 32 / `md` 56                                                                                                                                                                 |
-| `BrandMark` / `BrandArc` / `Wordmark`         | `@repo/ui/brand-mark`, `@repo/ui/wordmark` | The interlocking-arcs symbol and the TRADE NETWORK wordmark; `currentColor`, any size                                                                                                                                                                                            |
-| `GoogleIcon`                                  | `@repo/ui/icons/google-icon`               | Sign-in-with-Google mark                                                                                                                                                                                                                                                         |
+| Component                                     | Import                                     | Notes                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`                                      | `@repo/ui/button`                          | 6 variants × 8 sizes, `loading` / `disabled` props                                                                                                                                                                                                                                                                                                                                           |
+| `buttonClasses`                               | `@repo/ui/button-classes`                  | Button visuals without the element — for anchors. Not a client module, so a server component can call it                                                                                                                                                                                                                                                                                     |
+| `Avatar`                                      | `@repo/ui/avatar`                          | Structure only (size/`shape`: `circle` / `square`/clip); pass the skin via `className`                                                                                                                                                                                                                                                                                                       |
+| `IconButton`                                  | `@repo/ui/icon-button`                     | Icon-only actions; `label` required, hit target always ≥32px                                                                                                                                                                                                                                                                                                                                 |
+| `Toast`                                       | `@repo/ui/toast`                           | `ToastProvider` in the root layout, pinned **top right**; call `useToast().toast({ message, state })`                                                                                                                                                                                                                                                                                        |
+| `Field`                                       | `@repo/ui/field`                           | Label + control wrapper; `required` appends the asterisk, `optional` a muted "(Optional)"; `error` shows below it; `variant`: `form` / `auth` (16px) / `question` (16px, wider gap) / `caption` (12px)                                                                                                                                                                                       |
+| `Input`                                       | `@repo/ui/input`                           | 40px, `leading` slot for the ₦ prefix (not `prefix` — it collides with the HTML attribute); `variant`: `form` / `auth` / `strong` (darker border)                                                                                                                                                                                                                                            |
+| `Select`                                      | `@repo/ui/select`                          | Custom listbox (not a native `<select>` — Figma styles the popup). `value` + `onValueChange` + `options` (`string[]` or `{value,label,display?}[]`); `variant`: `field` / `auth` / `strong` (40px; `strong` is 16px on grey-300), `chip` (29px pill), `filter` (32px borderless grey-100, the table toolbar) or `soft` (16px on grey-100, the matching preference); `placeholder`, `leading` |
+| `OtpInput`                                    | `@repo/ui/otp-input`                       | Six-box code entry; `value` is one slot per box (`string[]`), `ref` lands on the first box for refocusing after a resend                                                                                                                                                                                                                                                                     |
+| `Switch`                                      | `@repo/ui/switch`                          | `role="switch"`, controlled                                                                                                                                                                                                                                                                                                                                                                  |
+| `Radio`                                       | `@repo/ui/radio`                           | Controlled radio dot; `size`: `md` / `lg` (24px); `disabled`                                                                                                                                                                                                                                                                                                                                 |
+| `CheckboxChip`                                | `@repo/ui/checkbox`                        | Pill-shaped checkbox used for sector picking                                                                                                                                                                                                                                                                                                                                                 |
+| `Badge`                                       | `@repo/ui/badge`                           | Small uppercase label (RECOMMENDED); `variant`: `label` / `pill` (fully rounded, OPTIONAL)                                                                                                                                                                                                                                                                                                   |
+| `Card`                                        | `@repo/ui/card`                            | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                                                                                                                                                                                 |
+| `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows. `variant="cards"` draws each row as a bordered card (`/portfolio`)                                                                                                                          |
+| `Sheet`                                       | `@repo/ui/sheet`                           | 544px right-edge `<dialog>` panel: header with optional icon chip, title and close                                                                                                                                                                                                                                                                                                           |
+| `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets. `divided` adds a rule under the heading                                                                                                                                                                                                                                                                                         |
+| `DetailRow`                                   | `@repo/ui/detail-row`                      | Label left, value right. `size="sm"` is the 14px summary row, default is 16px                                                                                                                                                                                                                                                                                                                |
+| `Tabs`                                        | `@repo/ui/tabs`                            | Underlined tab strip (tablist only; panels stay at the call site)                                                                                                                                                                                                                                                                                                                            |
+| `FilterBar`                                   | `@repo/ui/filter-bar`                      | "Filter by:" and its chips — wrap one or more `<Select variant="chip">`                                                                                                                                                                                                                                                                                                                      |
+| `ConfirmModal`                                | `@repo/ui/confirm-modal`                   | Confirm dialog — title, body slot, cancel + confirm footer. `width`: `sm` (453px) or `lg` (613px)                                                                                                                                                                                                                                                                                            |
+| `UploadDropzone`                              | `@repo/ui/upload-dropzone`                 | Green dashed evidence dropzone with the attached-file row (click, drag-and-drop, replace, remove)                                                                                                                                                                                                                                                                                            |
+| `DetailHeader`                                | `@repo/ui/detail-header`                   | 60px record header: back, avatar, name, status slot, prev/next                                                                                                                                                                                                                                                                                                                               |
+| `ButtonLink`                                  | `@repo/ui/button-link`                     | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                                                                                                                                                                                                                                                               |
+| `TopNav`                                      | `@repo/ui/top-nav`                         | The dashboard header — brand mark, `items` (an item without `href` renders inert) and a `trailing` slot; knows nothing about lenders                                                                                                                                                                                                                                                         |
+| `Sidebar`                                     | `@repo/ui/sidebar`                         | Chrome only — takes `sections` and `footer` as props. Unused since the top nav replaced it                                                                                                                                                                                                                                                                                                   |
+| `UserAvatar` / `OrgAvatar` / `InitialsAvatar` | `@repo/ui/avatars`                         | `Avatar` skinned with the app's tokens and icons                                                                                                                                                                                                                                                                                                                                             |
+| `TaiAgent`                                    | `@repo/ui/tai-agent`                       | The assistant character, built in DOM; eyes follow the cursor. `size`: `xs` 20 / `avatar` 24 / `sm` 32 / `md` 56                                                                                                                                                                                                                                                                             |
+| `BrandMark` / `BrandArc` / `Wordmark`         | `@repo/ui/brand-mark`, `@repo/ui/wordmark` | The interlocking-arcs symbol and the TRADE NETWORK wordmark; `currentColor`, any size                                                                                                                                                                                                                                                                                                        |
+| `GoogleIcon`                                  | `@repo/ui/icons/google-icon`               | Sign-in-with-Google mark                                                                                                                                                                                                                                                                                                                                                                     |
 
 ```tsx
 import { Button } from "@repo/ui/button";
@@ -243,7 +259,8 @@ import { Button } from "@repo/ui/button";
 ```
 
 `variant`: `primary` | `secondary` (grey-100 fill) | `tertiary` (white fill, grey-200 ring —
-the social sign-in buttons) | `outline` | `ghost` | `destructive`.
+the social sign-in buttons) | `outline` | `ghost` | `destructive` | `destructive-outline`
+(white fill, `red-error-400` ring and text — Delete account).
 `size`: `sm` | `pill` (12px × 8px, 14px text — the Update chip) | `md` | `lg` | `form` (settings/dialog footers) | `auth` (the sign-in and
 sign-up pages) | `compact` (the auth header's 37px CTA) | `inline` (text-link height, no side padding) |
 `flush` (vertical padding only).
@@ -271,14 +288,16 @@ app. `packages/ui` lists `next` as a peer dependency, so it may use `next/link` 
 **Lender-only components** live in `apps/lender/src/components/` — they render lender
 content, so they stay in the app until business genuinely needs one:
 
-| Component        | Notes                                                                                                                                                         |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OfferModal`     | Offer / counter-offer composer: form → review → send                                                                                                          |
-| `PartyCard`      | Borrower identity block (name, type, terms line, 56px avatar) for the offer and accept dialogs                                                                |
-| `TradeRoom`      | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                       |
-| `MatchBadge`     | Match-score pill on matched opportunities                                                                                                                     |
-| `TicketRange`    | The funding-mandate ticket-size control in settings. Onboarding's comp differs (₦0–₦1B, Min/Max fields, arrows), so it has its own colocated `FinancingRange` |
-| `ProviderLockup` | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                          |
+| Component                               | Notes                                                                                                                                                                                            |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TradeRoom`                             | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                          |
+| `MatchBadge`                            | Match-score pill on matched opportunities                                                                                                                                                        |
+| `MandateFields`                         | The mandate questions (allocation, rate, tenure, ticket range, industries) over a `MandateDraft`; onboarding step 2 and `/settings/funding-mandate` both render it. `disabled` locks every field |
+| `FinancingRange`                        | The ticket range: Min/Max fields and a log-scale slider from ₦50k to ₦1B. `disabled` hides the slider                                                                                            |
+| `IndustryPicker` / `SelectedIndustries` | Industry search and its chips. Without `onRemove` the chips render grey and read-only                                                                                                            |
+| `StatCard`                              | Label, figure, caption and icon chip. `size`: `md` (home overview) / `lg` (portfolio metrics); `featured` is the evergreen gradient card                                                         |
+| `FormDialog`                            | Grey-header `<dialog>` wrapping a `<form>`: title, close, body, `footer` slot; width via `className`. The body scrolls once the dialog hits the viewport, so a `Select` inside would clip. The account-security dialogs, Not interested and Request for info on `/opportunities` |
+| `ProviderLockup`                        | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                                                             |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -355,11 +374,28 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   digit (`51.30642496536482` vs `…481`) and React reported a hydration mismatch. Every
   computed coordinate goes through `round()` to 3 decimals. Do the same in any other
   geometry drawn during render.
-- **The portfolio banner ships without its grain overlay.** Figma layers a 1024×1024
-  noise PNG at 4% opacity over the gradient; the export is 1.9 MB, which is not worth it
-  for that. The gradient, the diagonals and the masked dot field
-  (`public/portfolio-banner-dots.png`) are all there. Add the grain back only if a
-  compressed export turns up.
+- **`/opportunities` speaks the opportunities API.** `services/` maps kobo to naira and
+  codes to labels, as for the mandate. The list is a cursor-paged infinite query under
+  `["opportunities", "list", filters]`; a filter change starts again without a cursor.
+  Opening a card calls `POST …/view` and clears its dot in every cached list at once;
+  the first card is shown without counting as a view. Dismissal, a `409` and a `404`
+  all remove the card through `forgetOpportunity`, and a `403` refetches
+  `/organizations/current`, whose `permissions` gate the button (`usePermission`).
+  Exposure, Make offer, Request for info and Inbox have no API yet: Exposure is hidden,
+  and the rest run in `OpportunityWorkspace` state, lost on reload.
+- **The `/opportunities` inbox is local state.** `OpportunityWorkspace` owns the
+  Requests/Inbox tab and the `Conversation`s. Sending an offer or a document request,
+  from the detail panel or the conversation's action bar, appends a message, moves that
+  conversation to the top and switches to Inbox. Withdrawing an offer drops its messages,
+  which flips the action back to Make offer. Exit, the Funded filter and replies have no
+  behaviour yet. The offer's interest is flat over the tenure at the mandate's
+  `interestRate`; available capital comes from `/dashboard/overview`
+  (`(dashboard)/hooks/use-dashboard-overview`).
+- **`proxy.ts` matches public files under a protected path.** Its matcher covers
+  `/opportunities/:path*`, so `/opportunities/foo.png` is protected too. The browser sends
+  the session cookie and gets the file, but `next/image`'s optimiser fetches without it,
+  gets the `/login` redirect and answers 400. Keep optimised images out of
+  `public/<route>/` (the chat background is in `public/chat/`), or pass `unoptimized`.
 - **The funding-window countdown has no real typeface.** Figma sets it in
   _Digital Numbers_, which is not on Google Fonts, and `next/font/google` is the only
   font path here — it renders in the system monospace stack with `tabular-nums`. Swap in
@@ -375,19 +411,13 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   outside-click and scroll-into-view. Do not regress those when editing it. An option's
   `label` shows in the list and `display` in the closed control, which is how the trade
   picker shows a rich row but a bare `FT-0001` once chosen.
-  The popup is absolutely positioned, so any scroll container it opens inside will clip
-  it — dialogs that host one keep `overflow-visible`.
+  The popup is absolutely positioned, so a scroll container it opens inside clips it.
+  Opening scrolls the popup into view, which is enough inside a scrolling dialog body
+  (the offer modal); otherwise the dialog keeps `overflow-visible`.
 - **Clicking a funded trade opens a right-side sheet, not a route.** Figma draws it as a
   544px panel pinned to the right edge (node 3649-63954), so it is a native `<dialog>`
   with `ml-auto h-full` — the platform still gives the focus trap, Escape and backdrop.
   `/portfolio/[id]` keeps its own URL while the sheet is open.
-- **`/offers/[id]` runs the whole negotiation in local state.** `NegotiationTimeline`
-  owns the thread: only the newest entry carries the NEW tag and the action buttons,
-  entries are grouped into one dot per day, and executing Tai's recommendation or
-  sending a counter prepends a new "Offer sent" entry. Exactly one accordion is open per
-  card — opening the recommendation collapses the offer details, as the Figma variants
-  specify. Accepting prepends a `terms-agreed` entry, which strips the counter offer's
-  action buttons and hands over to the disbursement dialogs.
 - **The lender dashboard uses values that are off the design system**, kept verbatim
   from Figma and marked with comments at each site: the 24px greeting and 20px stat
   figures are not on the type scale (which jumps 18 → 22), `#e0f2fe` behind the update
@@ -433,6 +463,11 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   from a server component into a client one keep their server-ness, so the sidebar, card
   and photo panel never reach the browser — only the step counter, progress bar and two
   forms do. Put new chrome in the shell, not the provider.
+- **`/mandate` speaks codes, kobo and basis points; the app speaks labels, naira and
+  percent.** `services/mandate.ts` converts both ways, with the converters in
+  `utils/mandate-options.ts` that onboarding also uses. `PUT` replaces the whole mandate,
+  so send every field. A non-null `nextChangeAt` means the 30-day limit is spent: the
+  settings form locks and shows the date. Saving unchanged values doesn't count as a change.
 - **Onboarding collects a logo it doesn't send.** The service has no logo upload yet (and
   422s on unknown fields), so `toRequest` leaves it out. The logo lives outside `data`
   because a `File` can't survive the session-storage mirror. The interest rate is typed as
@@ -440,7 +475,8 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 - **Onboarding submits both steps at once, so an error can land on the step you left.**
   `POST /onboarding/lender` runs from step 2. A 422 is mapped from each `pointer` onto its
   field (`utils/field-errors.ts`), and any organisation error sends the user back to step 1.
-  The form holds labels and naira; `toRequest` converts them to the API's codes and kobo.
+  The form holds labels and naira; `toRequest` converts them to the API's codes and minor units
+  (`*Minor`, kobo for `currency: "NGN"`).
 - **Session storage is a refresh hint for the wizard, not its source of truth.** React
   state is; `saveOnboardingProgress` mirrors `{ step, data }` so a reload doesn't drop back
   to step 1 with empty fields. Restoring happens in an effect, not as seeded initial state,
@@ -470,6 +506,11 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
 ## Conventions
 
 - Prettier formats; don't hand-align. Run `pnpm format` before committing.
+- **Comments only where they matter.** Write one when the code can't say it: a hidden
+  constraint, a workaround for a real bug, a value kept off the design system on purpose.
+  Don't narrate what the code does, restate a name or type, describe the Figma frame, or
+  think out loud ("we do X because earlier Y…", "until the service…"). Longer reasoning goes
+  in the commit message or a Gotchas entry here, not in the source.
 - Add a new shared component under `packages/ui/src/` — it is exported per-file via
   `"./*": "./src/*.tsx"`, so `packages/ui/src/badge.tsx` imports as `@repo/ui/badge`.
 - New workspaces go in `apps/*` or `packages/*` and are picked up automatically.

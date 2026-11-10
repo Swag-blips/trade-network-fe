@@ -3,10 +3,7 @@
 import { useState, type CSSProperties } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Cancel01Icon,
-  CheckmarkBadge02Icon,
-} from "@hugeicons/core-free-icons";
+import { Cancel01Icon, CheckmarkBadge02Icon } from "@hugeicons/core-free-icons";
 import { BrandArc } from "@repo/ui/brand-mark";
 import { IconButton } from "@repo/ui/icon-button";
 
@@ -44,14 +41,7 @@ function Bar({ scale, style }: { scale: number; style: CSSProperties }) {
   );
 }
 
-/** The two cards fanned out behind: initials tile, one bar, pill beneath. */
-function BackCard({
-  scale,
-  className,
-}: {
-  scale: number;
-  className: string;
-}) {
+function BackCard({ scale, className }: { scale: number; className: string }) {
   const tile = px(40, scale);
   return (
     <div
@@ -76,8 +66,18 @@ function BackCard({
       >
         KE
       </span>
-      <Bar scale={scale} style={{ left: px(63, scale), top: px(18, scale), width: px(118, scale) }} />
-      <VerifiedPill scale={scale} style={{ left: px(61, scale), top: px(35, scale) }} />
+      <Bar
+        scale={scale}
+        style={{
+          left: px(63, scale),
+          top: px(18, scale),
+          width: px(118, scale),
+        }}
+      />
+      <VerifiedPill
+        scale={scale}
+        style={{ left: px(61, scale), top: px(35, scale) }}
+      />
     </div>
   );
 }
@@ -130,7 +130,10 @@ export function OpportunityBanner() {
         className="absolute top-6 right-17.5 hidden h-20 w-56.75 lg:block"
       >
         <BackCard scale={0.793} className="top-6.5 right-5.75 shadow-card" />
-        <BackCard scale={0.863} className="top-4 right-3.75 shadow-small-thick" />
+        <BackCard
+          scale={0.863}
+          className="top-4 right-3.75 shadow-small-thick"
+        />
         <FrontCard />
       </div>
 

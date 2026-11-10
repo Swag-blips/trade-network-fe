@@ -1,20 +1,17 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { opportunityService } from "../services";
 import type { OpportunityQuery } from "../types/opportunity";
+import { OPPORTUNITY_LISTS } from "../utils/opportunity-cache";
 
-const PAGE_SIZE = 20;
-
-type Filters = Pick<OpportunityQuery, "borrowerRole" | "matchLevel">;
+type Filters = Pick<OpportunityQuery, "matchLevel" | "unread">;
 
 export function useOpportunities(filters: Filters) {
   return useInfiniteQuery({
-    queryKey: ["opportunities", filters],
+    queryKey: [...OPPORTUNITY_LISTS, filters],
     queryFn: ({ pageParam }) =>
-      opportunityService.list({ ...filters, page: pageParam, size: PAGE_SIZE }),
-    initialPageParam: 1,
-    getNextPageParam: ({ opportunities: { page, totalPages } }) =>
-      page < totalPages ? page + 1 : undefined,
-    // Switching tabs keeps the old counts on screen instead of blanking them.
+      opportunityService.list({ ...filters, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
   });
 }

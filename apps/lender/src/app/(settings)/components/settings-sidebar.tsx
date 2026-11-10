@@ -11,8 +11,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { OrgAvatar } from "@repo/ui/avatars";
-import { useDashboardProfile } from "@/hooks/use-dashboard-profile";
+import { useLogout } from "@/hooks/use-logout";
 import { useMe } from "@/hooks/use-me";
+import { useOrganization } from "@/hooks/use-organization";
 
 interface SettingsItem {
   label: string;
@@ -32,7 +33,7 @@ const GROUPS: SettingsGroup[] = [
     icon: UserCircleIcon,
     items: [
       { label: "Personal details", href: "/settings/profile" },
-      { label: "Account security" },
+      { label: "Account security", href: "/settings/account-security" },
     ],
   },
   {
@@ -76,9 +77,10 @@ function Item({ item, active }: { item: SettingsItem; active: boolean }) {
 
 export function SettingsSidebar() {
   const pathname = usePathname();
-  const { data: profile } = useDashboardProfile();
+  const { data: organization } = useOrganization();
   const { data: me } = useMe();
-  const orgName = profile?.profileName ?? "";
+  const { mutate: logout, isPending: signingOut } = useLogout();
+  const orgName = organization?.name ?? "";
 
   return (
     <aside className="flex w-65.5 flex-none flex-col gap-sm bg-grey-50 pt-xxs pb-lg">
@@ -132,7 +134,9 @@ export function SettingsSidebar() {
         <div className="flex flex-col gap-md border-t border-grey-100 px-md pt-md">
           <button
             type="button"
-            className="flex cursor-pointer items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900"
+            disabled={signingOut}
+            onClick={() => logout()}
+            className="flex cursor-pointer items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900 disabled:cursor-wait disabled:opacity-60"
           >
             <HugeiconsIcon icon={Logout01Icon} size={20} />
             Sign out
