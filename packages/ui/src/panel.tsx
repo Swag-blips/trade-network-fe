@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 
-/** Bordered card with a heading — the boxes inside the detail sheets. */
 export function Panel({
   title,
   divided = false,
   children,
 }: {
   title: string;
-  /** Rule between the heading and the content. */
   divided?: boolean;
   children: ReactNode;
 }) {

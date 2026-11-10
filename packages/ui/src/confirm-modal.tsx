@@ -24,7 +24,6 @@ export function ConfirmModal({
   confirmVariant?: ButtonVariant;
   confirmIcon?: ReactNode;
   confirmDisabled?: boolean;
-  /** `sm` is the 453px confirm dialog; `lg` the 613px form dialog. */
   width?: "sm" | "lg";
   onClose: () => void;
   onConfirm: () => void;

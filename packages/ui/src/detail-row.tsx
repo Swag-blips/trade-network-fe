@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 
-/** Label on the left, value hugging the right. */
 export function DetailRow({
   label,
   size = "md",
   children,
 }: {
   label: string;
-  /** `md` is the 16px drawer row, `sm` the 14px summary row. */
   size?: "sm" | "md";
   children: ReactNode;
 }) {

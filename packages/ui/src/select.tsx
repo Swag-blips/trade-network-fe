@@ -12,7 +12,8 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
 /** `size` is a real form-control attribute (a number), so the prop is `variant`. */
-export type SelectVariant = "field" | "chip";
+export type SelectVariant =
+  "field" | "auth" | "strong" | "chip" | "filter" | "soft";
 
 export interface SelectOption {
   value: string;
@@ -24,12 +25,28 @@ export interface SelectOption {
 
 const VARIANTS: Record<SelectVariant, { root: string; field: string }> = {
   field: {
-    root: "h-10 w-full border-grey-300",
+    root: "h-10 w-full border-grey-300 bg-white",
     field: "px-sm pr-9 text-body-sm/[normal] text-grey-900",
   },
+  auth: {
+    root: "h-10 w-full border-grey-200 bg-white",
+    field: "px-sm pr-9 text-body/[normal] text-grey-900",
+  },
+  strong: {
+    root: "h-10 w-full border-grey-300 bg-white",
+    field: "px-sm pr-9 text-body/[normal] text-grey-800",
+  },
   chip: {
-    root: "h-7.25 border-grey-200 shadow-small-thick",
+    root: "h-7.25 border-grey-200 bg-white shadow-small-thick",
     field: "px-xs pr-7 text-body-sm font-medium text-grey-800",
+  },
+  filter: {
+    root: "h-8 border-transparent bg-grey-100",
+    field: "px-xs pr-7 text-body-sm/[1.5] font-medium text-grey-800",
+  },
+  soft: {
+    root: "h-8.5 border-grey-100 bg-grey-100",
+    field: "px-xs pr-8 text-body/[1.5] font-medium text-grey-800",
   },
 };
 
@@ -44,13 +61,13 @@ export interface SelectProps {
   onValueChange: (value: string) => void;
   options: (SelectOption | string)[];
   variant?: SelectVariant;
-  /** Rendered inside the control, before the value. */
   leading?: ReactNode;
-  /** Shown while `value` is empty. */
   placeholder?: string;
   id?: string;
   className?: string;
   disabled?: boolean;
+  /** Which edge of the control the popup lines up with; `end` for controls at the right edge of the page. */
+  align?: "start" | "end";
   "aria-label"?: string;
 }
 
@@ -64,6 +81,7 @@ export function Select({
   id,
   className = "",
   disabled = false,
+  align = "start",
   "aria-label": ariaLabel,
 }: SelectProps) {
   const styles = VARIANTS[variant];
@@ -88,6 +106,10 @@ export function Select({
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) listRef.current?.scrollIntoView({ block: "nearest" });
   }, [open]);
 
   useEffect(() => {
@@ -174,7 +196,7 @@ export function Select({
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : show(Math.max(selected, 0)))}
         onKeyDown={onKeyDown}
-        className={`relative flex cursor-pointer items-center gap-2.5 rounded-md border bg-white text-left font-sans outline-none focus-visible:border-evergreen-600 disabled:cursor-not-allowed disabled:text-grey-500 ${styles.root} ${styles.field}`}
+        className={`relative flex cursor-pointer items-center gap-2.5 rounded-md border text-left font-sans outline-none focus-visible:border-evergreen-600 disabled:cursor-not-allowed disabled:text-grey-500 ${styles.root} ${styles.field}`}
       >
         {leading ? <span className="flex-none">{leading}</span> : null}
         <span
@@ -185,7 +207,7 @@ export function Select({
         <HugeiconsIcon
           icon={ArrowDown01Icon}
           size={16}
-          className={`pointer-events-none absolute text-grey-900 ${variant === "chip" ? "right-xs" : "right-sm"}`}
+          className={`pointer-events-none absolute text-grey-900 ${variant === "chip" || variant === "soft" ? "right-xs" : "right-sm"}`}
         />
       </button>
 
@@ -195,7 +217,7 @@ export function Select({
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          className="absolute top-[calc(100%+4px)] left-0 z-50 flex max-h-70 w-max min-w-full flex-col gap-1 overflow-y-auto rounded-lg border border-grey-200 bg-white p-xs shadow-thick"
+          className={`absolute top-[calc(100%+4px)] ${align === "end" ? "right-0" : "left-0"} z-50 flex max-h-70 w-max min-w-full flex-col gap-1 overflow-y-auto rounded-lg border border-grey-200 bg-white p-xs shadow-thick`}
         >
           {items.map((item, index) => (
             <li

@@ -1,7 +1,14 @@
 export type ButtonVariant =
-  "primary" | "secondary" | "tertiary" | "outline" | "ghost" | "destructive";
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "outline"
+  | "ghost"
+  | "destructive"
+  | "destructive-outline";
 
-export type ButtonSize = "sm" | "md" | "lg" | "form" | "auth" | "flush";
+export type ButtonSize =
+  "sm" | "pill" | "md" | "lg" | "form" | "auth" | "compact" | "inline" | "flush";
 
 const BASE =
   "group relative inline-flex cursor-pointer items-center justify-center " +
@@ -36,11 +43,19 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "bg-destructive text-white " +
     "not-disabled:hover:bg-destructive-hover not-disabled:active:bg-destructive " +
     "disabled:bg-destructive-hover/20",
+  "destructive-outline":
+    "inset-ring inset-ring-red-error-400 bg-white text-red-error-400 " +
+    "not-disabled:hover:bg-grey-50 not-disabled:active:bg-grey-100 " +
+    "disabled:inset-ring-red-error-400/40 disabled:text-red-error-400/40",
 };
 
 const SIZES: Record<ButtonSize, { button: string; content: string }> = {
   sm: {
     button: "px-1.5 py-1 text-body-sm/[normal]",
+    content: "gap-xxs [&_svg]:size-4",
+  },
+  pill: {
+    button: "px-sm py-xs text-body-sm/[normal]",
     content: "gap-xxs [&_svg]:size-4",
   },
   md: {
@@ -59,6 +74,16 @@ const SIZES: Record<ButtonSize, { button: string; content: string }> = {
     button: "px-md py-2.5 text-body/[normal]",
     content: "gap-xs [&_svg]:size-5",
   },
+  // A fixed 37px: Figma gets there with 8px padding, a 1px border and a 19px
+  // line, but the ring here is inset and Chrome rounds that line up to 20px.
+  compact: {
+    button: "h-9.25 px-md text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
+  inline: {
+    button: "py-0.5 text-body/[normal]",
+    content: "gap-xs [&_svg]:size-5",
+  },
   flush: {
     button: "py-xs text-body-sm/[normal]",
     content: "gap-xs [&_svg]:size-5",
@@ -69,10 +94,6 @@ function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
 
-/**
- * Button styling without the <button> element — for anchors and links, which
- * need the same visuals but cannot be a <button>.
- */
 export function buttonClasses({
   variant = "primary",
   size = "md",

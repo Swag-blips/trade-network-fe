@@ -9,10 +9,10 @@ export function AuthHeaderCta() {
   return (
     <ButtonLink
       href={isLoginFlow ? "/create-account" : "/login"}
-      variant="outline"
-      size="form"
+      variant="tertiary"
+      size="compact"
     >
-      {isLoginFlow ? "Create a new account" : "Login"}
+      {isLoginFlow ? "Create account" : "Login"}
     </ButtonLink>
   );
 }

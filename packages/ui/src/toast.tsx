@@ -11,7 +11,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Alert02Icon,
   Cancel01Icon,
-  CircleCheckIcon,
   InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -30,10 +29,32 @@ interface ToastRecord extends ToastOptions {
 }
 
 const STATE_ICON = {
-  success: { icon: CircleCheckIcon, className: "text-toast-success" },
   info: { icon: InformationCircleIcon, className: "text-toast-info" },
   error: { icon: Alert02Icon, className: "text-toast-error" },
 };
+
+function SuccessIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      className="size-5 flex-none"
+    >
+      <path
+        d="M9.9974 18.3332C14.5997 18.3332 18.3307 14.6022 18.3307 9.99984C18.3307 5.39746 14.5997 1.6665 9.9974 1.6665C5.39502 1.6665 1.66406 5.39746 1.66406 9.99984C1.66406 14.6022 5.39502 18.3332 9.9974 18.3332Z"
+        className="fill-toast-success"
+      />
+      <path
+        d="M6.66406 10.4165L8.33073 12.0832L12.9141 7.9165"
+        stroke="white"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 const SPINNER_BARS = Array.from({ length: 8 }, (_, i) => i);
 
@@ -64,27 +85,25 @@ export function Toast({
   action,
   onDismiss,
 }: ToastOptions & { onDismiss?: () => void }) {
-  const tone = state === "loading" ? null : STATE_ICON[state];
-
   return (
     <div
       role={state === "error" ? "alert" : "status"}
       aria-live={state === "error" ? "assertive" : "polite"}
-      className="flex max-w-full items-center justify-center gap-md overflow-hidden rounded-md bg-grey-900 p-2.5 shadow-elevated"
+      className="flex min-h-10 w-full items-center justify-center gap-md overflow-hidden rounded-md bg-grey-800 px-sm py-xs shadow-elevated"
     >
       <div
-        className={`flex min-w-0 items-center ${state === "loading" ? "gap-2.5" : "gap-xs"}`}
+        className={`flex min-w-0 flex-1 items-center ${state === "loading" ? "gap-2.5" : "gap-xs"}`}
       >
-        {tone ? (
+        {state === "success" ? <SuccessIcon /> : null}
+        {state === "loading" ? <Spinner /> : null}
+        {state === "info" || state === "error" ? (
           <HugeiconsIcon
-            icon={tone.icon}
+            icon={STATE_ICON[state].icon}
             size={20}
-            className={`flex-none ${tone.className}`}
+            className={`flex-none ${STATE_ICON[state].className}`}
           />
-        ) : (
-          <Spinner />
-        )}
-        <p className="font-sans text-body-sm/[normal] font-medium text-white">
+        ) : null}
+        <p className="min-w-0 flex-1 font-sans text-body/[normal] font-medium text-grey-50">
           {message}
         </p>
       </div>
@@ -103,9 +122,9 @@ export function Toast({
             type="button"
             aria-label="Dismiss"
             onClick={onDismiss}
-            className="flex-none text-white hover:text-grey-300"
+            className="flex-none cursor-pointer text-grey-500 hover:text-grey-300"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={20} />
+            <HugeiconsIcon icon={Cancel01Icon} size={20} strokeWidth={1.25} />
           </button>
         ) : null}
       </div>
@@ -138,7 +157,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-xl z-50 mx-auto flex max-w-120 flex-col items-center gap-xs px-md">
+      <div className="pointer-events-none fixed top-5 right-5 z-50 flex w-82 max-w-[calc(100vw-2.5rem)] flex-col gap-xs">
         {toasts.map((item) => (
           <div key={item.id} className="pointer-events-auto">
             <Toast {...item} onDismiss={() => dismiss(item.id)} />

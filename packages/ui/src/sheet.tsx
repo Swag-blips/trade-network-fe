@@ -5,7 +5,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { IconButton } from "./icon-button";
 
-/** The 544px panel that slides against the right edge. Escape and the backdrop come from <dialog>. */
 export function Sheet({
   title,
   icon,
@@ -13,7 +12,6 @@ export function Sheet({
   children,
 }: {
   title: string;
-  /** Optional chip before the title. */
   icon?: ReactNode;
   onClose: () => void;
   children: ReactNode;

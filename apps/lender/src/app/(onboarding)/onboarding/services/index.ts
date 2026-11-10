@@ -1,37 +1,42 @@
 import { mutation } from "@/api/client";
+import {
+  parseAllocation,
+  toBps,
+  toMinorUnits,
+  toSectorCode,
+  toTenorCode,
+} from "@/utils/mandate-options";
 import type {
-  CompleteOnboardingData,
   CompleteOnboardingDto,
   CompleteOnboardingRequest,
 } from "../types";
-import { countryName } from "../utils/countries";
 
-/** The allocation field is a formatted string; the service wants a number. */
-const toAmount = (value: string) => Number(value.replace(/[^0-9]/g, ""));
-
-function toRequest({ data }: CompleteOnboardingDto): CompleteOnboardingRequest {
+function toRequest({
+  challengeId,
+  data,
+}: CompleteOnboardingDto): CompleteOnboardingRequest {
   return {
-    // Without it the business profile is saved untyped, and the lender
-    // service rejects it as "not an active lender profile".
-    accountType: "LENDER",
-    companyName: data.companyName,
-    countryName: countryName(data.countryCode),
-    countryCode: data.countryCode,
-    capitalAllocation: toAmount(data.capitalAllocation),
-    tenor: data.tenor,
-    fundingType: data.fundingType,
-    fundingMin: data.fundingMin,
-    fundingMax: data.fundingMax,
-    businessSectors: data.sectors,
+    challengeId,
+    organization: {
+      name: data.companyName,
+      countryCode: data.countryCode,
+      state: data.state,
+      streetAddress: data.streetAddress,
+    },
+    mandate: {
+      currency: "NGN",
+      capitalAllocationMinor: toMinorUnits(parseAllocation(data.capitalAllocation)),
+      minTicketMinor: toMinorUnits(data.fundingMin),
+      maxTicketMinor: toMinorUnits(data.fundingMax),
+      annualInterestRateBps: toBps(Number(data.interestRate)),
+      tenor: toTenorCode(data.tenor),
+      sectors: data.sectors.map(toSectorCode),
+    },
   };
 }
 
 export const onboardingService = {
   complete(fields: CompleteOnboardingDto) {
-    return mutation<CompleteOnboardingData>(
-      `/onboard/signup/complete/${fields.session.onboardUid}`,
-      "post",
-      toRequest(fields),
-    );
+    return mutation("/onboarding/lender", "post", toRequest(fields));
   },
 };
