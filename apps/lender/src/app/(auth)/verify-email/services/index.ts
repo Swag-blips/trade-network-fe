@@ -13,7 +13,6 @@ export const verifyEmailService = {
     });
   },
 
- 
   resendSignupOtp(challengeId: string) {
     return mutation("/auth/signup/resend", "post", { challengeId });
   },

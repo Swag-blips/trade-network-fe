@@ -3,21 +3,22 @@ import type {
   Mandate,
   MandateRequest,
   MandateResponse,
+  MandateTerms,
+  MandateTermsRequest,
 } from "@/types/mandate";
 import {
   fromBps,
-  fromMinorUnits,
   fromSectorCode,
   fromTenorCode,
   toBps,
-  toMinorUnits,
   toSectorCode,
   toTenorCode,
 } from "@/utils/mandate-options";
+import { fromMinorUnits, toMinorUnits } from "@/utils/naira";
 
 const fromResponse = (mandate: MandateResponse): Mandate => ({
   capitalAllocation: fromMinorUnits(mandate.capitalAllocationMinor),
-  interestRate: fromBps(mandate.annualInterestRateBps),
+  interestRate: fromBps(mandate.interestRateBps),
   tenor: fromTenorCode(mandate.tenor),
   fundingType: mandate.fundingType,
   fundingMin: fromMinorUnits(mandate.minTicketMinor),
@@ -26,15 +27,20 @@ const fromResponse = (mandate: MandateResponse): Mandate => ({
   nextChangeAt: mandate.nextChangeAt,
 });
 
-const toRequest = (mandate: Mandate): MandateRequest => ({
+/** Onboarding posts these too, inside `POST /onboarding/lender`. */
+export const toTermsRequest = (terms: MandateTerms): MandateTermsRequest => ({
   currency: "NGN",
-  capitalAllocationMinor: toMinorUnits(mandate.capitalAllocation),
-  minTicketMinor: toMinorUnits(mandate.fundingMin),
-  maxTicketMinor: toMinorUnits(mandate.fundingMax),
-  annualInterestRateBps: toBps(mandate.interestRate),
-  tenor: toTenorCode(mandate.tenor),
+  capitalAllocationMinor: toMinorUnits(terms.capitalAllocation),
+  minTicketMinor: toMinorUnits(terms.fundingMin),
+  maxTicketMinor: toMinorUnits(terms.fundingMax),
+  interestRateBps: toBps(terms.interestRate),
+  tenor: toTenorCode(terms.tenor),
+  sectors: terms.businessSectors.map(toSectorCode),
+});
+
+const toRequest = (mandate: Mandate): MandateRequest => ({
+  ...toTermsRequest(mandate),
   fundingType: mandate.fundingType,
-  sectors: mandate.businessSectors.map(toSectorCode),
 });
 
 export const mandateService = {

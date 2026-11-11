@@ -13,7 +13,7 @@ import { StepFrame } from "./step-frame";
 export function FundingMandateStep() {
   const router = useRouter();
   const { toast } = useToast();
-  const { data, update, back, errors } = useOnboarding();
+  const { data, update, back } = useOnboarding();
   const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
   // Stays loading until /home has loaded: a second submit would get a 409.
   const [navigating, startNavigation] = useTransition();
@@ -52,7 +52,7 @@ export function FundingMandateStep() {
       onSubmit={handleDone}
       raisedFooter
     >
-      <MandateFields value={data} onChange={update} errors={errors} />
+      <MandateFields value={data} onChange={update} />
     </StepFrame>
   );
 }

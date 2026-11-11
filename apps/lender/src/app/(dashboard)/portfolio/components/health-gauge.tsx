@@ -1,4 +1,5 @@
 import { HEALTH, type HealthLevel } from "../types/customer";
+import { round } from "../utils/geometry";
 
 const CX = 101;
 const CY = 105;
@@ -13,9 +14,6 @@ const VALUE: Record<HealthLevel, number> = {
   "at-risk": 0.35,
   critical: 0.15,
 };
-
-/** Rounded so the server and client stringify these identically. */
-const round = (value: number) => Number(value.toFixed(3));
 
 const point = (angle: number, radius: number) => {
   const radians = (angle * Math.PI) / 180;

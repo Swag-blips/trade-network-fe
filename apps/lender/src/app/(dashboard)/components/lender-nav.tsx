@@ -11,8 +11,8 @@ import { OrgMenu } from "./org-menu";
 
 const ITEMS: TopNavItem[] = [
   { label: "Home", href: "/home", icon: Home05Icon },
-  { label: "Verify business", icon: SearchList01Icon },
   { label: "Opportunities", href: "/opportunities", icon: BankIcon },
+  { label: "Verify business", icon: SearchList01Icon },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase02Icon },
 ];
 

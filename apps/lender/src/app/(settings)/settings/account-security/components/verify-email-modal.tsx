@@ -5,8 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { MailValidation02Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
 import { OtpInput } from "@repo/ui/otp-input";
-
-const CODE_LENGTH = 6;
+import { emptyOtp } from "@/utils/otp";
 
 /** No email-change endpoint yet, so any six digits pass. */
 export function VerifyEmailModal({
@@ -20,7 +19,7 @@ export function VerifyEmailModal({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const firstDigit = useRef<HTMLInputElement>(null);
-  const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
+  const [digits, setDigits] = useState(emptyOtp);
   const complete = digits.every(Boolean);
 
   useEffect(() => {
@@ -29,7 +28,7 @@ export function VerifyEmailModal({
   }, []);
 
   function resend() {
-    setDigits(Array(CODE_LENGTH).fill(""));
+    setDigits(emptyOtp());
     firstDigit.current?.focus();
   }
 

@@ -5,4 +5,5 @@ export interface ProblemDetails {
   status: number;
   detail: string;
   errors?: { detail: string; pointer: string }[];
+  [member: string]: unknown;
 }

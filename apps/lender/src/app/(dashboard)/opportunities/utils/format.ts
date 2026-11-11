@@ -1,15 +1,13 @@
-import { compactAmount } from "@/utils/naira";
-import type { OfferTerms } from "../types/inbox";
+import { compactAmount, formatAmount } from "@/utils/naira";
 import type { MatchLevel } from "../types/opportunity";
 
-export const fullNaira = (value: number) =>
-  `NGN ${Math.round(value).toLocaleString("en-NG")}`;
+export const fullNaira = (value: number) => `NGN ${formatAmount(value)}`;
 
 export const compactNaira = (value: number) => `NGN ${compactAmount(value)}`;
 
-export const nairaSuffix = (value: number) =>
-  `${Math.round(value).toLocaleString("en-NG")} NGN`;
+export const nairaSuffix = (value: number) => `${formatAmount(value)} NGN`;
 
+/** "Dec 05, 2026", in the viewer's timezone. */
 export const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", {
     month: "short",
@@ -23,8 +21,12 @@ export const clockTime = (iso: string) =>
     minute: "2-digit",
   });
 
-export const interestOf = ({ amount, ratePercent }: OfferTerms) =>
-  (amount * ratePercent) / 100;
+/** "23h : 05m left". */
+export function timeLeft(ms: number) {
+  const minutes = Math.ceil(ms / 60_000);
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h : ${String(minutes % 60).padStart(2, "0")}m left`;
+}
 
 export const MATCH: Record<
   MatchLevel,

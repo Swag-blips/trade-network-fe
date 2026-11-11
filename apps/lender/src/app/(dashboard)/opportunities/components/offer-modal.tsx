@@ -7,26 +7,25 @@ import { Avatar } from "@repo/ui/avatar";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Select } from "@repo/ui/select";
+import { readProblem, readProblemType } from "@/api/client";
 import { RANGE_THUMB } from "@/components/financing-range";
 import { useMandate } from "@/hooks/use-mandate";
-import { naira } from "@/utils/naira";
-import { useDashboardOverview } from "../../hooks/use-dashboard-overview";
-import type { OfferTerms } from "../types/inbox";
-import type { Opportunity } from "../types/opportunity";
-import { interestOf, shortDate } from "../utils/format";
-
-const TENORS = [30, 45, 60, 90];
-const tenorLabel = (days: number) => `${days} days`;
-
-function toAmountText(raw: string) {
-  const [whole = "", ...rest] = raw.replace(/[^\d.]/g, "").split(".");
-  const grouped = whole
-    .replace(/^0+(?=\d)/, "")
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return rest.length > 0 ? `${grouped}.${rest.join("").slice(0, 2)}` : grouped;
-}
-
-const parseAmount = (text: string) => Number(text.replace(/,/g, "")) || 0;
+import {
+  formatAmountInput,
+  fromMinorUnits,
+  naira,
+  parseAmountInput,
+} from "@/utils/naira";
+import { useMakeOffer } from "../hooks/use-make-offer";
+import { isFormError } from "../utils/negotiation";
+import type { Offer, OfferTarget, OfferTerms } from "../types/inbox";
+import {
+  interestOf,
+  offerAmountError,
+  tenorLabel,
+  tenorOptions,
+} from "../utils/offer";
+import { shortDate } from "../utils/format";
 
 function Row({
   label,
@@ -52,37 +51,65 @@ function Row({
 export function OfferModal({
   opportunity,
   onClose,
-  onSend,
+  onSent,
 }: {
-  opportunity: Opportunity;
+  opportunity: OfferTarget;
   onClose: () => void;
-  onSend: (terms: OfferTerms) => void;
+  onSent: (offer: Offer) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const amountId = useId();
   const tenorId = useId();
   const { data: mandate } = useMandate();
-  const { data: overview } = useDashboardOverview();
+  const { mutate: makeOffer, isPending } = useMakeOffer(opportunity, onSent);
   const [amountText, setAmountText] = useState("");
-  const [tenorDays, setTenorDays] = useState(TENORS[0]!);
-
+  const [pickedTenor, setPickedTenor] = useState<number>();
+  const [capitalLeft, setCapitalLeft] = useState<number>();
   useEffect(() => {
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
   }, []);
 
-  const available = overview?.availableCapital;
-  const ceiling = available ?? opportunity.advance;
-  const amount = parseAmount(amountText);
+  const tenors = tenorOptions(mandate?.tenor, opportunity.tenorDays);
+  const tenorDays =
+    pickedTenor !== undefined && tenors.days.includes(pickedTenor)
+      ? pickedTenor
+      : tenors.days[0]!;
+  // The API has no "available capital" figure; it checks on send and, if the
+  // offer is too big, says how much is left. Until then only the mandate caps it.
+  const available = capitalLeft;
+  const ceiling = Math.min(
+    opportunity.advance,
+    mandate?.fundingMax ?? Infinity,
+    available ?? Infinity,
+  );
+  const amount = parseAmountInput(amountText);
   const terms: OfferTerms = {
     amount,
     tenorDays,
     ratePercent: mandate?.interestRate ?? 0,
   };
+
   const total = amount + interestOf(terms);
+
   const overCapital = available !== undefined && amount > available;
   const fill = ceiling > 0 ? Math.min(amount / ceiling, 1) * 100 : 0;
+  const amountError = offerAmountError(amount, opportunity.advance, mandate);
+  const canSend = !!mandate && amount > 0 && !overCapital && !amountError;
+
+  function send() {
+    if (!canSend || isPending) return;
+    makeOffer(terms, {
+      onError: (error) => {
+        if (readProblemType(error) === "capital-exceeded") {
+          const left = readProblem(error)?.availableMinor;
+          setCapitalLeft(fromMinorUnits(Number(left ?? 0)));
+        }
+        if (!isFormError(error)) onClose();
+      },
+    });
+  }
 
   return (
     <dialog
@@ -98,7 +125,7 @@ export function OfferModal({
         className="flex min-h-0 flex-1 flex-col"
         onSubmit={(event) => {
           event.preventDefault();
-          if (amount > 0 && !overCapital) onSend(terms);
+          send();
         }}
       >
         <header className="flex flex-none flex-col items-center gap-1 px-5 py-md">
@@ -152,12 +179,10 @@ export function OfferModal({
                 leadingIcon={<HugeiconsIcon icon={AiMagicIcon} />}
                 onClick={() => {
                   setAmountText(
-                    toAmountText(
-                      String(Math.round(Math.min(opportunity.advance, ceiling))),
-                    ),
+                    formatAmountInput(String(Math.floor(Math.max(ceiling, 0)))),
                   );
-                  if (TENORS.includes(opportunity.tenorDays))
-                    setTenorDays(opportunity.tenorDays);
+                  if (tenors.requested !== undefined)
+                    setPickedTenor(tenors.requested);
                 }}
               >
                 Auto suggest
@@ -183,9 +208,10 @@ export function OfferModal({
                     autoComplete="off"
                     placeholder="0.00"
                     value={amountText}
-                    onChange={(event) =>
-                      setAmountText(toAmountText(event.target.value))
-                    }
+                    aria-invalid={amountError ? true : undefined}
+                    onChange={(event) => {
+                      setAmountText(formatAmountInput(event.target.value));
+                    }}
                     className="field-sizing-content min-w-16 max-w-56 bg-transparent text-grey-900 caret-grey-900 outline-none placeholder:text-grey-300"
                   />
                 </div>
@@ -193,6 +219,14 @@ export function OfferModal({
                   Total repayment ≃{" "}
                   <span className="text-evergreen-600">{naira(total)}</span>
                 </p>
+                {amountError ? (
+                  <p
+                    role="alert"
+                    className="text-center text-body-sm/[normal] text-red-error-500"
+                  >
+                    {amountError}
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex w-full flex-col gap-xs">
@@ -210,9 +244,9 @@ export function OfferModal({
                     max={Math.max(Math.round(ceiling), 1)}
                     step={Math.max(Math.round(ceiling / 200), 1)}
                     value={Math.min(amount, ceiling)}
-                    onChange={(event) =>
-                      setAmountText(toAmountText(event.target.value))
-                    }
+                    onChange={(event) => {
+                      setAmountText(formatAmountInput(event.target.value));
+                    }}
                     className={`absolute inset-0 m-0 h-5 w-full cursor-pointer appearance-none bg-transparent outline-none ${RANGE_THUMB}`}
                   />
                 </div>
@@ -232,8 +266,10 @@ export function OfferModal({
                 id={tenorId}
                 variant="strong"
                 value={tenorLabel(tenorDays)}
-                onValueChange={(value) => setTenorDays(parseInt(value, 10))}
-                options={TENORS.map(tenorLabel)}
+                onValueChange={(value) => {
+                  setPickedTenor(parseInt(value, 10));
+                }}
+                options={tenors.days.map(tenorLabel)}
               />
             </Field>
           </section>
@@ -263,7 +299,8 @@ export function OfferModal({
           <Button
             type="submit"
             size="auth"
-            disabled={amount <= 0 || overCapital}
+            loading={isPending}
+            disabled={!canSend}
             trailingIcon={<HugeiconsIcon icon={SentIcon} />}
           >
             Send offer

@@ -6,7 +6,7 @@ export interface MandateResponse {
   capitalAllocationMinor: number;
   minTicketMinor: number;
   maxTicketMinor: number;
-  annualInterestRateBps: number;
+  interestRateBps: number;
   tenor: string;
   fundingType: string;
   sectors: string[];
@@ -28,6 +28,12 @@ export interface Mandate {
   businessSectors: string[];
   nextChangeAt: string | null;
 }
+
+/** What onboarding and the settings form both collect. */
+export type MandateTerms = Omit<Mandate, "fundingType" | "nextChangeAt">;
+
+/** The request's mandate fields, short of `fundingType`, which onboarding doesn't send. */
+export type MandateTermsRequest = Omit<MandateRequest, "fundingType">;
 
 export interface MandateDraft {
   capitalAllocation: string;

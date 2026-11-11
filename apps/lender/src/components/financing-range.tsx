@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
-import { formatAmount, parseAmount } from "@/utils/mandate-options";
-import { compactAmount } from "@/utils/naira";
+import { compactAmount, formatAmount, parseAmount } from "@/utils/naira";
 
 const FLOOR = 50_000;
 const CEILING = 1_000_000_000;
@@ -57,7 +56,6 @@ function scale(top: number) {
 export function FinancingRange({
   min,
   max,
-  minError,
   maxError,
   ceiling,
   disabled = false,
@@ -65,7 +63,6 @@ export function FinancingRange({
 }: {
   min: number;
   max: number;
-  minError?: string;
   maxError?: string;
   ceiling?: number;
   disabled?: boolean;
@@ -99,7 +96,6 @@ export function FinancingRange({
           htmlFor="financing-min"
           variant="caption"
           className="flex-1"
-          error={minError}
         >
           <Input
             id="financing-min"

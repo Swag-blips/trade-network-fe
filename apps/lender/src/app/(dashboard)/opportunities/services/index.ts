@@ -1,7 +1,25 @@
 import { mutation, query } from "@/api/client";
-import { fromMinorUnits, fromSectorCode } from "@/utils/mandate-options";
+import { fromBps, fromSectorCode } from "@/utils/mandate-options";
+import { fromMinorUnits, toMinorUnits } from "@/utils/naira";
+import type {
+  Conversation,
+  ConversationPage,
+  ConversationPageResponse,
+  ConversationQuery,
+  ConversationResponse,
+  DocumentRequestResponse,
+  Funding,
+  FundingResponse,
+  Message,
+  MessageResponse,
+  Offer,
+  OfferRequest,
+  OfferResponse,
+  OfferTerms,
+} from "../types/inbox";
 import type {
   DocumentKind,
+  FinancingPurpose,
   Opportunity,
   OpportunityPage,
   OpportunityPageResponse,
@@ -16,6 +34,15 @@ const DOCUMENT_LABELS: Record<DocumentKind, string> = {
   PURCHASE_ORDER: "Purchase order",
   DELIVERY_NOTE: "Delivery note",
 };
+
+const PURPOSE_LABELS: Record<FinancingPurpose, string> = {
+  EARLY_PAYMENT: "Early payment",
+  SUPPLIER_PAYMENT: "Pay a supplier",
+  INVENTORY_PURCHASE: "Purchase inventory",
+};
+
+const purposeLabel = (purpose: FinancingPurpose) =>
+  PURPOSE_LABELS[purpose] ?? purpose;
 
 const fromSummary = (
   summary: OpportunitySummaryResponse,
@@ -42,7 +69,7 @@ const fromResponse = ({
   kind: trade.borrowerRole === "DISTRIBUTOR" ? "Distributor" : "Supplier",
   buyer: trade.counterpartyName,
   industry: fromSectorCode(trade.sector),
-  purpose: trade.financingPurpose,
+  purpose: purposeLabel(trade.financingPurpose),
   tradeValue: fromMinorUnits(trade.invoiceValueMinor),
   tenorDays: trade.tenorDays,
   creditTermDays: trade.creditTermDays,
@@ -51,6 +78,94 @@ const fromResponse = ({
     file: document.fileName,
   })),
 });
+
+const fromOffer = (offer: OfferResponse): Offer => ({
+  id: offer.id,
+  opportunityId: offer.opportunityId,
+  conversationId: offer.conversationId,
+  madeBy: offer.madeBy,
+  status: offer.status,
+  amount: fromMinorUnits(offer.amountMinor),
+  tenorDays: offer.tenorDays,
+  ratePercent: fromBps(offer.interestRateBps),
+  interest: fromMinorUnits(offer.interestMinor),
+  repayment: fromMinorUnits(offer.repaymentMinor),
+});
+
+const toOffer = (terms: OfferTerms): OfferRequest => ({
+  amountMinor: toMinorUnits(terms.amount),
+  tenorDays: terms.tenorDays,
+});
+
+const fromFunding = (funding: FundingResponse): Funding => ({
+  id: funding.id,
+  status: funding.status,
+  amount: fromMinorUnits(funding.amountMinor),
+  payBy: funding.payBy,
+});
+
+const fromMessage = (message: MessageResponse): Message => {
+  switch (message.kind) {
+    case "OFFER":
+      return {
+        id: message.id,
+        kind: "offer",
+        outgoing: message.sender === "LENDER",
+        sentAt: message.sentAt,
+        offer: fromOffer(message.offer),
+      };
+    case "DOCUMENT_REQUEST":
+      return {
+        id: message.id,
+        kind: "documents",
+        outgoing: message.sender === "LENDER",
+        sentAt: message.sentAt,
+        documents: message.documents,
+      };
+    case "EXIT":
+      return {
+        id: message.id,
+        kind: "exit",
+        outgoing: true,
+        sentAt: message.sentAt,
+      };
+  }
+};
+
+const MESSAGE_KIND: Record<MessageResponse["kind"], Message["kind"]> = {
+  OFFER: "offer",
+  DOCUMENT_REQUEST: "documents",
+  EXIT: "exit",
+};
+
+const fromConversation = ({
+  trade,
+  ...conversation
+}: ConversationResponse): Conversation => {
+  const messages = conversation.messages.map(fromMessage);
+  return {
+    id: conversation.id,
+    status: conversation.status,
+    startedAt: conversation.startedAt,
+    pendingOffer:
+      messages.flatMap((message) =>
+        message.kind === "offer" &&
+        message.offer.id === conversation.pendingOfferId
+          ? [message.offer]
+          : [],
+      )[0] ?? null,
+    funding: conversation.funding ? fromFunding(conversation.funding) : null,
+    opportunity: {
+      id: conversation.opportunityId,
+      name: trade.borrowerName,
+      purpose: purposeLabel(trade.financingPurpose),
+      advance: fromMinorUnits(trade.requestedAdvanceMinor),
+      tenorDays: trade.tenorDays,
+      expiresAt: trade.expiresAt,
+    },
+    messages,
+  };
+};
 
 export const opportunityService = {
   async list(params: OpportunityQuery): Promise<OpportunityPage> {
@@ -72,5 +187,73 @@ export const opportunityService = {
 
   dismiss(id: string) {
     return mutation(`/opportunities/${id}/dismissal`, "post");
+  },
+
+  async makeOffer(id: string, terms: OfferTerms): Promise<Offer> {
+    return fromOffer(
+      await mutation<OfferResponse>(
+        `/opportunities/${id}/offers`,
+        "post",
+        toOffer(terms),
+      ),
+    );
+  },
+
+  requestDocuments(id: string, documents: string[]) {
+    return mutation<DocumentRequestResponse>(
+      `/opportunities/${id}/document-requests`,
+      "post",
+      { documents },
+    );
+  },
+};
+
+export const offerService = {
+  withdraw(id: string) {
+    return mutation(`/offers/${id}/withdrawal`, "post");
+  },
+
+  async accept(id: string): Promise<Funding> {
+    return fromFunding(
+      await mutation<FundingResponse>(`/offers/${id}/acceptance`, "post"),
+    );
+  },
+};
+
+export const fundingService = {
+  async pay(id: string): Promise<Funding> {
+    return fromFunding(
+      await mutation<FundingResponse>(`/fundings/${id}/payment`, "post"),
+    );
+  },
+};
+
+export const conversationService = {
+  async list(params: ConversationQuery): Promise<ConversationPage> {
+    const page = await query<ConversationPageResponse>("/conversations", {
+      ...params,
+    });
+    return {
+      items: page.items.map((item) => ({
+        id: item.id,
+        opportunityId: item.opportunityId,
+        status: item.status,
+        name: item.borrowerName,
+        lastMessage: item.lastMessage
+          ? MESSAGE_KIND[item.lastMessage.kind]
+          : null,
+      })),
+      nextCursor: page.nextCursor,
+    };
+  },
+
+  async get(id: string): Promise<Conversation> {
+    return fromConversation(
+      await query<ConversationResponse>(`/conversations/${id}`),
+    );
+  },
+
+  exit(id: string) {
+    return mutation(`/conversations/${id}/exit`, "post");
   },
 };

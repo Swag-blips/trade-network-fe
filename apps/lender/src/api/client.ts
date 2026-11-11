@@ -91,12 +91,21 @@ export function readProblem(err: unknown) {
     : undefined;
 }
 
+const PROBLEM_TYPE = "urn:trade-network:problem:";
+
+/** The problem `type` without its URN prefix: `"validation-failed"`. */
+export function readProblemType(err: unknown) {
+  return readProblem(err)?.type?.replace(PROBLEM_TYPE, "");
+}
+
 export function readStatus(err: unknown) {
   return axios.isAxiosError(err) ? err.response?.status : undefined;
 }
 
+/** A 422's first field message is more useful than its generic `detail`. */
 export function extractErrorMessage(err: unknown, fallback: string): string {
-  return readProblem(err)?.detail ?? fallback;
+  const problem = readProblem(err);
+  return problem?.errors?.[0]?.detail ?? problem?.detail ?? fallback;
 }
 
 export async function mutation<T = undefined>(

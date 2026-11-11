@@ -19,7 +19,6 @@ function FormPlaceholder() {
 
 export function MandateLoader() {
   const { data: mandate, isPending, isError } = useMandate();
-
   if (isPending) return <FormPlaceholder />;
 
   if (isError) {

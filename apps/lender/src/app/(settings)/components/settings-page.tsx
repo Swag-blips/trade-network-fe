@@ -30,22 +30,3 @@ export function SettingsPage({
     </div>
   );
 }
-
-export function SectionHeading({
-  title,
-  description,
-}: {
-  title: string;
-  description?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <h2 className="font-sans text-xl/normal font-medium text-grey-900">
-        {title}
-      </h2>
-      {description ? (
-        <p className="text-body-sm text-grey-600">{description}</p>
-      ) : null}
-    </div>
-  );
-}
