@@ -10,7 +10,7 @@ const DELETED = [
   "Your account settings and preferences",
 ];
 
-/** No delete endpoint yet, so confirming only closes the dialog. */
+
 export function DeleteAccountModal({
   onClose,
   onConfirm,

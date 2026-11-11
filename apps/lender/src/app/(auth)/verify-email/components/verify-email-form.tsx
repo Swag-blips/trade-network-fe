@@ -18,8 +18,7 @@ import { useVerifyLogin } from "../hooks/use-verify-login";
 import { useResendOtp } from "../hooks/use-resend-otp";
 import { VerifyingOverlay } from "./verifying-overlay";
 import { AuthCard } from "../../components/auth-card";
-
-const CODE_LENGTH = 6;
+import { emptyOtp, OTP_LENGTH } from "@/utils/otp";
 
 export function VerifyEmailForm({
   email,
@@ -39,11 +38,11 @@ export function VerifyEmailForm({
 
   const [navigating, startNavigation] = useTransition();
   const isPending = verifying || signingIn || navigating;
-  const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
+  const [digits, setDigits] = useState(emptyOtp);
   const firstDigit = useRef<HTMLInputElement>(null);
 
   const code = digits.join("");
-  const canSubmit = code.length === CODE_LENGTH;
+  const canSubmit = code.length === OTP_LENGTH;
 
   function handleVerify() {
     if (flow === "login") {
@@ -111,7 +110,7 @@ export function VerifyEmailForm({
       { flow, challengeId },
       {
         onSuccess: () => {
-          setDigits(Array(CODE_LENGTH).fill(""));
+          setDigits(emptyOtp());
           firstDigit.current?.focus();
         },
       },
@@ -143,7 +142,11 @@ export function VerifyEmailForm({
 
             <div className="flex w-full flex-col items-start gap-xl">
               <div className="flex w-full flex-col items-start gap-md">
-                <OtpInput ref={firstDigit} value={digits} onChange={setDigits} />
+                <OtpInput
+                  ref={firstDigit}
+                  value={digits}
+                  onChange={setDigits}
+                />
                 <p className="flex items-center gap-xs text-body-sm text-grey-900">
                   Didn&rsquo;t receive the code?{" "}
                   <button

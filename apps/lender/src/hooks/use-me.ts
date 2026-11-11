@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { query } from "@/api/client";
-import type { Me } from "@/types/profile";
+import type { User } from "@/types/user";
+
+export const ME_KEY = ["users", "me"] as const;
 
 export function useMe() {
   return useQuery({
-    queryKey: ["auth", "me"],
-    queryFn: () => query<Me>("/auth/me"),
+    queryKey: ME_KEY,
+    queryFn: () => query<User>("/users/me"),
     staleTime: Infinity,
   });
 }

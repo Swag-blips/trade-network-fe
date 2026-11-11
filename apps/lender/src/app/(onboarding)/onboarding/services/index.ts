@@ -1,11 +1,6 @@
 import { mutation } from "@/api/client";
-import {
-  parseAllocation,
-  toBps,
-  toMinorUnits,
-  toSectorCode,
-  toTenorCode,
-} from "@/utils/mandate-options";
+import { toTermsRequest } from "@/services/mandate";
+import { fromDraft } from "@/utils/mandate-options";
 import type {
   CompleteOnboardingDto,
   CompleteOnboardingRequest,
@@ -23,15 +18,7 @@ function toRequest({
       state: data.state,
       streetAddress: data.streetAddress,
     },
-    mandate: {
-      currency: "NGN",
-      capitalAllocationMinor: toMinorUnits(parseAllocation(data.capitalAllocation)),
-      minTicketMinor: toMinorUnits(data.fundingMin),
-      maxTicketMinor: toMinorUnits(data.fundingMax),
-      annualInterestRateBps: toBps(Number(data.interestRate)),
-      tenor: toTenorCode(data.tenor),
-      sectors: data.sectors.map(toSectorCode),
-    },
+    mandate: toTermsRequest(fromDraft(data)),
   };
 }
 

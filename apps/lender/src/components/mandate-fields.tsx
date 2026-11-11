@@ -1,19 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import { Field, FieldError } from "@repo/ui/field";
+import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Radio } from "@repo/ui/radio";
 import type { MandateDraft } from "@/types/mandate";
 import {
+  exceedsAllocation,
+  formatRate,
   SECTORS,
   TENORS,
-  exceedsAllocation,
-  formatAllocation,
-  formatRate,
-  parseAllocation,
   withSaved,
 } from "@/utils/mandate-options";
+import { formatAmountInput, parseAmountInput } from "@/utils/naira";
 import { FinancingRange, NAIRA } from "./financing-range";
 import { IndustryPicker } from "./industry-picker";
 import { SelectedIndustries } from "./selected-industries";
@@ -21,12 +20,10 @@ import { SelectedIndustries } from "./selected-industries";
 export function MandateFields({
   value,
   onChange,
-  errors = {},
   disabled = false,
 }: {
   value: MandateDraft;
   onChange: (fields: Partial<MandateDraft>) => void;
-  errors?: Partial<Record<keyof MandateDraft, string>>;
   disabled?: boolean;
 }) {
   const industriesInput = useRef<HTMLInputElement>(null);
@@ -46,7 +43,6 @@ export function MandateFields({
         htmlFor="allocation"
         variant="question"
         className="-mb-1"
-        error={errors.capitalAllocation}
       >
         <Input
           id="allocation"
@@ -58,7 +54,7 @@ export function MandateFields({
           value={capitalAllocation}
           onChange={(event) =>
             onChange({
-              capitalAllocation: formatAllocation(event.target.value),
+              capitalAllocation: formatAmountInput(event.target.value),
             })
           }
         />
@@ -69,7 +65,6 @@ export function MandateFields({
         htmlFor="interest-rate"
         variant="question"
         className="-mb-1"
-        error={errors.interestRate}
       >
         <Input
           id="interest-rate"
@@ -116,20 +111,17 @@ export function MandateFields({
             </label>
           ))}
         </div>
-        {errors.tenor ? <FieldError>{errors.tenor}</FieldError> : null}
       </div>
 
       <FinancingRange
         min={fundingMin}
         max={fundingMax}
-        minError={errors.fundingMin}
         maxError={
-          errors.fundingMax ??
-          (exceedsAllocation(value)
+          exceedsAllocation(value)
             ? "Max ticket can't be more than your capital allocation."
-            : undefined)
+            : undefined
         }
-        ceiling={parseAllocation(capitalAllocation)}
+        ceiling={parseAmountInput(capitalAllocation)}
         disabled={disabled}
         onChange={({ min, max }) =>
           onChange({ fundingMin: min, fundingMax: max })
@@ -141,7 +133,6 @@ export function MandateFields({
           label="Which industries would you prefer to finance?"
           htmlFor="industries"
           variant="question"
-          error={errors.sectors}
         >
           <IndustryPicker
             id="industries"

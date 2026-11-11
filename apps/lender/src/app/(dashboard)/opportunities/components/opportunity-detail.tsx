@@ -26,15 +26,14 @@ import { OfferModal } from "./offer-modal";
 import { RequestInfoModal } from "./request-info-modal";
 import { useDismissOpportunity } from "../hooks/use-dismiss-opportunity";
 import { useOpportunity } from "../hooks/use-opportunity";
-import type { OfferTerms } from "../types/inbox";
 import type { Opportunity, OpportunitySummary } from "../types/opportunity";
-import { MATCH, fullNaira, shortDate } from "../utils/format";
+import { fullNaira, MATCH, shortDate } from "../utils/format";
 import { forgetOpportunity } from "../utils/opportunity-cache";
 
 const TABS = ["Overview", "Trade details"] as const;
 type Tab = (typeof TABS)[number];
 
-function Square({ name }: { name: string }) {
+export function Square({ name }: { name: string }) {
   return (
     <Avatar
       name={name}
@@ -45,7 +44,7 @@ function Square({ name }: { name: string }) {
   );
 }
 
-function Metric({
+export function Metric({
   label,
   value,
   icon,
@@ -67,7 +66,7 @@ function Metric({
   );
 }
 
-function Notice({ icon, text }: { icon: IconSvgElement; text: string }) {
+export function Notice({ icon, text }: { icon: IconSvgElement; text: string }) {
   return (
     <p className="flex items-center gap-xs rounded-lg border border-grey-200 bg-grey-50 p-md text-body/[normal] text-grey-600">
       <HugeiconsIcon icon={icon} size={20} className="flex-none" />
@@ -76,7 +75,7 @@ function Notice({ icon, text }: { icon: IconSvgElement; text: string }) {
   );
 }
 
-function Party({ role, name }: { role: string; name: string }) {
+export function Party({ role, name }: { role: string; name: string }) {
   return (
     <div className="flex items-start gap-md">
       <Square name={name} />
@@ -158,7 +157,7 @@ function TradeDetails({ item }: { item: Opportunity }) {
   );
 }
 
-function BodyPlaceholder() {
+export function BodyPlaceholder() {
   return (
     <div aria-hidden className="grid grid-cols-2 gap-md">
       {[0, 1, 2, 3].map((index) => (
@@ -171,18 +170,22 @@ function BodyPlaceholder() {
   );
 }
 
+export const CLOSED: Opportunity["status"][] = ["DISMISSED", "WITHDRAWN", "CLOSED"];
+
 export function OpportunityDetail({
+  id,
   summary,
-  onOffer,
-  onRequestDocuments,
+  onEngaged,
 }: {
-  summary: OpportunitySummary;
-  onOffer: (opportunity: Opportunity, terms: OfferTerms) => void;
-  onRequestDocuments: (opportunity: Opportunity, documents: string[]) => void;
+  id: string;
+  summary?: OpportunitySummary;
+  onEngaged: (conversationId: string) => void;
 }) {
   const queryClient = useQueryClient();
-  const { data: item, isPending, error } = useOpportunity(summary.id);
+  const { data: item, isPending, error } = useOpportunity(id);
+  const head = item ?? summary;
   const canDismiss = usePermission("opportunities:dismiss");
+  const canNegotiate = usePermission("offers:negotiate");
   const { mutate: dismiss, isPending: dismissing } = useDismissOpportunity();
   const [tab, setTab] = useState<Tab>("Overview");
   const [offerOpen, setOfferOpen] = useState(false);
@@ -191,8 +194,8 @@ export function OpportunityDetail({
 
   const gone = readStatus(error) === 404;
   useEffect(() => {
-    if (gone) forgetOpportunity(queryClient, summary.id);
-  }, [gone, queryClient, summary.id]);
+    if (gone) forgetOpportunity(queryClient, id);
+  }, [gone, queryClient, id]);
 
   const open = item?.status === "OPEN";
 
@@ -200,36 +203,44 @@ export function OpportunityDetail({
     <div className="flex min-w-0 flex-1 flex-col bg-white shadow-small-thick">
       <header className="flex min-h-18 flex-none items-center justify-between gap-md border-b border-grey-100 px-lg py-md">
         <div className="flex min-w-0 items-center gap-md">
-          <Square name={summary.name} />
-          <div className="flex min-w-0 flex-col gap-1">
-            <h2 className="truncate font-sans text-body/[normal] font-medium text-grey-900">
-              {summary.name}
-            </h2>
-            <p className="text-body-sm/[normal] text-grey-600">
-              <span className={`font-medium ${MATCH[summary.match].text}`}>
-                {MATCH[summary.match].label}
-              </span>
-              {` · Expires ${shortDate(summary.expiresAt)}`}
-            </p>
-          </div>
+          {head ? (
+            <>
+              <Square name={head.name} />
+              <div className="flex min-w-0 flex-col gap-1">
+                <h2 className="truncate font-sans text-body/[normal] font-medium text-grey-900">
+                  {head.name}
+                </h2>
+                <p className="text-body-sm/[normal] text-grey-600">
+                  <span className={`font-medium ${MATCH[head.match].text}`}>
+                    {MATCH[head.match].label}
+                  </span>
+                  {` · Expires ${shortDate(head.expiresAt)}`}
+                </p>
+              </div>
+            </>
+          ) : null}
         </div>
 
         {item && open ? (
           <div className="flex flex-none items-center gap-md">
-            <Button
-              size="auth"
-              leadingIcon={<HugeiconsIcon icon={SentIcon} />}
-              onClick={() => setOfferOpen(true)}
-            >
-              Make offer
-            </Button>
-            <Button
-              variant="secondary"
-              size="auth"
-              onClick={() => setRequestOpen(true)}
-            >
-              Request for info
-            </Button>
+            {canNegotiate ? (
+              <>
+                <Button
+                  size="auth"
+                  leadingIcon={<HugeiconsIcon icon={SentIcon} />}
+                  onClick={() => setOfferOpen(true)}
+                >
+                  Make offer
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="auth"
+                  onClick={() => setRequestOpen(true)}
+                >
+                  Request for info
+                </Button>
+              </>
+            ) : null}
             {canDismiss ? (
               <IconButton
                 label="Not interested"
@@ -269,12 +280,12 @@ export function OpportunityDetail({
           />
         ) : (
           <>
-            {open ? null : (
+            {CLOSED.includes(item.status) ? (
               <Notice
                 icon={InformationCircleIcon}
                 text="This request is no longer available."
               />
-            )}
+            ) : null}
             {tab === "Overview" ? (
               <div className="grid grid-cols-2 gap-md">
                 <Metric
@@ -308,19 +319,20 @@ export function OpportunityDetail({
         <OfferModal
           opportunity={item}
           onClose={() => setOfferOpen(false)}
-          onSend={(terms) => {
+          onSent={(offer) => {
             setOfferOpen(false);
-            onOffer(item, terms);
+            onEngaged(offer.conversationId);
           }}
         />
       ) : null}
 
       {requestOpen && item ? (
         <RequestInfoModal
+          opportunityId={item.id}
           onClose={() => setRequestOpen(false)}
-          onSend={(documents) => {
+          onSent={(request) => {
             setRequestOpen(false);
-            onRequestDocuments(item, documents);
+            onEngaged(request.conversationId);
           }}
         />
       ) : null}
@@ -330,7 +342,7 @@ export function OpportunityDetail({
           pending={dismissing}
           onClose={() => setDismissOpen(false)}
           onConfirm={() =>
-            dismiss(summary.id, { onSettled: () => setDismissOpen(false) })
+            dismiss(id, { onSettled: () => setDismissOpen(false) })
           }
         />
       ) : null}

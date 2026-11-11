@@ -3,6 +3,7 @@ import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage, readStatus } from "@/api/client";
 import { opportunityService } from "../services";
 import { forgetOpportunity } from "../utils/opportunity-cache";
+import { ORGANIZATION_KEY } from "@/hooks/use-organization";
 
 export function useDismissOpportunity() {
   const { toast } = useToast();
@@ -12,9 +13,6 @@ export function useDismissOpportunity() {
     mutationFn: (id: string) => opportunityService.dismiss(id),
     onSuccess: (_, id) => {
       forgetOpportunity(queryClient, id);
-      void queryClient.invalidateQueries({
-        queryKey: ["dashboard", "new-for-you"],
-      });
       toast({
         state: "success",
         message: "Opportunity has been removed from your list",
@@ -26,7 +24,7 @@ export function useDismissOpportunity() {
       if (status === 409 || status === 404) forgetOpportunity(queryClient, id);
       if (status === 403) {
         void queryClient.invalidateQueries({
-          queryKey: ["organizations", "current"],
+          queryKey: ORGANIZATION_KEY,
         });
       }
       toast({

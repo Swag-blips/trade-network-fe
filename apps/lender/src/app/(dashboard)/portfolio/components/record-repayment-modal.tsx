@@ -32,7 +32,7 @@ export function RecordRepaymentModal({
   const [amount, setAmount] = useState(
     trade?.outstanding.replace("₦", "") ?? "",
   );
-  const [evidence, setEvidence] = useState<string | null>(null);
+  const [evidence, setEvidence] = useState<File | null>(null);
 
   function selectTrade(next: string) {
     setTradeId(next);
@@ -47,7 +47,7 @@ export function RecordRepaymentModal({
       confirmLabel="Confirm repayment"
       confirmDisabled={!tradeId || !amount || !evidence}
       onClose={onClose}
-      onConfirm={() => onSubmit({ tradeId, amount, evidence: evidence! })}
+      onConfirm={() => onSubmit({ tradeId, amount, evidence: evidence!.name })}
     >
       <p className="w-full text-body text-grey-800">
         Record a repayment of a funded trade.

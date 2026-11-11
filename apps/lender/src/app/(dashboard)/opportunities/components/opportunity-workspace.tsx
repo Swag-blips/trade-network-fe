@@ -2,28 +2,24 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useToast } from "@repo/ui/toast";
 import { ConversationView } from "./conversation-view";
 import { FinancingPreference } from "./financing-preference";
 import { InboxList } from "./inbox-list";
 import { MatchingPreference } from "./matching-preference";
 import { OpportunityBanner } from "./opportunity-banner";
 import { OpportunityDetail } from "./opportunity-detail";
+import { OpportunityDetailsModal } from "./opportunity-details-modal";
 import {
   RequestsPane,
   type ListState,
   type Pane,
   type Show,
 } from "./requests-pane";
+import { useConversations } from "../hooks/use-conversations";
 import { useOpportunities } from "../hooks/use-opportunities";
 import { useViewOpportunity } from "../hooks/use-view-opportunity";
-import type {
-  Conversation,
-  InboxShow,
-  Message,
-  OfferTerms,
-} from "../types/inbox";
-import type { MatchLevel, Opportunity } from "../types/opportunity";
+import type { ConversationSummary, InboxShow } from "../types/inbox";
+import type { MatchLevel } from "../types/opportunity";
 
 function EmptyPreview() {
   return (
@@ -46,71 +42,16 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
   const [show, setShow] = useState<Show>("All");
   const [selectedId, setSelectedId] = useState<string>();
   const [pane, setPane] = useState<Pane>("Requests");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [conversationId, setConversationId] = useState<string>();
-  const [inboxShow, setInboxShow] = useState<InboxShow>("Active");
+  const [inboxShow, setInboxShow] = useState<InboxShow>("All");
+  const [detailOf, setDetailOf] = useState<string>();
   const { mutate: markViewed } = useViewOpportunity();
-  const { toast } = useToast();
+  const conversations = useConversations(inboxShow);
 
-  function post(opportunity: Opportunity, message: Message) {
-    setConversations((current) => {
-      const existing = current.find(
-        (conversation) => conversation.opportunity.id === opportunity.id,
-      );
-      const next: Conversation = existing
-        ? { ...existing, opportunity, messages: [...existing.messages, message] }
-        : {
-            opportunity,
-            startedAt: message.sentAt,
-            funded: false,
-            messages: [message],
-          };
-      return [
-        next,
-        ...current.filter(
-          (conversation) => conversation.opportunity.id !== opportunity.id,
-        ),
-      ];
-    });
-    setConversationId(opportunity.id);
-    setInboxShow("Active");
-    setPane("Inbox");
-  }
-
-  function sendOffer(opportunity: Opportunity, terms: OfferTerms) {
-    post(opportunity, {
-      id: crypto.randomUUID(),
-      kind: "offer",
-      sentAt: new Date().toISOString(),
-      terms,
-    });
-    toast({ state: "success", message: `Offer sent to ${opportunity.name}` });
-  }
-
-  function requestDocuments(opportunity: Opportunity, documents: string[]) {
-    post(opportunity, {
-      id: crypto.randomUUID(),
-      kind: "documents",
-      sentAt: new Date().toISOString(),
-      documents,
-    });
-    toast({ state: "success", message: "Request for info sent" });
-  }
-
-  function withdrawOffer(id: string) {
-    setConversations((current) =>
-      current.map((conversation) =>
-        conversation.opportunity.id === id
-          ? {
-              ...conversation,
-              messages: conversation.messages.filter(
-                (message) => message.kind !== "offer",
-              ),
-            }
-          : conversation,
-      ),
-    );
-    toast({ state: "success", message: "Offer withdrawn" });
+  function openConversation(id: string) {
+    setConversationId(id);
+    setInboxShow("All");
+    setPane("Negotiations");
   }
 
   const {
@@ -129,13 +70,22 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
   const filtered = match !== undefined || show !== "All";
   const searching = !isPending && !isError && items.length === 0 && !filtered;
   const selected = items.find((item) => item.id === selectedId) ?? items[0];
-  const inbox = conversations.filter(
-    (conversation) => conversation.funded === (inboxShow === "Funded"),
-  );
-  const conversation =
-    inbox.find((item) => item.opportunity.id === conversationId) ?? inbox[0];
-  const showInbox = !searching || conversations.length > 0;
-  const inInbox = pane === "Inbox" && showInbox;
+  const inbox = conversations.data?.pages.flatMap((page) => page.items) ?? [];
+  const activeId = conversationId ?? inbox[0]?.id;
+  const showInbox = !searching || inbox.length > 0 || inboxShow !== "All";
+  const inInbox = pane === "Negotiations" && showInbox;
+
+  const inboxList: ListState<ConversationSummary> = conversations.isPending
+    ? { kind: "loading" }
+    : conversations.isError
+      ? { kind: "error" }
+      : {
+          kind: "ready",
+          items: inbox,
+          hasMore: conversations.hasNextPage,
+          loadingMore: conversations.isFetchingNextPage,
+          onLoadMore: () => void conversations.fetchNextPage(),
+        };
 
   const list: ListState = isPending
     ? { kind: "loading" }
@@ -178,31 +128,25 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
             inbox={
               showInbox ? (
                 <InboxList
-                  conversations={inbox}
-                  selectedId={conversation?.opportunity.id}
+                  list={inboxList}
+                  selectedId={activeId}
                   onSelect={setConversationId}
                   show={inboxShow}
-                  onShowChange={setInboxShow}
+                  onShowChange={(next) => {
+                    setInboxShow(next);
+                    setConversationId(undefined);
+                  }}
                 />
               ) : undefined
             }
           />
           {inInbox ? (
-            conversation ? (
+            activeId ? (
               <ConversationView
-                key={conversation.opportunity.id}
-                conversation={conversation}
-                onOffer={(terms) => sendOffer(conversation.opportunity, terms)}
-                onRequestDocuments={(documents) =>
-                  requestDocuments(conversation.opportunity, documents)
-                }
-                onWithdrawOffer={() =>
-                  withdrawOffer(conversation.opportunity.id)
-                }
-                onViewDetails={() => {
-                  setSelectedId(conversation.opportunity.id);
-                  setPane("Requests");
-                }}
+                key={activeId}
+                id={activeId}
+                summary={inbox.find((item) => item.id === activeId)}
+                onViewDetails={setDetailOf}
               />
             ) : (
               <div className="min-w-0 flex-1 bg-white shadow-small-thick" />
@@ -210,9 +154,9 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
           ) : selected ? (
             <OpportunityDetail
               key={selected.id}
+              id={selected.id}
               summary={selected}
-              onOffer={sendOffer}
-              onRequestDocuments={requestDocuments}
+              onEngaged={openConversation}
             />
           ) : isPending ? (
             <div className="min-w-0 flex-1 bg-white shadow-small-thick" />
@@ -221,6 +165,13 @@ export function OpportunityWorkspace({ title }: { title: React.ReactNode }) {
           )}
         </div>
       </section>
+
+      {detailOf ? (
+        <OpportunityDetailsModal
+          id={detailOf}
+          onClose={() => setDetailOf(undefined)}
+        />
+      ) : null}
     </>
   );
 }

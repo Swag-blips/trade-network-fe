@@ -12,18 +12,18 @@ import { Tabs } from "@repo/ui/tabs";
 import { OpportunityCard } from "./opportunity-card";
 import type { OpportunitySummary } from "../types/opportunity";
 
-const TABS = ["Requests", "Inbox"] as const;
+const TABS = ["Requests", "Negotiations"] as const;
 export type Pane = (typeof TABS)[number];
 const SHOW = ["All", "New"] as const;
 export type Show = (typeof SHOW)[number];
 
-export type ListState =
+export type ListState<T = OpportunitySummary> =
   | { kind: "loading" }
   | { kind: "error" }
   | { kind: "searching" }
   | {
       kind: "ready";
-      items: OpportunitySummary[];
+      items: T[];
       hasMore: boolean;
       loadingMore: boolean;
       onLoadMore: () => void;
@@ -68,7 +68,13 @@ export function PillGroup<T extends string>({
   );
 }
 
-export function EmptyState({ icon, text }: { icon: IconSvgElement; text: string }) {
+export function EmptyState({
+  icon,
+  text,
+}: {
+  icon: IconSvgElement;
+  text: string;
+}) {
   return (
     <div className="flex justify-center px-md pt-3xl">
       <div className="flex w-62.5 flex-col items-center gap-md text-center">
@@ -79,7 +85,7 @@ export function EmptyState({ icon, text }: { icon: IconSvgElement; text: string 
   );
 }
 
-function CardPlaceholder() {
+export function CardPlaceholder() {
   return (
     <div aria-hidden className="flex gap-md p-md">
       <span className="size-10 flex-none animate-pulse rounded-md bg-grey-100" />
@@ -88,6 +94,22 @@ function CardPlaceholder() {
         <span className="h-3.5 w-24 animate-pulse rounded-sm bg-grey-100" />
         <span className="mt-1 h-6 w-52 animate-pulse rounded-full bg-grey-100" />
       </span>
+    </div>
+  );
+}
+
+export function LoadMore<T>({ list }: { list: ListState<T> }) {
+  if (list.kind !== "ready" || !list.hasMore) return null;
+  return (
+    <div className="flex justify-center p-md">
+      <Button
+        variant="tertiary"
+        size="form"
+        loading={list.loadingMore}
+        onClick={list.onLoadMore}
+      >
+        Load more
+      </Button>
     </div>
   );
 }
@@ -124,10 +146,10 @@ export function RequestsPane({
         className="flex-none px-md pt-2.5"
       />
 
-      {tab === "Inbox" && inbox ? (
+      {tab === "Negotiations" && inbox ? (
         <div
           role="tabpanel"
-          aria-label="Inbox"
+          aria-label="Negotiations"
           className="flex min-h-px flex-1 flex-col"
         >
           {inbox}
@@ -177,18 +199,7 @@ export function RequestsPane({
                       onSelect={() => onSelect(item.id)}
                     />
                   ))}
-                  {list.hasMore ? (
-                    <div className="flex justify-center p-md">
-                      <Button
-                        variant="tertiary"
-                        size="form"
-                        loading={list.loadingMore}
-                        onClick={list.onLoadMore}
-                      >
-                        Load more
-                      </Button>
-                    </div>
-                  ) : null}
+                  <LoadMore list={list} />
                 </div>
               )}
             </>

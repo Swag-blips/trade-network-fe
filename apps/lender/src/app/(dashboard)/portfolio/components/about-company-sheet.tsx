@@ -82,7 +82,9 @@ export function AboutCompanySheet({
 
         {tab === "Details" ? (
           <Panel title="Company details" divided>
-            <DetailRow label="Business number">{about.businessNumber}</DetailRow>
+            <DetailRow label="Business number">
+              {about.businessNumber}
+            </DetailRow>
             <DetailRow label="Address">
               <span className="w-44.25 text-grey-800 whitespace-normal">
                 {about.address}

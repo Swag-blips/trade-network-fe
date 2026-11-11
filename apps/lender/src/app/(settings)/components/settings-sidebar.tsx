@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -11,9 +12,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { OrgAvatar } from "@repo/ui/avatars";
-import { useLogout } from "@/hooks/use-logout";
 import { useMe } from "@/hooks/use-me";
 import { useOrganization } from "@/hooks/use-organization";
+import { LogoutModal } from "./logout-modal";
 
 interface SettingsItem {
   label: string;
@@ -42,8 +43,8 @@ const GROUPS: SettingsGroup[] = [
     items: [
       { label: "Funding preference", href: "/settings/funding-mandate" },
       { label: "Company details", href: "/settings/company" },
-      { label: "Team & Permissions" },
-      { label: "Login activity" },
+      { label: "Team & Permissions", href: "/settings/teams" },
+      { label: "Login activity", href: "/settings/login-activity" },
     ],
   },
 ];
@@ -79,7 +80,7 @@ export function SettingsSidebar() {
   const pathname = usePathname();
   const { data: organization } = useOrganization();
   const { data: me } = useMe();
-  const { mutate: logout, isPending: signingOut } = useLogout();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
   const orgName = organization?.name ?? "";
 
   return (
@@ -134,15 +135,18 @@ export function SettingsSidebar() {
         <div className="flex flex-col gap-md border-t border-grey-100 px-md pt-md">
           <button
             type="button"
-            disabled={signingOut}
-            onClick={() => logout()}
-            className="flex cursor-pointer items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900 disabled:cursor-wait disabled:opacity-60"
+            onClick={() => setConfirmingLogout(true)}
+            className="flex cursor-pointer items-center gap-xs text-body-sm/[normal] text-grey-500 hover:text-grey-900"
           >
             <HugeiconsIcon icon={Logout01Icon} size={20} />
             Sign out
           </button>
         </div>
       </div>
+
+      {confirmingLogout ? (
+        <LogoutModal onClose={() => setConfirmingLogout(false)} />
+      ) : null}
     </aside>
   );
 }

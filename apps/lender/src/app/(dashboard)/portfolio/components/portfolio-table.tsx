@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Search01Icon } from "@hugeicons/core-free-icons";
 import { Avatar } from "@repo/ui/avatar";
 import { DataTable } from "@repo/ui/data-table";
+import { SearchInput } from "@repo/ui/search-input";
 import { Select } from "@repo/ui/select";
 import { HealthChip } from "./health-chip";
 import { PORTFOLIO_HEALTH, type Customer } from "../types/customer";
-import { toAmount, withKobo } from "../utils/amount";
+import { parseAmount, withKobo } from "@/utils/naira";
 
 const ANY = "Any Status";
 const STATUSES = [
@@ -29,20 +28,12 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
   return (
     <div className="flex flex-col rounded-xl border border-grey-100 bg-white shadow-small-thick">
       <div className="flex items-center justify-between gap-md px-md py-2.5">
-        <label className="flex w-91.75 max-w-full items-center gap-xs overflow-hidden rounded-full border border-grey-200 bg-grey-50 px-sm py-xs focus-within:outline-2 focus-within:outline-evergreen-600">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            size={16}
-            className="flex-none text-grey-900"
-          />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search company"
-            aria-label="Search company"
-            className="min-w-0 flex-1 bg-transparent font-sans text-body/[normal] font-medium text-grey-900 outline-none placeholder:text-grey-400"
-          />
-        </label>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Search company"
+          className="w-91.75"
+        />
 
         <Select
           aria-label="Filter by portfolio health"
@@ -92,7 +83,7 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
             width: 190,
             cell: (customer) => (
               <span className="font-medium">
-                {withKobo(toAmount(customer.outstanding))}
+                {withKobo(parseAmount(customer.outstanding))}
               </span>
             ),
           },

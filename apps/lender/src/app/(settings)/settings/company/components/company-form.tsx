@@ -10,10 +10,14 @@ import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { OrgAvatar } from "@repo/ui/avatars";
 import { useOrganization } from "@/hooks/use-organization";
+import { usePermission } from "@/hooks/use-permission";
 import { COUNTRIES } from "@/utils/countries";
+import { useUpdateOrganization } from "../hooks/use-update-organization";
 
 export function CompanyForm() {
   const { data: organization } = useOrganization();
+  const canEdit = usePermission("organization:update");
+  const { mutate: updateOrganization, isPending } = useUpdateOrganization();
 
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -24,19 +28,36 @@ export function CompanyForm() {
     if (!organization) return;
     setName(organization.name);
     setCountry(organization.countryCode);
-    setState(organization.state);
-    setStreetAddress(organization.streetAddress);
+    setState(organization.state ?? "");
+    setStreetAddress(organization.streetAddress ?? "");
   }, [organization]);
 
   const dirty =
     !!organization &&
     (name !== organization.name ||
       country !== organization.countryCode ||
-      state !== organization.state ||
-      streetAddress !== organization.streetAddress);
+      state !== (organization.state ?? "") ||
+      streetAddress !== (organization.streetAddress ?? ""));
+  const complete =
+    name.trim() !== "" &&
+    country !== "" &&
+    state.trim() !== "" &&
+    streetAddress.trim() !== "";
 
   return (
-    <div className="flex w-158 max-w-full flex-col rounded-xl border border-grey-200 bg-white px-lg py-md">
+    <form
+      className="flex w-158 max-w-full flex-col rounded-xl border border-grey-200 bg-white px-lg py-md"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!canEdit || !dirty || !complete || isPending) return;
+        updateOrganization({
+          name: name.trim(),
+          countryCode: country,
+          state: state.trim(),
+          streetAddress: streetAddress.trim(),
+        });
+      }}
+    >
       <div className="flex flex-col gap-lg pb-md">
         <div className="flex items-center gap-md">
           <OrgAvatar name={name} size={80} shape="square" />
@@ -44,6 +65,7 @@ export function CompanyForm() {
             <div className="flex items-center gap-2.5">
               {/* No upload endpoint yet. */}
               <Button
+                type="button"
                 variant="ghost"
                 size="inline"
                 leadingIcon={<HugeiconsIcon icon={CloudUploadIcon} />}
@@ -63,6 +85,8 @@ export function CompanyForm() {
             <Input
               id="company-name"
               variant="strong"
+              maxLength={200}
+              disabled={!canEdit}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
@@ -71,6 +95,7 @@ export function CompanyForm() {
             <Select
               id="country"
               variant="strong"
+              disabled={!canEdit}
               value={country}
               onValueChange={setCountry}
               options={COUNTRIES}
@@ -80,6 +105,8 @@ export function CompanyForm() {
             <Input
               id="state"
               variant="strong"
+              maxLength={100}
+              disabled={!canEdit}
               value={state}
               onChange={(event) => setState(event.target.value)}
             />
@@ -88,6 +115,8 @@ export function CompanyForm() {
             <Input
               id="street-address"
               variant="strong"
+              maxLength={300}
+              disabled={!canEdit}
               value={streetAddress}
               onChange={(event) => setStreetAddress(event.target.value)}
             />
@@ -95,12 +124,18 @@ export function CompanyForm() {
         </div>
       </div>
 
-      <div className="py-md">
-        {/* No organisation update endpoint yet. */}
-        <Button size="form" disabled={!dirty}>
-          Save
-        </Button>
-      </div>
-    </div>
+      {canEdit ? (
+        <div className="py-md">
+          <Button
+            type="submit"
+            size="form"
+            loading={isPending}
+            disabled={!dirty || !complete}
+          >
+            Save
+          </Button>
+        </div>
+      ) : null}
+    </form>
   );
 }

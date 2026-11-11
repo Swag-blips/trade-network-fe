@@ -13,14 +13,6 @@ export function useUpdateMandate() {
     mutationFn: (mandate: Mandate) => mandateService.update(mandate),
     onSuccess: (saved) => {
       queryClient.setQueryData(MANDATE_KEY, saved);
-      // Available capital follows the allocation, and what counts as a match
-      // follows the rest of the mandate.
-      void queryClient.invalidateQueries({
-        queryKey: ["dashboard", "overview"],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["dashboard", "new-for-you"],
-      });
       toast({ message: "Your financing preference was updated" });
     },
     onError: (error) =>

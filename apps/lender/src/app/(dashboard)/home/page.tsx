@@ -1,34 +1,19 @@
-import { Topbar } from "../components/topbar";
-import { WelcomeBanner } from "./components/welcome-banner";
-import { OverviewStats } from "./components/overview-stats";
-import { CapitalDeployedCard } from "./components/capital-deployed-card";
-import { NewForYouCard } from "./components/new-for-you-card";
-import { WelcomeModalHost } from "./components/welcome-modal-host";
+import { HomeGlow } from "./components/home-glow";
+import { Greeting } from "./components/greeting";
+import { HomeMetrics } from "./components/home-metrics";
+import { RecentUpdates } from "./components/recent-updates";
 
 export default function LenderHomePage() {
   return (
-    <>
-      <Topbar title="Home" />
-      <div className="min-h-px flex-1 overflow-y-auto pb-lg">
-        <div className="mx-auto w-full max-w-content">
-          <WelcomeBanner />
-
-          <div className="mt-xl grid grid-cols-[minmax(0,1fr)_375px] items-start gap-xl px-lg">
-            <section id="dashboard-overview" className="flex flex-col">
-              <h2 className="border-b border-grey-100 py-xs font-sans text-body font-medium text-grey-900">
-                Overview
-              </h2>
-              <div className="flex flex-col gap-md py-md">
-                <OverviewStats />
-                <CapitalDeployedCard />
-              </div>
-            </section>
-
-            <NewForYouCard />
-          </div>
+    <div className="relative min-h-px flex-1 overflow-y-auto">
+      <HomeGlow />
+      <div className="relative mx-auto flex w-full max-w-252 flex-col gap-xl px-lg py-10">
+        <div className="flex flex-col gap-lg">
+          <Greeting />
+          <HomeMetrics />
         </div>
+        <RecentUpdates />
       </div>
-      <WelcomeModalHost />
-    </>
+    </div>
   );
 }

@@ -16,8 +16,8 @@ export function FormDialog({
   title: string;
   className: string;
   onClose: () => void;
-  onSubmit: () => void;
-  footer: ReactNode;
+  onSubmit?: () => void;
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -42,7 +42,7 @@ export function FormDialog({
         className="flex min-h-0 flex-1 flex-col"
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit();
+          onSubmit?.();
         }}
       >
         <header className="flex items-center gap-sm border-b border-grey-200 bg-grey-50 px-lg py-md">
@@ -61,9 +61,11 @@ export function FormDialog({
           {children}
         </div>
 
-        <footer className="flex items-center justify-end gap-md border-t border-grey-100 px-lg py-md">
-          {footer}
-        </footer>
+        {footer ? (
+          <footer className="flex items-center justify-end gap-md border-t border-grey-100 px-lg py-md">
+            {footer}
+          </footer>
+        ) : null}
       </form>
     </dialog>
   );

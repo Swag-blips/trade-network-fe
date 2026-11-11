@@ -8,6 +8,11 @@ import { Field } from "@repo/ui/field";
 import { IconButton } from "@repo/ui/icon-button";
 import { Input } from "@repo/ui/input";
 import { FormDialog } from "@/components/form-dialog";
+import { useRequestDocuments } from "../hooks/use-request-documents";
+import { isFormError } from "../utils/negotiation";
+import type { DocumentRequestResponse } from "../types/inbox";
+
+const MAX_DOCUMENTS = 10;
 
 type Row = { id: number; value: string };
 
@@ -38,6 +43,7 @@ function DocumentRow({
           value={row.value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="e.g. Signed purchase order"
+          maxLength={200}
           autoFocus={index > 0}
         />
       </Field>
@@ -57,12 +63,18 @@ function DocumentRow({
 }
 
 export function RequestInfoModal({
+  opportunityId,
   onClose,
-  onSend,
+  onSent,
 }: {
+  opportunityId: string;
   onClose: () => void;
-  onSend: (documents: string[]) => void;
+  onSent: (request: DocumentRequestResponse) => void;
 }) {
+  const { mutate: requestDocuments, isPending } = useRequestDocuments(
+    opportunityId,
+    onSent,
+  );
   const [rows, setRows] = useState<Row[]>([{ id: 0, value: "" }]);
   const documents = rows.map((row) => row.value.trim()).filter(Boolean);
 
@@ -72,7 +84,12 @@ export function RequestInfoModal({
       className="w-159.75"
       onClose={onClose}
       onSubmit={() => {
-        if (documents.length > 0) onSend(documents);
+        if (documents.length === 0 || isPending) return;
+        requestDocuments(documents, {
+          onError: (error) => {
+            if (!isFormError(error)) onClose();
+          },
+        });
       }}
       footer={
         <>
@@ -87,6 +104,7 @@ export function RequestInfoModal({
           <Button
             type="submit"
             size="compact"
+            loading={isPending}
             disabled={documents.length === 0}
           >
             Send request
@@ -106,13 +124,13 @@ export function RequestInfoModal({
               key={row.id}
               index={index}
               row={row}
-              onChange={(value) =>
+              onChange={(value) => {
                 setRows((current) =>
                   current.map((item) =>
                     item.id === row.id ? { ...item, value } : item,
                   ),
-                )
-              }
+                );
+              }}
               onRemove={
                 index === 0
                   ? undefined
@@ -124,20 +142,25 @@ export function RequestInfoModal({
             />
           ))}
         </div>
-        <Button
-          type="button"
-          variant="tertiary"
-          size="form"
-          leadingIcon={<HugeiconsIcon icon={Add01Icon} />}
-          onClick={() =>
-            setRows((current) => [
-              ...current,
-              { id: Math.max(...current.map((item) => item.id)) + 1, value: "" },
-            ])
-          }
-        >
-          Add another document
-        </Button>
+        {rows.length < MAX_DOCUMENTS ? (
+          <Button
+            type="button"
+            variant="tertiary"
+            size="form"
+            leadingIcon={<HugeiconsIcon icon={Add01Icon} />}
+            onClick={() =>
+              setRows((current) => [
+                ...current,
+                {
+                  id: Math.max(...current.map((item) => item.id)) + 1,
+                  value: "",
+                },
+              ])
+            }
+          >
+            Add another document
+          </Button>
+        ) : null}
       </div>
 
       <p className="border-l-4 border-orange-500 bg-orange-50 px-lg py-2.5 text-body/[1.5] text-grey-900">

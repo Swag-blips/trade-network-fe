@@ -3,43 +3,16 @@
 import { useState } from "react";
 import { Button } from "@repo/ui/button";
 import { MandateFields } from "@/components/mandate-fields";
-import type { Mandate, MandateDraft } from "@/types/mandate";
+import type { Mandate } from "@/types/mandate";
 import {
-  formatAllocation,
+  fromDraft,
   isCompleteMandate,
-  parseAllocation,
+  isSameDraft,
+  toDraft,
 } from "@/utils/mandate-options";
 import { useUpdateMandate } from "../hooks/use-update-mandate";
+import { longDate } from "../utils/format";
 import { UpdateLimitBanner } from "./update-limit-banner";
-
-const toDraft = (mandate: Mandate): MandateDraft => ({
-  capitalAllocation: formatAllocation(String(mandate.capitalAllocation)),
-  interestRate: String(mandate.interestRate),
-  tenor: mandate.tenor,
-  fundingMin: mandate.fundingMin,
-  fundingMax: mandate.fundingMax,
-  sectors: mandate.businessSectors,
-});
-
-function isSame(a: MandateDraft, b: MandateDraft) {
-  return (
-    parseAllocation(a.capitalAllocation) ===
-      parseAllocation(b.capitalAllocation) &&
-    Number(a.interestRate) === Number(b.interestRate) &&
-    a.tenor === b.tenor &&
-    a.fundingMin === b.fundingMin &&
-    a.fundingMax === b.fundingMax &&
-    a.sectors.length === b.sectors.length &&
-    a.sectors.every((sector) => b.sectors.includes(sector))
-  );
-}
-
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
-  });
 
 export function MandateForm({ mandate }: { mandate: Mandate }) {
   const { mutate: updateMandate, isPending } = useUpdateMandate();
@@ -48,7 +21,7 @@ export function MandateForm({ mandate }: { mandate: Mandate }) {
 
   const { nextChangeAt } = mandate;
   const locked = nextChangeAt !== null;
-  const dirty = !isSame(draft, toDraft(mandate));
+  const dirty = !isSameDraft(draft, toDraft(mandate));
   const valid = isCompleteMandate(draft);
 
   return (
@@ -59,7 +32,7 @@ export function MandateForm({ mandate }: { mandate: Mandate }) {
           onDismiss={() => setDismissed("locked")}
         >
           You&rsquo;ve already updated your funding mandate within the last 30
-          days. You can make changes again on {formatDate(nextChangeAt)}.
+          days. You can make changes again on {longDate(nextChangeAt)}.
         </UpdateLimitBanner>
       ) : null}
       {!locked && dirty && dismissed !== "edited" ? (
@@ -78,15 +51,7 @@ export function MandateForm({ mandate }: { mandate: Mandate }) {
         onSubmit={(event) => {
           event.preventDefault();
           if (!dirty || !valid || locked) return;
-          updateMandate({
-            ...mandate,
-            capitalAllocation: parseAllocation(draft.capitalAllocation),
-            interestRate: Number(draft.interestRate),
-            tenor: draft.tenor,
-            fundingMin: draft.fundingMin,
-            fundingMax: draft.fundingMax,
-            businessSectors: draft.sectors,
-          });
+          updateMandate({ ...mandate, ...fromDraft(draft) });
         }}
       >
         <MandateFields
