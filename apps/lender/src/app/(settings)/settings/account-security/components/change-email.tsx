@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@repo/ui/button";
@@ -8,28 +8,18 @@ import { useToast } from "@repo/ui/toast";
 import {
   extractErrorMessage,
   readFieldErrors,
-  readProblem,
   readProblemType,
-  readRetryAfter,
 } from "@/api/client";
-import { emptyOtp } from "@/utils/otp";
-import { useCooldown } from "../hooks/use-cooldown";
 import {
   useConfirmEmailChange,
   useRequestEmailChange,
   useResendEmailChange,
-  useResendStepUp,
-  useStartStepUp,
-  useVerifyStepUp,
 } from "../hooks/use-email-change";
+import { useStepUp } from "../hooks/use-step-up";
 import { NewEmailModal } from "./new-email-modal";
 import { VerifyEmailModal } from "./verify-email-modal";
 
-/** Codes are limited to one a minute per address. */
-const DEFAULT_RETRY_SECONDS = 60;
-
 type Step =
-  | { kind: "current"; challengeId?: string }
   | { kind: "new-email"; stepUpChallengeId: string }
   | {
       kind: "verify-new";
@@ -41,19 +31,14 @@ type Step =
 export function ChangeEmail({ email }: { email?: string }) {
   const { toast } = useToast();
   const [step, setStep] = useState<Step | null>(null);
-  const [digits, setDigits] = useState(emptyOtp);
-  const [codeError, setCodeError] = useState<string>();
   const [newEmail, setNewEmail] = useState("");
   const [emailError, setEmailError] = useState<string>();
-  const firstDigit = useRef<HTMLInputElement>(null);
-  const sendCooldown = useCooldown();
-  const verifyCooldown = useCooldown();
 
-  const { mutate: startStepUp } = useStartStepUp();
-  const { mutate: verifyStepUp, isPending: verifyingStepUp } =
-    useVerifyStepUp();
-  const { mutate: resendStepUp, isPending: resendingStepUp } =
-    useResendStepUp();
+  const stepUp = useStepUp({
+    onBegin: () => setStep(null),
+    onVerified: (stepUpChallengeId) => enterNewEmail(stepUpChallengeId),
+  });
+
   const { mutate: requestChange, isPending: requesting } =
     useRequestEmailChange();
   const { mutate: confirmChange, isPending: confirming } =
@@ -61,98 +46,13 @@ export function ChangeEmail({ email }: { email?: string }) {
   const { mutate: resendChange, isPending: resendingChange } =
     useResendEmailChange();
 
-  function failed(error: unknown, fallback: string) {
-    toast({ state: "error", message: extractErrorMessage(error, fallback) });
-  }
-
-  function rateLimited(error: unknown, cooldown: typeof sendCooldown) {
-    if (readProblemType(error) !== "rate-limited") return false;
-    cooldown.start(readRetryAfter(error) ?? DEFAULT_RETRY_SECONDS);
-    return true;
-  }
-
-  function resetCode() {
-    setDigits(emptyOtp());
-    setCodeError(undefined);
-    verifyCooldown.stop();
-  }
-
   function close() {
     setStep(null);
-    resetCode();
-    sendCooldown.stop();
-  }
-
-  function beginStepUp() {
-    resetCode();
-    sendCooldown.stop();
-    setStep({ kind: "current" });
-    startStepUp(undefined, {
-      onSuccess: ({ challengeId }) =>
-        setStep((current) =>
-          current?.kind === "current"
-            ? { kind: "current", challengeId }
-            : current,
-        ),
-      onError: (error) => {
-        if (rateLimited(error, sendCooldown)) {
-          setCodeError(
-            extractErrorMessage(error, "Too many requests. Try again shortly."),
-          );
-          return;
-        }
-        failed(error, "We couldn't send a code to your email.");
-        close();
-      },
-    });
-  }
-
-  function restart(error: unknown) {
-    toast({
-      state: "error",
-      message:
-        readProblem(error)?.detail ??
-        "That code has expired. We've sent a new one to your current email.",
-    });
-    beginStepUp();
-  }
-
-  function codeFailed(error: unknown, fallback: string) {
-    const type = readProblemType(error);
-    if (type === "invalid-code" || type === "validation-failed") {
-      setCodeError(extractErrorMessage(error, "That code didn't work"));
-      return;
-    }
-    if (rateLimited(error, verifyCooldown)) {
-      setCodeError(extractErrorMessage(error, "Too many attempts."));
-      return;
-    }
-    if (type === "challenge-expired") {
-      restart(error);
-      return;
-    }
-    failed(error, fallback);
-  }
-
-  function resent() {
-    toast({ message: "A new code is on its way" });
-    setDigits(emptyOtp());
-    setCodeError(undefined);
-    firstDigit.current?.focus();
-  }
-
-  function resendFailed(error: unknown) {
-    if (rateLimited(error, sendCooldown)) return;
-    if (readProblemType(error) === "challenge-expired") {
-      restart(error);
-      return;
-    }
-    failed(error, "We couldn't send a new code.");
+    stepUp.close();
   }
 
   function enterNewEmail(stepUpChallengeId: string) {
-    resetCode();
-    sendCooldown.stop();
+    stepUp.close();
     setStep({ kind: "new-email", stepUpChallengeId });
   }
 
@@ -166,51 +66,18 @@ export function ChangeEmail({ email }: { email?: string }) {
         onClick={() => {
           setNewEmail("");
           setEmailError(undefined);
-          beginStepUp();
+          stepUp.begin();
         }}
       >
         Change
       </Button>
 
-      {step?.kind === "current" && email ? (
+      {stepUp.active && email ? (
         <VerifyEmailModal
           key="current"
           email={email}
           address="current"
-          value={digits}
-          onChange={(value) => {
-            setDigits(value);
-            setCodeError(undefined);
-          }}
-          inputRef={firstDigit}
-          error={codeError}
-          ready={!!step.challengeId}
-          verifying={verifyingStepUp}
-          resending={resendingStepUp}
-          verifyIn={verifyCooldown.seconds}
-          resendIn={sendCooldown.seconds}
-          onResend={() => {
-            if (!step.challengeId) {
-              beginStepUp();
-              return;
-            }
-            resendStepUp(step.challengeId, {
-              onSuccess: resent,
-              onError: resendFailed,
-            });
-          }}
-          onVerify={() => {
-            const { challengeId } = step;
-            if (!challengeId) return;
-            verifyStepUp(
-              { challengeId, code: digits.join("") },
-              {
-                onSuccess: () => enterNewEmail(challengeId),
-                onError: (error) =>
-                  codeFailed(error, "That code could not be verified."),
-              },
-            );
-          }}
+          {...stepUp.modal}
           onClose={close}
         />
       ) : null}
@@ -221,18 +88,17 @@ export function ChangeEmail({ email }: { email?: string }) {
           onEmailChange={(value) => {
             setNewEmail(value);
             setEmailError(undefined);
-            sendCooldown.stop();
+            stepUp.stopSendCooldown();
           }}
           error={emailError}
           saving={requesting}
-          retryIn={sendCooldown.seconds}
+          retryIn={stepUp.code.resendIn}
           onSave={(address) =>
             requestChange(
               { stepUpChallengeId: step.stepUpChallengeId, email: address },
               {
                 onSuccess: ({ challengeId }) => {
-                  resetCode();
-                  sendCooldown.stop();
+                  stepUp.resetCode();
                   setStep((current) =>
                     current?.kind === "new-email"
                       ? {
@@ -251,17 +117,23 @@ export function ChangeEmail({ email }: { email?: string }) {
                     setEmailError(onEmail.detail);
                     return;
                   }
-                  if (rateLimited(error, sendCooldown)) return;
+                  if (stepUp.sendLimited(error)) return;
                   if (readProblemType(error) === "challenge-expired") {
                     toast({
                       state: "error",
                       message:
                         "Please confirm it’s you again. We’ve sent a new code to your current email.",
                     });
-                    beginStepUp();
+                    stepUp.begin();
                     return;
                   }
-                  failed(error, "We couldn't send a code to that email.");
+                  toast({
+                    state: "error",
+                    message: extractErrorMessage(
+                      error,
+                      "We couldn't send a code to that email.",
+                    ),
+                  });
                 },
               },
             )
@@ -275,27 +147,22 @@ export function ChangeEmail({ email }: { email?: string }) {
           key="new"
           email={step.email}
           address="new"
-          value={digits}
-          onChange={(value) => {
-            setDigits(value);
-            setCodeError(undefined);
-          }}
-          inputRef={firstDigit}
-          error={codeError}
+          {...stepUp.code}
           ready
           verifying={confirming}
           resending={resendingChange}
-          verifyIn={verifyCooldown.seconds}
-          resendIn={sendCooldown.seconds}
           onResend={() =>
             resendChange(step.challengeId, {
-              onSuccess: resent,
-              onError: resendFailed,
+              onSuccess: stepUp.resent,
+              onError: stepUp.resendFailed,
             })
           }
           onVerify={() =>
             confirmChange(
-              { challengeId: step.challengeId, code: digits.join("") },
+              {
+                challengeId: step.challengeId,
+                code: stepUp.code.value.join(""),
+              },
               {
                 onSuccess: () => {
                   toast({
@@ -315,7 +182,7 @@ export function ChangeEmail({ email }: { email?: string }) {
                     enterNewEmail(step.stepUpChallengeId);
                     return;
                   }
-                  codeFailed(error, "That code could not be verified.");
+                  stepUp.codeFailed(error, "That code could not be verified.");
                 },
               },
             )

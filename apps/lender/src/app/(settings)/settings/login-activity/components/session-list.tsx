@@ -14,10 +14,17 @@ const LIST =
   "flex flex-col divide-y divide-grey-100 overflow-hidden rounded-2xl border border-grey-100 shadow-card";
 
 export function SessionList() {
-  const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSessions();
+  const {
+    data,
+    isPending,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useSessions();
   const [confirming, setConfirming] = useState(false);
-  const { mutate: revokeOthers, isPending: revoking } = useRevokeOtherSessions();
+  const { mutate: revokeOthers, isPending: revoking } =
+    useRevokeOtherSessions();
 
   if (isPending) {
     return (

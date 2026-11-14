@@ -140,9 +140,7 @@ export function MembersPanel({
         ]}
       />
 
-      {inviting ? (
-        <InviteDialog onClose={() => setInviting(false)} />
-      ) : null}
+      {inviting ? <InviteDialog onClose={() => setInviting(false)} /> : null}
     </div>
   );
 }

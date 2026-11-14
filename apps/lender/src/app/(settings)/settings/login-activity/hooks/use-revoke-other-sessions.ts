@@ -10,7 +10,10 @@ export function useRevokeOtherSessions() {
   return useMutation({
     mutationFn: () => mutation("/users/me/sessions/revocation", "post"),
     onSuccess: () =>
-      toast({ state: "success", message: "Your other devices were signed out" }),
+      toast({
+        state: "success",
+        message: "Your other devices were signed out",
+      }),
     onError: (error) =>
       toast({
         state: "error",

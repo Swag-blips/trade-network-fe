@@ -12,6 +12,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { IconSvgElement } from "@hugeicons/react";
 import { OrgAvatar } from "@repo/ui/avatars";
+import { OPEN_WHILE_DELETING } from "@/components/deletion-gate";
 import { useMe } from "@/hooks/use-me";
 import { useOrganization } from "@/hooks/use-organization";
 import { LogoutModal } from "./logout-modal";
@@ -82,6 +83,7 @@ export function SettingsSidebar() {
   const { data: me } = useMe();
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const orgName = organization?.name ?? "";
+  const deleting = !!me?.deleteAfter;
 
   return (
     <aside className="flex w-65.5 flex-none flex-col gap-sm bg-grey-50 pt-xxs pb-lg">
@@ -122,11 +124,17 @@ export function SettingsSidebar() {
                 </span>
               </div>
               <ul className="flex flex-col gap-xs">
-                {group.items.map((item) => (
-                  <li key={item.label}>
-                    <Item item={item} active={pathname === item.href} />
-                  </li>
-                ))}
+                {group.items
+                  .filter(
+                    (item) =>
+                      !deleting ||
+                      (item.href && OPEN_WHILE_DELETING.includes(item.href)),
+                  )
+                  .map((item) => (
+                    <li key={item.label}>
+                      <Item item={item} active={pathname === item.href} />
+                    </li>
+                  ))}
               </ul>
             </div>
           ))}

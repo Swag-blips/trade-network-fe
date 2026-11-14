@@ -9,6 +9,16 @@ import { OtpInput } from "@repo/ui/otp-input";
 import { OTP_LENGTH } from "@/utils/otp";
 import { formatWait } from "../utils/wait";
 
+type Address = "current" | "new" | "account";
+
+const INTRO: Record<Address, string> = {
+  current:
+    "Confirm that it’s you by entering the OTP that was sent to your old email: ",
+  new: "Enter the OTP that was sent to your new email: ",
+  account:
+    "Confirm that it’s you by entering the OTP that was sent to your email: ",
+};
+
 export function VerifyEmailModal({
   email,
   address,
@@ -26,7 +36,7 @@ export function VerifyEmailModal({
   onClose,
 }: {
   email: string;
-  address: "current" | "new";
+  address: Address;
   value: string[];
   onChange: (value: string[]) => void;
   inputRef?: Ref<HTMLInputElement>;
@@ -80,9 +90,7 @@ export function VerifyEmailModal({
             Verify your email
           </h2>
           <p className="text-body/[1.5] text-grey-600">
-            {address === "current"
-              ? "Confirm that it’s you by entering the OTP that was sent to your old email: "
-              : "Enter the OTP that was sent to your new email: "}
+            {INTRO[address]}
             <span className="font-medium text-grey-800">{email}</span>
           </p>
         </div>

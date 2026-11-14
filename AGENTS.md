@@ -56,7 +56,7 @@ All of these live in `apps/lender`. `apps/business` has none yet.
 /portfolio/[id]            funded trades / about / signals
 /portfolio/[id]/[tradeId]  one funded trade: repayment schedule + financing summary
 /settings/profile          personal details        → app/(settings)/settings/…
-/settings/account-security email change + delete account
+/settings/account-security email change + delete account (scheduled, cancellable for 7 days)
 /settings/company          company details
 /settings/funding-mandate  funding preference: the onboarding mandate questions, editable once per 30 days
 /settings/teams            members, invitations and system roles
@@ -97,7 +97,8 @@ Shared helpers to check before writing your own:
   typed-amount pair `formatAmountInput` / `parseAmountInput`, `withKobo`
   ("250,000,000.00"), and `toMinorUnits` / `fromMinorUnits` for kobo.
 - `@/utils/otp`: `OTP_LENGTH` and `emptyOtp`.
-- `@/utils/date`: `shortDate` ("Nov 05, 2026") and `longDate` ("November 05, 2026").
+- `@/utils/date`: `shortDate` ("Nov 05, 2026"), `longDate` ("November 05, 2026") and
+  `localeDate` ("24 November 2026", in the viewer's locale).
 - `@/utils/avatar`: `DEFAULT_PHOTO`, the illustrated person every member shows until
   photo upload exists (profile, the teams list and the nav account menu).
 - `@/utils/financing-purpose`: the `FinancingPurpose` codes and `purposeLabel`.
@@ -709,7 +710,7 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   onboarding step 1 alike, matching `OrganizationDetailsDto`, which requires it only for `NG`. Both pick it
   from `NIGERIAN_STATES`, whose values are ISO 3166-2 codes (`NG-LA`) — the code is what the
   API takes, the name is only the label. Company shows a saved state that isn't a known code
-  as an extra option but won't save it until a real state is picked. Photo and logo upload and account deletion
+  as an extra option but won't save it until a real state is picked. Photo and logo upload
   have no API yet.
 - **Changing email is three codes' worth of steps, run by `ChangeEmail`**
   (`account-security/components/change-email.tsx`). Change posts `/auth/step-up` (a code
@@ -725,7 +726,24 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   `@/api/client`, 60s when the header isn't exposed cross-origin): sending and verifying
   count down separately, so a resend limit doesn't block typing in the code you have.
   Step 2 answers the same whether or not the address is taken, so don't check
-  availability before confirm.
+  availability before confirm. The step-up half (send, resend, verify, both cooldowns,
+  the error rules) is `useStepUp` (`account-security/hooks/use-step-up.ts`), which Delete
+  account reuses; it hands the accepted `challengeId` to `onVerified`.
+- **Deleting an account schedules it; `me.deleteAfter` is the switch.** Delete account →
+  confirm → step-up → `POST /users/me/deletion { stepUpChallengeId }`, which ends every
+  session and clears the cookies. On success `onlineManager.setOnline(false)` freezes React
+  Query so nothing is sent before the "Go to login" button's `location.assign("/login")`.
+  `challenge-expired` or a `422` restarts the step-up; a `409` (`organization-has-members`,
+  `deals-in-progress`) toasts its detail and closes. An Owner with other joined members
+  can't start it (read from `useMembers`). While `deleteAfter` is set, organisation routes
+  answer `403 account-deletion-scheduled`: `useOrganization` is disabled, `DeletionGate`
+  (`@/components/deletion-gate`, in the dashboard and settings layouts) sends every page
+  outside `OPEN_WHILE_DELETING` to `/settings/account-security`, the settings sidebar hides
+  the other items, and `QueryProvider`'s cache `onError` refetches `ME_KEY` on that 403
+  (no retries). Account security then shows "Deletion request submitted" with the days
+  left (`daysUntil`) and the date, and Cancel request
+  (`POST /users/me/deletion/cancellation`, then every query is invalidated). Dates use
+  `localeDate` (`@/utils/date`), the viewer's locale.
 - **Bad input is shown on the field; every other failure is a toast.** A 422
   `validation-failed` with `errors[]` puts each `detail` under the field its `pointer`
   names: the form calls `useFieldErrors([...pointer paths])` (`@/hooks/use-field-errors`)

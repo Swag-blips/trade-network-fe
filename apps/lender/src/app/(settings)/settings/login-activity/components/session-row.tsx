@@ -117,7 +117,9 @@ export function SessionRow({ session }: { session: LoginSession }) {
       {confirming ? (
         <ConfirmDialog
           title={
-            session.current ? "Sign out of this device?" : "Sign out this device?"
+            session.current
+              ? "Sign out of this device?"
+              : "Sign out this device?"
           }
           confirmLabel="Sign out"
           confirmVariant="destructive"

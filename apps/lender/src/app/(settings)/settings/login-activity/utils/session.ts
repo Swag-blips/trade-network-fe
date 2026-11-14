@@ -10,7 +10,8 @@ export function describeDevice(userAgent: string | null): {
   if (/Android/.test(userAgent)) {
     return { label: "Android phone", kind: "mobile" };
   }
-  if (/Windows/.test(userAgent)) return { label: "Windows PC", kind: "desktop" };
+  if (/Windows/.test(userAgent))
+    return { label: "Windows PC", kind: "desktop" };
   if (/Macintosh/.test(userAgent)) return { label: "Mac", kind: "desktop" };
   if (/Linux/.test(userAgent)) return { label: "Linux PC", kind: "desktop" };
   return { label: "Unknown device", kind: "desktop" };

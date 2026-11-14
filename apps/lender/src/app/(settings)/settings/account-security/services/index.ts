@@ -1,5 +1,11 @@
 import { mutation } from "@/api/client";
-import type { Challenge, CodeDto, EmailChangeDto } from "../types";
+import type {
+  Challenge,
+  CodeDto,
+  DeletionRequest,
+  DeletionResult,
+  EmailChangeDto,
+} from "../types";
 
 export const emailChangeService = {
   startStepUp() {
@@ -24,5 +30,15 @@ export const emailChangeService = {
 
   resendChange(challengeId: string) {
     return mutation("/users/me/email-change/resend", "post", { challengeId });
+  },
+};
+
+export const accountDeletionService = {
+  schedule(dto: DeletionRequest) {
+    return mutation<DeletionResult>("/users/me/deletion", "post", dto);
+  },
+
+  cancel() {
+    return mutation("/users/me/deletion/cancellation", "post");
   },
 };

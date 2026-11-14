@@ -11,3 +11,11 @@ export interface EmailChangeDto {
   stepUpChallengeId: string;
   email: string;
 }
+
+export interface DeletionRequest {
+  stepUpChallengeId: string;
+}
+
+export interface DeletionResult {
+  deleteAfter: string;
+}

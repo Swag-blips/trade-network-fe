@@ -2,6 +2,7 @@
 
 import { Button } from "@repo/ui/button";
 import { FormDialog } from "@/components/form-dialog";
+import { Notice } from "@/components/notice";
 
 const DELETED = [
   "Your account and company profile",
@@ -11,9 +12,12 @@ const DELETED = [
 ];
 
 export function DeleteAccountModal({
+  soleOwner,
   onClose,
   onConfirm,
 }: {
+  /** The organisation goes with the account, so its open offers and invitations end now. */
+  soleOwner: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }) {
@@ -67,9 +71,18 @@ export function DeleteAccountModal({
 
       <p className="rounded-md border border-grey-200 bg-grey-50 px-md py-2.5 text-body/[1.5] text-grey-600">
         You have <strong className="font-medium text-grey-800">7 days</strong>{" "}
-        to cancel your account deletion request. After this period, your account
-        will be permanently deleted, and this action cannot be undone.
+        to cancel your account deletion request. Nothing is removed before then.
+        After this period, your account will be permanently deleted, and this
+        action cannot be undone.
       </p>
+
+      {soleOwner ? (
+        <Notice>
+          Your organisation&rsquo;s pending offers will be withdrawn and its
+          open invitations revoked straight away. Cancelling won&rsquo;t bring
+          them back.
+        </Notice>
+      ) : null}
     </FormDialog>
   );
 }
