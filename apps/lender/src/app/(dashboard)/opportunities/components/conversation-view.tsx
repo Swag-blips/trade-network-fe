@@ -9,6 +9,7 @@ import {
   ArrowRight01Icon,
   BanIcon,
   BanknoteIcon,
+  Calendar04Icon,
   CheckmarkCircle02Icon,
   Clock01Icon,
   Coins01Icon,
@@ -32,6 +33,7 @@ import { usePermission } from "@/hooks/use-permission";
 import { naira } from "@/utils/naira";
 import { OfferModal } from "./offer-modal";
 import { PaymentModal } from "./payment-modal";
+import { RepaymentScheduleModal } from "./repayment-schedule-modal";
 import { RequestInfoModal } from "./request-info-modal";
 import { useAcceptOffer } from "../hooks/use-accept-offer";
 import { useConversation } from "../hooks/use-conversation";
@@ -48,7 +50,8 @@ import type {
   OfferStatus,
 } from "../types/inbox";
 import { conversationKey } from "../utils/negotiation";
-import { clockTime, shortDate, timeLeft } from "../utils/format";
+import { shortDate } from "@/utils/date";
+import { clockTime, timeLeft } from "../utils/format";
 
 function describeStatus(
   conversation?: Conversation,
@@ -210,7 +213,58 @@ function OfferFacts({ offer }: { offer: Offer }) {
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function OfferBubble({
+  message,
+  funding,
+}: {
+  message: Extract<Message, { kind: "offer" }>;
+  funding: Funding | null;
+}) {
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const { offer } = message;
+  const side = message.outgoing ? "out" : "in";
+
+  return (
+    <Bubble side={side} time={message.sentAt}>
+      <Lead
+        label={
+          (offer.madeBy === "BORROWER" ? COUNTER_LABEL : OFFER_LABEL)[
+            offer.status
+          ]
+        }
+        value={naira(offer.amount)}
+        struck={SETTLED.includes(offer.status)}
+      />
+      <OfferFacts offer={offer} />
+      <Button
+        variant="tertiary"
+        size="compact"
+        className="w-full"
+        leadingIcon={<HugeiconsIcon icon={Calendar04Icon} />}
+        onClick={() => setScheduleOpen(true)}
+      >
+        View repayment schedule
+      </Button>
+      {scheduleOpen ? (
+        <RepaymentScheduleModal
+          offer={offer}
+          disbursedAt={
+            funding?.offerId === offer.id ? funding.confirmedAt : null
+          }
+          onClose={() => setScheduleOpen(false)}
+        />
+      ) : null}
+    </Bubble>
+  );
+}
+
+function MessageBubble({
+  message,
+  funding,
+}: {
+  message: Message;
+  funding: Funding | null;
+}) {
   const side = message.outgoing ? "out" : "in";
 
   if (message.kind === "documents") {
@@ -264,20 +318,7 @@ function MessageBubble({ message }: { message: Message }) {
     );
   }
 
-  return (
-    <Bubble side={side} time={message.sentAt}>
-      <Lead
-        label={
-          (offer.madeBy === "BORROWER" ? COUNTER_LABEL : OFFER_LABEL)[
-            offer.status
-          ]
-        }
-        value={naira(offer.amount)}
-        struck={SETTLED.includes(offer.status)}
-      />
-      <OfferFacts offer={offer} />
-    </Bubble>
-  );
+  return <OfferBubble message={message} funding={funding} />;
 }
 
 function NoticeFooter({
@@ -486,7 +527,11 @@ export function ConversationView({
               </Bubble>
 
               {conversation.messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  funding={conversation.funding}
+                />
               ))}
             </>
           ) : error ? (

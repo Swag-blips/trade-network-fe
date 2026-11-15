@@ -8,6 +8,8 @@ import { Field } from "@repo/ui/field";
 import { IconButton } from "@repo/ui/icon-button";
 import { Input } from "@repo/ui/input";
 import { FormDialog } from "@/components/form-dialog";
+import { Notice } from "@/components/notice";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { useRequestDocuments } from "../hooks/use-request-documents";
 import { isFormError } from "../utils/negotiation";
 import type { DocumentRequestResponse } from "../types/inbox";
@@ -19,11 +21,13 @@ type Row = { id: number; value: string };
 function DocumentRow({
   index,
   row,
+  error,
   onChange,
   onRemove,
 }: {
   index: number;
   row: Row;
+  error?: string;
   onChange: (value: string) => void;
   onRemove?: () => void;
 }) {
@@ -36,6 +40,7 @@ function DocumentRow({
         htmlFor={id}
         variant="auth"
         className="flex-1"
+        error={error}
       >
         <Input
           id={id}
@@ -77,6 +82,18 @@ export function RequestInfoModal({
   );
   const [rows, setRows] = useState<Row[]>([{ id: 0, value: "" }]);
   const documents = rows.map((row) => row.value.trim()).filter(Boolean);
+  const filled = rows.filter((row) => row.value.trim() !== "");
+  const fieldErrors = useFieldErrors([
+    ...filled.map((_, index) => `documents/${index}`),
+    "documents",
+  ]);
+
+  // The API numbers the documents it was sent, which skips blank rows.
+  function errorFor(row: Row) {
+    const index = filled.indexOf(row);
+    const own = index === -1 ? undefined : fieldErrors.errors[`documents/${index}`];
+    return own ?? (row === rows[0] ? fieldErrors.errors.documents : undefined);
+  }
 
   return (
     <FormDialog
@@ -85,8 +102,10 @@ export function RequestInfoModal({
       onClose={onClose}
       onSubmit={() => {
         if (documents.length === 0 || isPending) return;
+        fieldErrors.reset();
         requestDocuments(documents, {
           onError: (error) => {
+            fieldErrors.show(error);
             if (!isFormError(error)) onClose();
           },
         });
@@ -124,7 +143,9 @@ export function RequestInfoModal({
               key={row.id}
               index={index}
               row={row}
+              error={errorFor(row)}
               onChange={(value) => {
+                fieldErrors.reset();
                 setRows((current) =>
                   current.map((item) =>
                     item.id === row.id ? { ...item, value } : item,
@@ -134,10 +155,12 @@ export function RequestInfoModal({
               onRemove={
                 index === 0
                   ? undefined
-                  : () =>
+                  : () => {
+                      fieldErrors.reset();
                       setRows((current) =>
                         current.filter((item) => item.id !== row.id),
-                      )
+                      );
+                    }
               }
             />
           ))}
@@ -163,10 +186,10 @@ export function RequestInfoModal({
         ) : null}
       </div>
 
-      <p className="border-l-4 border-orange-500 bg-orange-50 px-lg py-2.5 text-body/[1.5] text-grey-900">
+      <Notice>
         Once sent, a negotiation will start with this enterprise. You&apos;ll be
         taken to your inbox to continue the conversation.
-      </p>
+      </Notice>
     </FormDialog>
   );
 }

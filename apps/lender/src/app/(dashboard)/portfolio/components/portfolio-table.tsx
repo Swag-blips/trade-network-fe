@@ -2,68 +2,89 @@
 
 import { useState } from "react";
 import { Avatar } from "@repo/ui/avatar";
+import { Button } from "@repo/ui/button";
 import { DataTable } from "@repo/ui/data-table";
-import { SearchInput } from "@repo/ui/search-input";
-import { Select } from "@repo/ui/select";
+import { withKobo } from "@/utils/naira";
+import { shortDate } from "@/utils/date";
+import { EmptyState } from "./empty-state";
 import { HealthChip } from "./health-chip";
-import { PORTFOLIO_HEALTH, type Customer } from "../types/customer";
-import { parseAmount, withKobo } from "@/utils/naira";
+import { ANY_STATUS, TablePanel } from "./table-panel";
+import { useBorrowers } from "../hooks/use-borrowers";
+import { useDebouncedValue } from "../hooks/use-debounced-value";
+import { PORTFOLIO_HEALTH } from "../types/portfolio";
 
-const ANY = "Any Status";
-const STATUSES = [
-  ANY,
-  ...new Set(Object.values(PORTFOLIO_HEALTH).map((health) => health.label)),
-];
+const STATUSES = Object.values(PORTFOLIO_HEALTH).map((health) => health.label);
 
-export function PortfolioTable({ customers }: { customers: Customer[] }) {
+export function PortfolioTable() {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState(ANY);
+  const [status, setStatus] = useState(ANY_STATUS);
+  const search = useDebouncedValue(query.trim());
+  const {
+    data,
+    isPending,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useBorrowers(search);
 
-  const visible = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(query.trim().toLowerCase()) &&
-      (status === ANY || PORTFOLIO_HEALTH[customer.health].label === status),
+  const borrowers = data?.pages.flatMap((page) => page.items) ?? [];
+  const visible = borrowers.filter(
+    (borrower) =>
+      status === ANY_STATUS ||
+      PORTFOLIO_HEALTH[borrower.health].label === status,
   );
 
+  if (!search && !isPending && borrowers.length === 0) {
+    return (
+      <EmptyState
+        title={
+          isError
+            ? "We couldn't load your portfolio"
+            : "No trades have been funded"
+        }
+        bodyWidth="w-91.75"
+        className="min-h-57.75 rounded-xl border border-grey-100 bg-white px-md shadow-small-thick"
+      >
+        {isError
+          ? "Refresh the page to try again."
+          : "View your financed businesses here to track facilities, repayments, and trade signals."}
+      </EmptyState>
+    );
+  }
+
   return (
-    <div className="flex flex-col rounded-xl border border-grey-100 bg-white shadow-small-thick">
-      <div className="flex items-center justify-between gap-md px-md py-2.5">
-        <SearchInput
-          value={query}
-          onChange={setQuery}
-          placeholder="Search company"
-          className="w-91.75"
-        />
-
-        <Select
-          aria-label="Filter by portfolio health"
-          variant="filter"
-          value={status}
-          onValueChange={setStatus}
-          options={STATUSES}
-        />
-      </div>
-
+    <TablePanel
+      query={query}
+      onQueryChange={setQuery}
+      placeholder="Search company"
+      status={status}
+      onStatusChange={setStatus}
+      statuses={STATUSES}
+      filterLabel="Filter by portfolio health"
+    >
       <DataTable
         variant="cards"
         rows={visible}
         gap={32}
-        rowKey={(customer) => customer.id}
-        rowHref={(customer) => `/portfolio/${customer.id}`}
-        empty="No companies match these filters."
+        rowKey={(borrower) => borrower.id}
+        rowHref={(borrower) => `/portfolio/${borrower.id}`}
+        empty={
+          isPending ? "Loading companies…" : "No companies match these filters."
+        }
         columns={[
           {
             header: `Company (${visible.length})`,
-            cell: (customer) => (
+            cell: (borrower) => (
               <span className="flex min-w-0 items-center gap-md">
                 <Avatar
-                  name={customer.name}
+                  name={borrower.name}
                   size={40}
                   shape="square"
                   className="border border-grey-200 bg-grey-50 text-grey-600"
                 />
                 <span className="truncate font-medium text-evergreen-600">
-                  {customer.name}
+                  {borrower.name}
                 </span>
               </span>
             ),
@@ -71,29 +92,49 @@ export function PortfolioTable({ customers }: { customers: Customer[] }) {
           {
             header: "Active loans",
             width: 172,
-            cell: (customer) => customer.activeTrades,
+            cell: (borrower) => borrower.activeFundings,
           },
           {
             header: "Next repayment",
             width: 172,
-            cell: (customer) => customer.repaymentDue,
+            cell: (borrower) => (
+              <span className={borrower.overdue ? "text-red-error-500" : ""}>
+                {borrower.nextRepaymentAt
+                  ? shortDate(borrower.nextRepaymentAt)
+                  : "—"}
+              </span>
+            ),
           },
           {
             header: "Outstanding amount (NGN)",
             width: 190,
-            cell: (customer) => (
-              <span className="font-medium">
-                {withKobo(parseAmount(customer.outstanding))}
+            cell: (borrower) => (
+              <span
+                className={`font-medium ${borrower.overdue ? "text-red-error-500" : ""}`}
+              >
+                {withKobo(borrower.outstanding)}
               </span>
             ),
           },
           {
             header: "Portfolio health",
             width: 140,
-            cell: (customer) => <HealthChip level={customer.health} />,
+            cell: (borrower) => <HealthChip level={borrower.health} />,
           },
         ]}
       />
-    </div>
+      {hasNextPage ? (
+        <div className="flex justify-center px-md pb-md">
+          <Button
+            variant="tertiary"
+            size="form"
+            loading={isFetchingNextPage}
+            onClick={() => void fetchNextPage()}
+          >
+            Load more
+          </Button>
+        </div>
+      ) : null}
+    </TablePanel>
   );
 }

@@ -8,6 +8,7 @@ import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { UserAvatar } from "@repo/ui/avatars";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { useMe } from "@/hooks/use-me";
 import { useUpdateMe } from "../hooks/use-update-me";
 import { DIAL_CODES, joinPhone, splitPhone } from "../utils/phone";
@@ -18,6 +19,8 @@ export function ProfileForm() {
   const { data: me } = useMe();
   const { mutate: updateMe, isPending } = useUpdateMe();
   const saved = splitPhone(me?.phone ?? null);
+  const fieldErrors = useFieldErrors(["firstName", "lastName", "phone"]);
+  const { errors } = fieldErrors;
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -47,11 +50,15 @@ export function ProfileForm() {
       onSubmit={(event) => {
         event.preventDefault();
         if (!canSave || isPending) return;
-        updateMe({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          phone: joinPhone(dialCode, number),
-        });
+        fieldErrors.reset();
+        updateMe(
+          {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            phone: joinPhone(dialCode, number),
+          },
+          { onError: fieldErrors.show },
+        );
       }}
     >
       <div className="flex flex-col gap-lg pb-md">
@@ -81,13 +88,17 @@ export function ProfileForm() {
             htmlFor="first-name"
             variant="auth"
             className="flex-1"
+            error={errors.firstName}
           >
             <Input
               id="first-name"
               variant="strong"
               maxLength={100}
               value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
+              onChange={(event) => {
+                setFirstName(event.target.value);
+                fieldErrors.clear("firstName");
+              }}
             />
           </Field>
           <Field
@@ -95,13 +106,17 @@ export function ProfileForm() {
             htmlFor="last-name"
             variant="auth"
             className="flex-1"
+            error={errors.lastName}
           >
             <Input
               id="last-name"
               variant="strong"
               maxLength={100}
               value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
+              onChange={(event) => {
+                setLastName(event.target.value);
+                fieldErrors.clear("lastName");
+              }}
             />
           </Field>
         </div>
@@ -112,6 +127,7 @@ export function ProfileForm() {
           htmlFor="phone"
           variant="auth"
           className="w-70.75"
+          error={errors.phone}
         >
           <div className="flex gap-xs">
             <div className="w-25.75 flex-none">
@@ -119,7 +135,10 @@ export function ProfileForm() {
                 variant="strong"
                 aria-label="Country code"
                 value={dialCode}
-                onValueChange={setDialCode}
+                onValueChange={(code) => {
+                  setDialCode(code);
+                  fieldErrors.clear("phone");
+                }}
                 options={
                   DIAL_CODES.includes(dialCode)
                     ? DIAL_CODES
@@ -134,7 +153,10 @@ export function ProfileForm() {
               autoComplete="tel-national"
               placeholder="1234567890"
               value={number}
-              onChange={(event) => setNumber(event.target.value)}
+              onChange={(event) => {
+                setNumber(event.target.value);
+                fieldErrors.clear("phone");
+              }}
             />
           </div>
         </Field>

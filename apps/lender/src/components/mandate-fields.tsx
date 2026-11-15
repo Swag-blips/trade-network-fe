@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef } from "react";
-import { Field } from "@repo/ui/field";
+import { Field, FieldError } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Radio } from "@repo/ui/radio";
 import type { MandateDraft } from "@/types/mandate";
 import {
   exceedsAllocation,
   formatRate,
+  type MandateErrors,
   SECTORS,
   TENORS,
   withSaved,
@@ -20,10 +21,12 @@ import { SelectedIndustries } from "./selected-industries";
 export function MandateFields({
   value,
   onChange,
+  errors = {},
   disabled = false,
 }: {
   value: MandateDraft;
   onChange: (fields: Partial<MandateDraft>) => void;
+  errors?: MandateErrors;
   disabled?: boolean;
 }) {
   const industriesInput = useRef<HTMLInputElement>(null);
@@ -43,6 +46,7 @@ export function MandateFields({
         htmlFor="allocation"
         variant="question"
         className="-mb-1"
+        error={errors.capitalAllocationMinor}
       >
         <Input
           id="allocation"
@@ -65,6 +69,7 @@ export function MandateFields({
         htmlFor="interest-rate"
         variant="question"
         className="-mb-1"
+        error={errors.interestRateBps}
       >
         <Input
           id="interest-rate"
@@ -111,15 +116,17 @@ export function MandateFields({
             </label>
           ))}
         </div>
+        {errors.tenor ? <FieldError>{errors.tenor}</FieldError> : null}
       </div>
 
       <FinancingRange
         min={fundingMin}
         max={fundingMax}
+        minError={errors.minTicketMinor}
         maxError={
           exceedsAllocation(value)
             ? "Max ticket can't be more than your capital allocation."
-            : undefined
+            : errors.maxTicketMinor
         }
         ceiling={parseAmountInput(capitalAllocation)}
         disabled={disabled}
@@ -133,6 +140,7 @@ export function MandateFields({
           label="Which industries would you prefer to finance?"
           htmlFor="industries"
           variant="question"
+          error={errors.sectors}
         >
           <IndustryPicker
             id="industries"

@@ -36,6 +36,25 @@ export function withSaved(options: string[], saved: string) {
   return saved && !options.includes(saved) ? [saved, ...options] : options;
 }
 
+/** The `/mandate` body field each draft field is sent as: what a 422's pointer names. */
+export const MANDATE_FIELD = {
+  capitalAllocation: "capitalAllocationMinor",
+  interestRate: "interestRateBps",
+  tenor: "tenor",
+  fundingMin: "minTicketMinor",
+  fundingMax: "maxTicketMinor",
+  sectors: "sectors",
+} as const satisfies Record<keyof MandateDraft, string>;
+
+export type MandateField = (typeof MANDATE_FIELD)[keyof MandateDraft];
+export type MandateErrors = Partial<Record<MandateField, string>>;
+export const MANDATE_FIELDS = Object.values(MANDATE_FIELD);
+
+export const changedMandateFields = (patch: Partial<MandateDraft>) =>
+  (Object.keys(patch) as (keyof MandateDraft)[]).map(
+    (key) => MANDATE_FIELD[key],
+  );
+
 export const exceedsAllocation = (draft: MandateDraft) =>
   parseAmountInput(draft.capitalAllocation) > 0 &&
   draft.fundingMax > parseAmountInput(draft.capitalAllocation);

@@ -9,6 +9,7 @@ import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { useToast } from "@repo/ui/toast";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { saveChallengeId } from "@/lib/onboarding-storage";
 import { useCreateAccount } from "../hooks/use-create-account";
 import { AuthCard } from "../../components/auth-card";
@@ -22,6 +23,8 @@ export function CreateAccountForm() {
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState(false);
   const { mutate: createAccount, isPending } = useCreateAccount();
+  const fieldErrors = useFieldErrors(["firstName", "lastName", "email"]);
+  const { errors } = fieldErrors;
 
   const fieldsFilled =
     firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "";
@@ -38,6 +41,7 @@ export function CreateAccountForm() {
       return;
     }
 
+    fieldErrors.reset();
     createAccount(
       { email, firstName, lastName },
       {
@@ -45,6 +49,7 @@ export function CreateAccountForm() {
           saveChallengeId(challengeId);
           router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         },
+        onError: fieldErrors.show,
       },
     );
   }
@@ -75,13 +80,17 @@ export function CreateAccountForm() {
                 htmlFor="first-name"
                 variant="auth"
                 className="flex-1"
+                error={errors.firstName}
               >
                 <Input
                   id="first-name"
                   variant="auth"
                   placeholder="John"
                   value={firstName}
-                  onChange={(event) => setFirstName(event.target.value)}
+                  onChange={(event) => {
+                    setFirstName(event.target.value);
+                    fieldErrors.clear("firstName");
+                  }}
                 />
               </Field>
               <Field
@@ -89,13 +98,17 @@ export function CreateAccountForm() {
                 htmlFor="last-name"
                 variant="auth"
                 className="flex-1"
+                error={errors.lastName}
               >
                 <Input
                   id="last-name"
                   variant="auth"
                   placeholder="Doe"
                   value={lastName}
-                  onChange={(event) => setLastName(event.target.value)}
+                  onChange={(event) => {
+                    setLastName(event.target.value);
+                    fieldErrors.clear("lastName");
+                  }}
                 />
               </Field>
             </div>
@@ -105,6 +118,7 @@ export function CreateAccountForm() {
               htmlFor="email"
               variant="auth"
               className="w-full"
+              error={errors.email}
             >
               <Input
                 id="email"
@@ -112,7 +126,10 @@ export function CreateAccountForm() {
                 variant="auth"
                 placeholder="John@company.com"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  fieldErrors.clear("email");
+                }}
               />
             </Field>
 

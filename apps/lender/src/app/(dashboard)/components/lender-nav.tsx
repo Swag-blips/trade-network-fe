@@ -7,12 +7,15 @@ import {
   SearchList01Icon,
 } from "@hugeicons/core-free-icons";
 import { TopNav, type TopNavItem } from "@repo/ui/top-nav";
+import { AppConfig } from "@/lib";
 import { OrgMenu } from "./org-menu";
 
 const ITEMS: TopNavItem[] = [
   { label: "Home", href: "/home", icon: Home05Icon },
   { label: "Opportunities", href: "/opportunities", icon: BankIcon },
-  { label: "Verify business", icon: SearchList01Icon },
+  ...(AppConfig.features.verifyBusiness
+    ? [{ label: "Verify business", icon: SearchList01Icon }]
+    : []),
   { label: "Portfolio", href: "/portfolio", icon: Briefcase02Icon },
 ];
 

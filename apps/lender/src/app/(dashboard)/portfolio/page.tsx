@@ -1,6 +1,5 @@
 import { PortfolioMetrics } from "./components/portfolio-metrics";
 import { PortfolioTable } from "./components/portfolio-table";
-import { CUSTOMERS } from "./data";
 
 export default function PortfolioPage() {
   return (
@@ -17,8 +16,8 @@ export default function PortfolioPage() {
         </div>
 
         <div className="flex flex-col gap-lg">
-          <PortfolioMetrics customers={CUSTOMERS} />
-          <PortfolioTable customers={CUSTOMERS} />
+          <PortfolioMetrics />
+          <PortfolioTable />
         </div>
       </div>
     </div>

@@ -43,27 +43,28 @@ apps/lender/src/           (apps/business/src/ follows the same shape)
 
 All of these live in `apps/lender`. `apps/business` has none yet.
 
-```
+````
 /                          redirects to /home
 /create-account            sign-up                 → app/(auth)/…
 /login
 /verify-email              OTP, then on to /onboarding
 /onboarding                organisation + mandate  → app/(onboarding)/onboarding
 /home                      lender dashboard        → app/(dashboard)/home
-/opportunities             financing opportunities + inbox → app/(dashboard)/opportunities
+/opportunities             financing opportunities + negotiations → app/(dashboard)/opportunities
 /portfolio                 funded customers        → app/(dashboard)/portfolio
-/portfolio/[id]            customer overview / funded trades / repayments
+/portfolio/[id]            funded trades / about / signals
+/portfolio/[id]/[tradeId]  one funded trade: repayment schedule + financing summary
 /settings/profile          personal details        → app/(settings)/settings/…
 /settings/account-security email change + delete account
 /settings/company          company details
 /settings/funding-mandate  funding preference: the onboarding mandate questions, editable once per 30 days
-/settings/preferences      notifications + Tai autonomy (not in the sidebar)
-```
+/settings/teams            members and system roles (no API yet)
+/settings/login-activity   sessions, sign out one or all other devices```
 
 **Four route groups, four shells.** `(auth)` and `(onboarding)` are the signed-out and
 first-run flows, each with its own layout. `app/(dashboard)/` is the dashboard workspace
 with the top nav; `app/(settings)/` is a separate group with its own settings
-sidebar (Back link, org identity, Account / Organisation groups, Sign out; items
+sidebar (Back link, org identity, Account / Organisation groups, Sign out behind a confirm modal; items
 without a page yet render inert). The dashboard and settings
 shells share nothing but the token system.
 
@@ -82,11 +83,23 @@ stays in the route folder.
 **Don't repeat yourself.** Before writing a hook, type, formatter or component, grep for
 one that already does the job. Two hooks fetching the same endpoint under different query
 keys are two requests and two caches that drift apart — `useMe` is the only reader of
-`/auth/me`, and `useOrganization` of `/organizations/current`. When a second page needs a
+`/users/me` (`ME_KEY`), `useOrganization` of `/organizations/current` (`ORGANIZATION_KEY`),
+and `useCapital` of `/capital` (`CAPITAL_KEY`). When a second page needs a
 form or check another page already has (the mandate questions in onboarding and
 settings), promote it and give it the props it lacks (`disabled`, an optional
 `onRemove`) rather than copying it. Rules that both sides must agree on, like
 `isCompleteMandate`, live once in `utils/`.
+
+Shared helpers to check before writing your own:
+
+- `@/utils/naira`: money. `naira`, `formatAmount`, `compactAmount`, `parseAmount`, the
+  typed-amount pair `formatAmountInput` / `parseAmountInput`, `withKobo`
+  ("250,000,000.00"), and `toMinorUnits` / `fromMinorUnits` for kobo.
+- `@/utils/otp`: `OTP_LENGTH` and `emptyOtp`.
+- `@/utils/date`: `shortDate` ("Nov 05, 2026") and `longDate` ("November 05, 2026").
+- `@/utils/financing-purpose`: the `FinancingPurpose` codes and `purposeLabel`.
+- `@/api/client`: `readProblemType(err)` returns the problem `type` without its URN
+  prefix, so compare it to `"validation-failed"` rather than declaring URN constants.
 
 - Import shared code via the `@/*` alias: `@/components/…`, `@/hooks/…`, `@/utils/…`
   (mapped to each app's own `src/*` in its `tsconfig.json`). Colocated siblings use relative
@@ -228,14 +241,15 @@ stale:
 | `CheckboxChip`                                | `@repo/ui/checkbox`                        | Pill-shaped checkbox used for sector picking                                                                                                                                                                                                                                                                                                                                                 |
 | `Badge`                                       | `@repo/ui/badge`                           | Small uppercase label (RECOMMENDED); `variant`: `label` / `pill` (fully rounded, OPTIONAL)                                                                                                                                                                                                                                                                                                   |
 | `Card`                                        | `@repo/ui/card`                            | ⚠️ untouched `create-turbo` scaffolding — rewrite before use                                                                                                                                                                                                                                                                                                                                 |
-| `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows. `variant="cards"` draws each row as a bordered card (`/portfolio`)                                                                                                                          |
+| `DataTable`                                   | `@repo/ui/data-table`                      | List tables. Declare `columns` with `header` / `width` / `cell`; leave `width` off the column that takes the slack. `rowHref` → `Link` rows, `onRowClick` → `button` rows, neither → `div` rows. `variant="cards"` draws each row as a bordered card (`/portfolio`), `variant="outlined"` puts the whole table in one bordered box (`/settings/teams`)                                                                                                                          |
 | `Sheet`                                       | `@repo/ui/sheet`                           | 544px right-edge `<dialog>` panel: header with optional icon chip, title and close                                                                                                                                                                                                                                                                                                           |
 | `Panel`                                       | `@repo/ui/panel`                           | Bordered card with a 16px heading — the boxes inside sheets. `divided` adds a rule under the heading                                                                                                                                                                                                                                                                                         |
 | `DetailRow`                                   | `@repo/ui/detail-row`                      | Label left, value right. `size="sm"` is the 14px summary row, default is 16px                                                                                                                                                                                                                                                                                                                |
 | `Tabs`                                        | `@repo/ui/tabs`                            | Underlined tab strip (tablist only; panels stay at the call site)                                                                                                                                                                                                                                                                                                                            |
+| `SearchInput`                                 | `@repo/ui/search-input`                    | The grey pill search field above tables; width via `className`                                                                                                                                                                                                                                                                                                                              |
 | `FilterBar`                                   | `@repo/ui/filter-bar`                      | "Filter by:" and its chips — wrap one or more `<Select variant="chip">`                                                                                                                                                                                                                                                                                                                      |
 | `ConfirmModal`                                | `@repo/ui/confirm-modal`                   | Confirm dialog — title, body slot, cancel + confirm footer. `width`: `sm` (453px) or `lg` (613px)                                                                                                                                                                                                                                                                                            |
-| `UploadDropzone`                              | `@repo/ui/upload-dropzone`                 | Green dashed evidence dropzone with the attached-file row (click, drag-and-drop, replace, remove)                                                                                                                                                                                                                                                                                            |
+| `UploadDropzone`                              | `@repo/ui/upload-dropzone`                 | Controlled over a `File`. `variant`: `proof` (green dashed evidence box with the attached-file row, unused since the portfolio redesign) or `browse` (grey dashed, Browse files; attached shows name, size and replace, the payment receipt)                                                                                                                                                                                                                                                                                            |
 | `DetailHeader`                                | `@repo/ui/detail-header`                   | 60px record header: back, avatar, name, status slot, prev/next                                                                                                                                                                                                                                                                                                                               |
 | `ButtonLink`                                  | `@repo/ui/button-link`                     | `next/link` wearing `buttonClasses()` — same props as `Button`                                                                                                                                                                                                                                                                                                                               |
 | `TopNav`                                      | `@repo/ui/top-nav`                         | The dashboard header — brand mark, `items` (an item without `href` renders inert) and a `trailing` slot; knows nothing about lenders                                                                                                                                                                                                                                                         |
@@ -256,7 +270,7 @@ import { Button } from "@repo/ui/button";
 >
   Delete
 </Button>;
-```
+````
 
 `variant`: `primary` | `secondary` (grey-100 fill) | `tertiary` (white fill, grey-200 ring —
 the social sign-in buttons) | `outline` | `ghost` | `destructive` | `destructive-outline`
@@ -288,16 +302,17 @@ app. `packages/ui` lists `next` as a peer dependency, so it may use `next/link` 
 **Lender-only components** live in `apps/lender/src/components/` — they render lender
 content, so they stay in the app until business genuinely needs one:
 
-| Component                               | Notes                                                                                                                                                                                            |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `TradeRoom`                             | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                          |
-| `MatchBadge`                            | Match-score pill on matched opportunities                                                                                                                                                        |
-| `MandateFields`                         | The mandate questions (allocation, rate, tenure, ticket range, industries) over a `MandateDraft`; onboarding step 2 and `/settings/funding-mandate` both render it. `disabled` locks every field |
-| `FinancingRange`                        | The ticket range: Min/Max fields and a log-scale slider from ₦50k to ₦1B. `disabled` hides the slider                                                                                            |
-| `IndustryPicker` / `SelectedIndustries` | Industry search and its chips. Without `onRemove` the chips render grey and read-only                                                                                                            |
-| `StatCard`                              | Label, figure, caption and icon chip. `size`: `md` (home overview) / `lg` (portfolio metrics); `featured` is the evergreen gradient card                                                         |
-| `FormDialog`                            | Grey-header `<dialog>` wrapping a `<form>`: title, close, body, `footer` slot; width via `className`. The body scrolls once the dialog hits the viewport, so a `Select` inside would clip. The account-security dialogs, Not interested and Request for info on `/opportunities` |
-| `ProviderLockup`                        | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                                                             |
+| Component                               | Notes                                                                                                                                                                                                                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TradeRoom`                             | Trade details / Evidence / Activity sub-tabs over a `TradeRoomData` prop. The first candidate to promote if business shows trade detail                                                                                                                                          |
+| `MatchBadge`                            | Match-score pill on matched opportunities                                                                                                                                                                                                                                        |
+| `MandateFields`                         | The mandate questions (allocation, rate, tenure, ticket range, industries) over a `MandateDraft`; onboarding step 2 and `/settings/funding-mandate` both render it. `disabled` locks every field                                                                                 |
+| `FinancingRange`                        | The ticket range: Min/Max fields and a log-scale slider from ₦50k up to the allocation (`ceiling`, at most ₦1B). With no allocation yet the whole card is "Set your capital allocation first". `disabled` hides the slider |
+| `IndustryPicker` / `SelectedIndustries` | Industry search and its chips. Without `onRemove` the chips render grey and read-only                                                                                                                                                                                            |
+| `FormDialog`                            | Grey-header `<dialog>` wrapping a `<form>`: title, close (`dismissible={false}` hides the X when the footer has its own Close), body, optional `footer` slot (no footer, no form submit); width via `className`. The body scrolls once the dialog hits the viewport, so a `Select` inside would clip. The account-security dialogs, Not interested and Request for info on `/opportunities` |
+| `ConfirmDialog`                         | `FormDialog` with Cancel, a divider and one confirm button over a sentence of body copy: Sign out and Withdraw offer                                                                                                                                                              |
+| `ScheduleTable`                         | Installment rows (dot, label, due date, amount), an optional Status column, an optional per-row `action` column (Mark as paid) and an optional Total repayment row. The trade page on `/portfolio` and the repayment schedule modal on `/opportunities` |
+| `ProviderLockup`                        | TRADE NETWORK wordmark + "For Capital Providers", in the auth and onboarding headers                                                                                                                                                                                             |
 
 `UserAvatar`'s empty state is the Figma person placeholder, inlined as one scalable
 `viewBox` (`grey-300` disc, `grey-100` figure) rather than a committed file per size.
@@ -363,17 +378,15 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   unusual but is intentional until a designer says otherwise.
 - **`next/image` will destroy a transparent PNG/WebP.** The optimiser re-encodes to
   JPEG for any client that doesn't advertise webp/avif, and JPEG has no alpha — the
-  transparency flattens to black with no error. Pass `unoptimized` for cut-out images
-  (see the modal photo in `welcome-modal.tsx`).
+  transparency flattens to black with no error. Pass `unoptimized` for cut-out images.
 - **The Figma MCP asset server is ephemeral.** Exported asset URLs
   (`http://localhost:3845/assets/…`) stop resolving — returning `Error getting image` —
   as soon as the Figma desktop app switches to a different tab. Download anything you
   need _while_ the file is the active tab, not later.
-- **Trig in SSR-ed markup must be rounded.** `HealthGauge` computes tick and needle
+- **Trig in SSR-ed markup must be rounded.** A health gauge once computed tick and needle
   coordinates from `Math.cos`/`Math.sin`; the server and client disagreed on the last
-  digit (`51.30642496536482` vs `…481`) and React reported a hydration mismatch. Every
-  computed coordinate goes through `round()` to 3 decimals. Do the same in any other
-  geometry drawn during render.
+  digit (`51.30642496536482` vs `…481`) and React reported a hydration mismatch. Round
+  every coordinate drawn during render to a few decimals.
 - **`/opportunities` speaks the opportunities API.** `services/` maps kobo to naira and
   codes to labels, as for the mandate. The list is a cursor-paged infinite query under
   `["opportunities", "list", filters]`; a filter change starts again without a cursor.
@@ -381,16 +394,53 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   the first card is shown without counting as a view. Dismissal, a `409` and a `404`
   all remove the card through `forgetOpportunity`, and a `403` refetches
   `/organizations/current`, whose `permissions` gate the button (`usePermission`).
-  Exposure, Make offer, Request for info and Inbox have no API yet: Exposure is hidden,
-  and the rest run in `OpportunityWorkspace` state, lost on reload.
-- **The `/opportunities` inbox is local state.** `OpportunityWorkspace` owns the
-  Requests/Inbox tab and the `Conversation`s. Sending an offer or a document request,
-  from the detail panel or the conversation's action bar, appends a message, moves that
-  conversation to the top and switches to Inbox. Withdrawing an offer drops its messages,
-  which flips the action back to Make offer. Exit, the Funded filter and replies have no
-  behaviour yet. The offer's interest is flat over the tenure at the mandate's
-  `interestRate`; available capital comes from `/dashboard/overview`
-  (`(dashboard)/hooks/use-dashboard-overview`).
+  Exposure has no API yet and is hidden.
+- **The first offer or document request moves a request into Negotiations.** The API marks
+  it `ENGAGED` and stops listing it, so `afterNegotiation` (`utils/negotiation.ts`) drops
+  the card and invalidates everything under `["conversations"]`.
+  Every failure is a toast. A `422` or a `409 capital-exceeded` keeps the dialog open so
+  the terms can be corrected (`isFormError`). The modal's available capital is
+  `useCapital().available`, which a capital-exceeded body's `availableMinor` overrides
+  until the modal closes. Every negotiation change goes through `refreshNegotiations`,
+  which invalidates `["conversations"]` and `CAPITAL_KEY` together. Anything else closes it. `onSent` is a
+  `useMutation` option, not a `mutate` callback, because sending unmounts the Requests
+  detail panel before a `mutate` callback could fire. The offer's tenure options are
+  fixed picks inside the mandate's tenor range, and the amount is held to the requested
+  advance, the ticket range and available capital, which are the rules the API enforces.
+  Those rules live in `utils/offer.ts`; the amount field reuses `formatAmountInput` and
+  `parseAmountInput` from `@/utils/naira`.
+  Make offer, Request for info and Withdraw offer need `offers:negotiate`.
+- **The Negotiations tab filters with `show=all`, `active` or `funded`.** The chips All /
+  On-going / Funded map to those in `use-conversations.ts`.
+- **A negotiation reads the thread from `GET /conversations/:id` and never patches it.**
+  After every action it invalidates `["conversations"]` and refetches. Messages are never
+  removed: a withdrawn offer becomes a "This offer was withdrawn" note, a declined, lapsed
+  or countered one stays struck through, and an `EXIT` message is a "You left this
+  negotiation" note. `services/` turns `pendingOfferId` into `pendingOffer`; its `madeBy`
+  says whose it is, and an offer from `BORROWER` is the enterprise's counter.
+- **`FUNDED` means the enterprise confirmed the money arrived; the deal itself stays
+  `ACTIVE`.** For `ACTIVE`, the footer comes from `funding.status` first, then the pending
+  offer: `AWAITING_PAYMENT` is "Awaiting payment of funds (23h : 05m left)" counting down
+  to `payBy` (`useTimeLeft`, refetching at zero), with Make payment for `funding:disburse`;
+  `AWAITING_CONFIRMATION` is "Awaiting confirmation"; `EXPIRED` adds a one-line notice
+  above the buttons below. A counter shows Accept offer (`offers:accept`, behind a
+  `ConfirmDialog`, `POST /offers/:id/acceptance`) and Make offer; the lender's own pending
+  offer shows Withdraw offer (behind a `ConfirmDialog`) and Request document; none shows
+  Make offer and Request document. `FUNDED` and `CLOSED` have no footer. Exit shows for
+  `ACTIVE` with `offers:negotiate` while no funding is awaiting payment or confirmation; it
+  asks first, then posts `/conversations/:id/exit`. `CLOSED` reads "You left this
+  negotiation" when the last message is `EXIT`, otherwise "This request has closed".
+- **An offer's repayment schedule is computed in the app.** Offers have no installments,
+  so `repaymentSchedule` (`opportunities/utils/schedule.ts`) follows the API's rule for
+  fundings: one equal installment every 30 days (`ceil(tenorDays / 30)` of them), the last
+  on the tenure's final day taking the rounding. Due dates count from
+  `funding.confirmedAt` for the funded offer, otherwise from today. Every offer bubble
+  except a withdrawn one has View repayment schedule. A funded trade on `/portfolio` reads
+  its real installments instead.
+- **`PaymentModal`'s Confirm payment posts `/fundings/:id/payment` with no body.** The
+  amount is `funding.amount`, the beneficiary the borrower. The API has no bank details or
+  receipt upload yet, so Bank name and Account number show "—" and the attached receipt
+  only enables the button; it isn't sent.
 - **`proxy.ts` matches public files under a protected path.** Its matcher covers
   `/opportunities/:path*`, so `/opportunities/foo.png` is protected too. The browser sends
   the session cookie and gets the file, but `next/image`'s optimiser fetches without it,
@@ -400,10 +450,20 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   _Digital Numbers_, which is not on Google Fonts, and `next/font/google` is the only
   font path here — it renders in the system monospace stack with `tabular-nums`. Swap in
   the real face if the designer supplies it.
-- **`/portfolio/[id]` holds the customer in client state.** `CustomerDetail` owns it so
-  recording a repayment can update the status chip in `DetailHeader`, hide the Record
-  repayment button, flip the trade to repaid and prepend the repayments row in one go.
-  The page stays a server component that only looks the customer up.
+- **`/portfolio` speaks the portfolio API and derives nothing.** The cards read
+  `GET /portfolio`; At risk and Need attention have no API and show "—". The list pages
+  `GET /portfolio/borrowers` by cursor under `["portfolio", "borrowers", search]`, with the
+  search debounced and sent to the API, so a new search starts without a cursor. A `422`
+  whose pointer is `#/cursor` means the cursor went stale: `useBorrowers` resets the query
+  to page one. Health has no API either: a company with an overdue funding is At risk,
+  any other On track, and the health filter runs over the loaded rows. A company page reads
+  `GET /portfolio/borrowers/:id` and `GET /fundings?borrowerId=` (not paged, filtered in
+  the app); a trade page reads `GET /fundings/:id`, and its rows link by funding `id`, not
+  `reference`. Statuses are computed at request time, so every key sits under
+  `["portfolio"]` and a recorded repayment invalidates all of it with `CAPITAL_KEY`.
+  `contact` is null for every enterprise today, which the About tab shows as an empty
+  state. Before the enterprise confirms the funds, a funding has no installments, no
+  outstanding and no `confirmedAt`.
 - **`Select` is a hand-built listbox, so keyboard support is ours to keep.** Figma styles
   the popup ([node 3883-68463](https://www.figma.com/design/TcbSe6y2vzc4z3MU6P8ldR/Marketing-Designs-%7C-Hops?node-id=3883-68463)),
   which a native `<select>` cannot do. It implements `role="combobox"`/`listbox`/`option`
@@ -414,16 +474,32 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   The popup is absolutely positioned, so a scroll container it opens inside clips it.
   Opening scrolls the popup into view, which is enough inside a scrolling dialog body
   (the offer modal); otherwise the dialog keeps `overflow-visible`.
-- **Clicking a funded trade opens a right-side sheet, not a route.** Figma draws it as a
-  544px panel pinned to the right edge (node 3649-63954), so it is a native `<dialog>`
-  with `ml-auto h-full` — the platform still gives the focus trap, Escape and backdrop.
-  `/portfolio/[id]` keeps its own URL while the sheet is open.
+- **A funded trade is a page, `/portfolio/[id]/[tradeId]`.** An overdue trade adds the
+  orange notice and shows the remaining repayment in `red-error-300` with the oldest
+  overdue date. Mark as paid is not in the design: each unpaid installment gets one for
+  `repayments:record`, behind a `ConfirmDialog`, posting `/installments/:id/receipt` (no
+  body, whole installments only).
 - **The lender dashboard uses values that are off the design system**, kept verbatim
-  from Figma and marked with comments at each site: the 24px greeting and 20px stat
-  figures are not on the type scale (which jumps 18 → 22), `#e0f2fe` behind the update
-  icon is off-palette (nearest is `azure-100`), the sidebar org avatar's gradient
-  stops sit just off the ocean ramp, and the capital-deployed ring's two category
-  colours (`#7be7fc`, `#005894`) match no ramp stop.
+  from Figma: the 24px greeting and metric figures are not on the type scale (which jumps
+  18 → 22), and the org avatar's gradient stops sit just off the ocean ramp.
+- **Teams & permissions has no API.** `/settings/teams` lists only
+  the signed-in user (from `/users/me`) as Owner, because an organisation is created with
+  its Owner and nobody can be invited yet. The six system roles are static in
+  `teams/utils/roles.ts`, with permission counts copied from the backend's
+  `LENDER_ROLE_PERMISSIONS`; keep them in step until a roles endpoint exists. Invite member
+  and Create custom role need `team:manage` and do nothing.
+- **`/settings/login-activity` lists every login, ended ones included.** It pages
+  `GET /users/me/sessions` by cursor under `["sessions"]`, and the count above it is the
+  active sessions loaded so far, not every login ever. Only an `active` row has the `⋯`
+  menu. Signing out a row, or all other devices, asks first; signing out the `current`
+  row clears this browser's cookies too, so it hard-navigates to `/login` instead of
+  refetching.
+- **`/home` reads `/users/me` for the greeting and `GET /capital` for the three figures.**
+  `useCapital` (`@/hooks/use-capital`, shared with the offer modal) maps kobo to naira: Available to deploy
+  is `availableMinor` (allocation less pending offers and live fundings), Capital deployed
+  and Outstanding balance count only fundings the enterprise has confirmed. A `404` (no
+  mandate) or `403` isn't retried and shows "—". Recent updates has no endpoint yet and
+  shows the empty state.
 - **Tailwind pitfalls this repo has already hit** (all three cost real debugging time):
   - **`next/font` variables must go on `<html>`, not `<body>`.** `@theme` declares
     `--font-sans` on `:root`; a `:root` variable cannot read one defined on a
@@ -464,8 +540,10 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   and photo panel never reach the browser — only the step counter, progress bar and two
   forms do. Put new chrome in the shell, not the provider.
 - **`/mandate` speaks codes, kobo and basis points; the app speaks labels, naira and
-  percent.** `services/mandate.ts` converts both ways, with the converters in
-  `utils/mandate-options.ts` that onboarding also uses. `PUT` replaces the whole mandate,
+  percent.** `services/mandate.ts` converts both ways; `toTermsRequest` is the part
+  onboarding also posts. The form works on a `MandateDraft`, and `toDraft` / `fromDraft` /
+  `isSameDraft` in `utils/mandate-options.ts` convert it for both onboarding and settings.
+  `PUT` replaces the whole mandate,
   so send every field. A non-null `nextChangeAt` means the 30-day limit is spent: the
   settings form locks and shows the date. Saving unchanged values doesn't count as a change.
 - **Onboarding collects a logo it doesn't send.** The service has no logo upload yet (and
@@ -473,14 +551,41 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   because a `File` can't survive the session-storage mirror. The interest rate is typed as
   a percentage and sent as `annualInterestRateBps` (`8` → `800`).
 - **Onboarding submits both steps at once, so an error can land on the step you left.**
-  `POST /onboarding/lender` runs from step 2. A 422 is mapped from each `pointer` onto its
-  field (`utils/field-errors.ts`), and any organisation error sends the user back to step 1.
+  `POST /onboarding/lender` runs from step 2. A 422 shows under its fields, and one whose
+  `pointer` is under `#/organization/` also sends the user back to step 1.
   The form holds labels and naira; `toRequest` converts them to the API's codes and minor units
-  (`*Minor`, kobo for `currency: "NGN"`).
+  (`*Minor`, kobo for `currency: "NGN"`, via `toMinorUnits` in `@/utils/naira`).
 - **Session storage is a refresh hint for the wizard, not its source of truth.** React
   state is; `saveOnboardingProgress` mirrors `{ step, data }` so a reload doesn't drop back
   to step 1 with empty fields. Restoring happens in an effect, not as seeded initial state,
   or the first client render would disagree with the server markup.
+- **Settings saves write the response straight into the shared cache.** `PUT /users/me`
+  and `PUT /organizations/current` return the saved record, which replaces `ME_KEY` /
+  `ORGANIZATION_KEY`, so the form, sidebar and nav show what the API stored (a normalised
+  phone, a trimmed name). The phone is one E.164 string: the form joins the dial code and
+  number, and splits a saved one with `libphonenumber-js` (`profile/utils/phone.ts`).
+  Company sends every field each time; without `organization:update` the fields are
+  disabled and Save is hidden. State exists only for Nigeria: `hasState` (`@/utils/countries`)
+  hides the field and leaves `state` out of the body for any other country, in Company and
+  onboarding step 1 alike, matching `OrganizationDetailsDto`, which requires it only for `NG`. Both pick it
+  from `NIGERIAN_STATES`, whose values are ISO 3166-2 codes (`NG-LA`) — the code is what the
+  API takes, the name is only the label. Company shows a saved state that isn't a known code
+  as an extra option but won't save it until a real state is picked. Photo and logo upload, email change and account deletion
+  have no API yet.
+- **Bad input is shown on the field; every other failure is a toast.** A 422
+  `validation-failed` with `errors[]` puts each `detail` under the field its `pointer`
+  names: the form calls `useFieldErrors([...pointer paths])` (`@/hooks/use-field-errors`)
+  and passes `onError: fieldErrors.show` to `mutate`, and the mutation hook skips its own
+  toast when `readFieldErrors(error)` finds fields. A path also matches its parent
+  (`sectors` takes `sectors/0`), a message for a field the form doesn't show still toasts,
+  and editing a field clears its message. Anything else — 401, 403, 409, 5xx, a 422 with
+  no fields — toasts `extractErrorMessage(error, fallback)`. Onboarding keeps its errors in
+  `OnboardingProvider`, because a 422 from step 2 can name a step-1 field, and the
+  mandate forms map `MANDATE_FIELD` (draft field → `capitalAllocationMinor`, …) to know
+  which pointer each input owns. Request for info numbers `documents/N` over the
+  non-blank rows only, as sent. Checks the form makes itself before sending (an offer
+  over the ticket range, max ticket over the allocation) still win over the API's.
+  A failed GET that leaves a panel empty may still say so in place.
 - **The API has no response envelope.** `trade-network-be` returns plain JSON or a 204,
   and failures as real HTTP errors in `application/problem+json`, with the user-safe text
   in `detail`. `query<T>` and `mutation<T>` return the body as is, so `T` is the whole
@@ -491,6 +596,11 @@ Do not read that file whole — it is tens of thousands of tokens. The `hugeicon
   `VerifyEmailForm` sends it to `/onboarding` rather than `redirectTo`. Only an active
   account gets the session cookies, so `proxy.ts` treats a refresh cookie on `/onboarding`
   as finished onboarding and redirects to `/home`.
+- **Verify business is behind a flag and stays out of production.** The nav item only
+  shows when `NEXT_PUBLIC_FEATURE_VERIFY_BUSINESS=true`, read once in `AppConfig.features`
+  (`@/lib`). It is a `NEXT_PUBLIC_` variable, so it is baked in at build time: set it in
+  `.env.development` (or the preview environment), never in the production build's env.
+  Every `.env*` file is gitignored, so each machine sets it locally.
 - **`Card` in `packages/ui` is still untouched scaffolding** (`Button` has been replaced).
 - **The Figma button matrix contradicts the style guide in places** — see
   [node 2770-1631](https://www.figma.com/design/TcbSe6y2vzc4z3MU6P8ldR/Marketing-Designs-%7C-Hops?node-id=2770-1631).

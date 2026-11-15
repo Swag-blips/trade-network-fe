@@ -2,28 +2,31 @@ import type { ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 
+// End stop is off-palette, verbatim from Figma.
+export const FEATURED_FILL =
+  "bg-linear-to-r from-evergreen-800 to-[#0d5551] text-grey-50";
+
 export function StatCard({
   label,
   value,
   caption,
   icon,
   featured = false,
+  valueClassName = "",
   className = "flex-1",
 }: {
   label: string;
   value: ReactNode;
-  caption: string;
+  caption?: string;
   icon: IconSvgElement;
   featured?: boolean;
+  valueClassName?: string;
   className?: string;
 }) {
   return (
     <div
       className={`flex items-start overflow-hidden rounded-lg border border-grey-100 p-md shadow-soft-section ${
-        featured
-          ? // End stop is off-palette, verbatim from Figma.
-            "bg-linear-to-r from-evergreen-800 to-[#0d5551] text-grey-50"
-          : "bg-white"
+        featured ? FEATURED_FILL : "bg-white"
       } ${className}`}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-xs">
@@ -42,16 +45,18 @@ export function StatCard({
         <div className="flex w-full flex-col gap-1">
           <p
             className={`font-brand text-2xl/[1.3] font-normal tracking-[0.192px] ${
-              featured ? "" : "text-grey-900"
+              valueClassName || (featured ? "" : "text-grey-900")
             }`}
           >
             {value}
           </p>
-          <p
-            className={`text-body-sm/[normal] ${featured ? "opacity-80" : "text-grey-600"}`}
-          >
-            {caption}
-          </p>
+          {caption ? (
+            <p
+              className={`text-body-sm/[normal] ${featured ? "opacity-80" : "text-grey-600"}`}
+            >
+              {caption}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

@@ -1,9 +1,10 @@
 export type DeviceKind = "desktop" | "mobile";
 
-export function describeDevice(userAgent: string): {
+export function describeDevice(userAgent: string | null): {
   label: string;
   kind: DeviceKind;
 } {
+  if (!userAgent) return { label: "Unknown device", kind: "desktop" };
   if (/iPhone/.test(userAgent)) return { label: "iPhone", kind: "mobile" };
   if (/iPad/.test(userAgent)) return { label: "iPad", kind: "mobile" };
   if (/Android/.test(userAgent)) {
@@ -41,3 +42,11 @@ export const sessionTime = (iso: string) =>
     hour: "2-digit",
     minute: "2-digit",
   });
+
+/** "Ended today, 09:12 AM" or "Ended Nov 07, 2026, 09:12 AM". */
+export function endedLabel(iso: string | null) {
+  if (!iso) return "Ended";
+  const day = sessionDay(iso);
+  const lead = day === "Today" || day === "Yesterday" ? day.toLowerCase() : day;
+  return `Ended ${lead}, ${sessionTime(iso)}`;
+}

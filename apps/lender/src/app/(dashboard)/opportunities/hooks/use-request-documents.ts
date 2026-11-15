@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
-import { extractErrorMessage } from "@/api/client";
+import { extractErrorMessage, readFieldErrors } from "@/api/client";
 import { opportunityService } from "../services";
 import type { DocumentRequestResponse } from "../types/inbox";
 import { afterNegotiation, settleNegotiationError } from "../utils/negotiation";
@@ -22,6 +22,7 @@ export function useRequestDocuments(
     },
     onError: (error) => {
       settleNegotiationError(queryClient, error, opportunityId);
+      if (readFieldErrors(error)) return;
       toast({
         state: "error",
         message: extractErrorMessage(

@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { CustomerDetail } from "../components/customer-detail";
-import { CUSTOMERS } from "../data";
-
-export function generateStaticParams() {
-  return CUSTOMERS.map((customer) => ({ id: customer.id }));
-}
+import { PageGlow } from "@/components/page-glow";
+import { BorrowerDetail } from "../components/borrower-detail";
 
 export default async function CustomerPage({
   params,
@@ -12,26 +7,13 @@ export default async function CustomerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const index = CUSTOMERS.findIndex((customer) => customer.id === id);
-  const customer = CUSTOMERS[index];
-
-  if (!customer) {
-    notFound();
-  }
 
   return (
-    <CustomerDetail
-      customer={customer}
-      prevHref={
-        CUSTOMERS[index - 1]
-          ? `/portfolio/${CUSTOMERS[index - 1]!.id}`
-          : undefined
-      }
-      nextHref={
-        CUSTOMERS[index + 1]
-          ? `/portfolio/${CUSTOMERS[index + 1]!.id}`
-          : undefined
-      }
-    />
+    <div className="relative min-h-px flex-1 overflow-y-auto bg-grey-50">
+      <PageGlow />
+      <div className="relative mx-auto flex w-full max-w-content flex-col gap-xl px-xl py-xl">
+        <BorrowerDetail id={id} />
+      </div>
+    </div>
   );
 }

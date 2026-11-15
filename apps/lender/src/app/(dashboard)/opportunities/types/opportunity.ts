@@ -1,13 +1,10 @@
+import type { FinancingPurpose } from "@/utils/financing-purpose";
 import type { BorrowerCategory } from "../../types";
 
 export type MatchLevel = "STRONG" | "MODERATE" | "WEAK";
 export type OpportunityStatus =
   "OPEN" | "ENGAGED" | "DISMISSED" | "WITHDRAWN" | "CLOSED";
 export type DocumentKind = "INVOICE" | "PURCHASE_ORDER" | "DELIVERY_NOTE";
-export type FinancingPurpose =
-  | "EARLY_PAYMENT"
-  | "SUPPLIER_PAYMENT"
-  | "INVENTORY_PURCHASE";
 
 /** `GET /opportunities` query. Leave a filter out for "All". */
 export interface OpportunityQuery {

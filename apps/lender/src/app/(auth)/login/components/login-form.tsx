@@ -6,6 +6,7 @@ import { BrandMark } from "@repo/ui/brand-mark";
 import { Button } from "@repo/ui/button";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { saveLoginChallenge } from "@/lib/login-storage";
 import { useLogin } from "../hooks/useLogin";
 import { AuthCard } from "../../components/auth-card";
@@ -14,13 +15,16 @@ export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const { mutate: login, isPending } = useLogin();
+  const fieldErrors = useFieldErrors(["email"]);
 
   function handleSubmit(event: React.SubmitEvent) {
     event.preventDefault();
 
+    fieldErrors.reset();
     login(
       { email },
       {
+        onError: fieldErrors.show,
         onSuccess: (response) => {
           saveLoginChallenge(response.challengeId);
           router.push(
@@ -56,6 +60,7 @@ export function LoginForm() {
               htmlFor="email"
               variant="auth"
               className="w-full"
+              error={fieldErrors.errors.email}
             >
               <Input
                 id="email"
@@ -63,7 +68,10 @@ export function LoginForm() {
                 variant="auth"
                 placeholder="johnferguson@omnipay.com"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  fieldErrors.clear("email");
+                }}
               />
             </Field>
 

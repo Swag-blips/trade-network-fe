@@ -1,106 +1,135 @@
 "use client";
 
 import { useState } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Invoice01Icon } from "@hugeicons/core-free-icons";
-import { Select } from "@repo/ui/select";
-import { DataTable } from "@repo/ui/data-table";
-import { FilterBar } from "@repo/ui/filter-bar";
-import { StatusChip } from "./status-chip";
-import { FundedTradeDrawer } from "./funded-trade-drawer";
 import {
-  CUSTOMER_STATUS,
-  type Customer,
-  type FundedTrade,
-} from "../types/customer";
+  Alert01Icon,
+  AlertCircleIcon,
+  Clock02Icon,
+  SirenIcon,
+} from "@hugeicons/core-free-icons";
+import { DataTable } from "@repo/ui/data-table";
+import { withKobo } from "@/utils/naira";
+import { shortDate } from "@/utils/date";
+import { StatCard } from "./stat-card";
+import { StatusChip } from "./status-chip";
+import { ANY_STATUS, TablePanel } from "./table-panel";
+import { useFundings } from "../hooks/use-fundings";
+import { TRADE_STATUS, type Borrower } from "../types/portfolio";
 
-const STATUSES = [
-  "Any status",
-  ...Object.values(CUSTOMER_STATUS).map((status) => status.label),
-];
+const STATUSES = Object.values(TRADE_STATUS).map((status) => status.label);
 
-export function FundedTradesTab({
-  customer,
-  onRecordRepayment,
-}: {
-  customer: Customer;
-  onRecordRepayment?: (tradeId: string) => void;
-}) {
-  const [status, setStatus] = useState(STATUSES[0]!);
-  const [open, setOpen] = useState<FundedTrade | null>(null);
+export function FundedTradesTab({ borrower }: { borrower: Borrower }) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState(ANY_STATUS);
+  const { data: fundings = [], isPending, isError } = useFundings(borrower.id);
 
-  const visible = customer.trades.filter(
-    (trade) =>
-      status === "Any status" || CUSTOMER_STATUS[trade.status].label === status,
+  const search = query.trim().replace(/^#/, "").toLowerCase();
+  const visible = fundings.filter(
+    (funding) =>
+      funding.reference.toLowerCase().includes(search) &&
+      (status === ANY_STATUS || TRADE_STATUS[funding.status].label === status),
   );
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="flex w-full items-center gap-md">
-        <h2 className="min-w-0 flex-1 font-sans text-xl/normal font-medium text-grey-900">
-          Funded trades
-        </h2>
-        <FilterBar>
-          <Select
-            aria-label="Filter trades by status"
-            variant="chip"
-            value={status}
-            onValueChange={setStatus}
-            options={STATUSES}
-          />
-        </FilterBar>
+    <div className="flex flex-col gap-lg">
+      <div className="flex items-stretch gap-2.5">
+        <StatCard
+          label="Credit exposure"
+          value={`₦ ${withKobo(borrower.outstanding)}`}
+          valueClassName="text-red-error-500"
+          icon={SirenIcon}
+        />
+        <StatCard
+          label="Outstanding"
+          value={borrower.fundings.active}
+          icon={AlertCircleIcon}
+        />
+        <StatCard
+          label="Due soon"
+          value={borrower.fundings.dueSoon}
+          icon={Clock02Icon}
+        />
+        <StatCard
+          label="Overdue"
+          value={borrower.fundings.overdue}
+          icon={Alert01Icon}
+        />
       </div>
 
-      <div className="mt-md w-full">
+      <TablePanel
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Search trade ID"
+        status={status}
+        onStatusChange={setStatus}
+        statuses={STATUSES}
+        filterLabel="Filter trades by status"
+      >
         <DataTable
+          variant="cards"
           rows={visible}
-          gap={52}
-          rowKey={(trade) => trade.id}
-          onRowClick={setOpen}
-          empty="No trades match this filter."
+          gap={32}
+          rowKey={(funding) => funding.id}
+          rowHref={(funding) => `/portfolio/${borrower.id}/${funding.id}`}
+          empty={
+            isPending
+              ? "Loading trades…"
+              : isError
+                ? "We couldn't load these trades."
+                : fundings.length === 0
+                  ? "No trades have been funded for this company."
+                  : "No trades match these filters."
+          }
           columns={[
             {
-              header: "Trade ID",
-              width: 108,
-              cell: (trade) => (
-                <>
-                  <span className="flex size-8 flex-none items-center justify-center rounded-full bg-evergreen-100">
-                    <HugeiconsIcon
-                      icon={Invoice01Icon}
-                      size={16}
-                      className="text-evergreen-700"
-                    />
-                  </span>
-                  <span className="ml-xs font-sans">{trade.id}</span>
-                </>
+              header: "ID",
+              cell: (funding) => (
+                <span className="font-medium text-evergreen-600">
+                  {funding.reference}
+                </span>
               ),
             },
-            { header: "Funding type", cell: (trade) => trade.fundingType },
             {
-              header: "Outstanding balance",
-              width: 160,
-              cell: (trade) => trade.outstanding,
+              header: "Amount financed (NGN)",
+              width: 190,
+              cell: (funding) => (
+                <span className="font-medium">{withKobo(funding.amount)}</span>
+              ),
             },
-            { header: "Due date", width: 160, cell: (trade) => trade.dueDate },
+            {
+              header: "Next repayment",
+              width: 172,
+              cell: (funding) => (
+                <span
+                  className={
+                    funding.status === "overdue" ? "text-red-error-500" : ""
+                  }
+                >
+                  {funding.nextRepaymentAt
+                    ? shortDate(funding.nextRepaymentAt)
+                    : "—"}
+                </span>
+              ),
+            },
+            {
+              header: "Outstanding amount (NGN)",
+              width: 190,
+              cell: (funding) => (
+                <span
+                  className={`font-medium ${funding.status === "overdue" ? "text-red-error-500" : ""}`}
+                >
+                  {withKobo(funding.outstanding)}
+                </span>
+              ),
+            },
             {
               header: "Status",
-              width: 124,
-              cell: (trade) => <StatusChip status={trade.status} />,
+              width: 172,
+              cell: (funding) => <StatusChip status={funding.status} />,
             },
           ]}
         />
-      </div>
-
-      {open ? (
-        <FundedTradeDrawer
-          trade={open}
-          onClose={() => setOpen(null)}
-          onRecordRepayment={() => {
-            setOpen(null);
-            onRecordRepayment?.(open.id);
-          }}
-        />
-      ) : null}
+      </TablePanel>
     </div>
   );
 }

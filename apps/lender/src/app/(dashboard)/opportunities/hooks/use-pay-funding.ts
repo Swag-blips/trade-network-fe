@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage } from "@/api/client";
 import { fundingService } from "../services";
-import { CONVERSATIONS, settleNegotiationError } from "../utils/negotiation";
+import {
+  refreshNegotiations,
+  settleNegotiationError,
+} from "../utils/negotiation";
 
 export function usePayFunding() {
   const { toast } = useToast();
@@ -11,7 +14,7 @@ export function usePayFunding() {
   return useMutation({
     mutationFn: (fundingId: string) => fundingService.pay(fundingId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+      refreshNegotiations(queryClient);
       toast({ state: "success", message: "Payment marked as sent" });
     },
     onError: (error) => {

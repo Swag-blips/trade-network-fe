@@ -1,5 +1,6 @@
 import { mutation, query } from "@/api/client";
 import { fromBps, fromSectorCode } from "@/utils/mandate-options";
+import { purposeLabel } from "@/utils/financing-purpose";
 import { fromMinorUnits, toMinorUnits } from "@/utils/naira";
 import type {
   Conversation,
@@ -19,7 +20,6 @@ import type {
 } from "../types/inbox";
 import type {
   DocumentKind,
-  FinancingPurpose,
   Opportunity,
   OpportunityPage,
   OpportunityPageResponse,
@@ -34,15 +34,6 @@ const DOCUMENT_LABELS: Record<DocumentKind, string> = {
   PURCHASE_ORDER: "Purchase order",
   DELIVERY_NOTE: "Delivery note",
 };
-
-const PURPOSE_LABELS: Record<FinancingPurpose, string> = {
-  EARLY_PAYMENT: "Early payment",
-  SUPPLIER_PAYMENT: "Pay a supplier",
-  INVENTORY_PURCHASE: "Purchase inventory",
-};
-
-const purposeLabel = (purpose: FinancingPurpose) =>
-  PURPOSE_LABELS[purpose] ?? purpose;
 
 const fromSummary = (
   summary: OpportunitySummaryResponse,
@@ -99,9 +90,12 @@ const toOffer = (terms: OfferTerms): OfferRequest => ({
 
 const fromFunding = (funding: FundingResponse): Funding => ({
   id: funding.id,
+  reference: funding.reference,
+  offerId: funding.offerId,
   status: funding.status,
   amount: fromMinorUnits(funding.amountMinor),
   payBy: funding.payBy,
+  confirmedAt: funding.confirmedAt,
 });
 
 const fromMessage = (message: MessageResponse): Message => {

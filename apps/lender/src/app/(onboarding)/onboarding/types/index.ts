@@ -11,7 +11,7 @@ export interface CompleteOnboardingRequest {
   organization: {
     name: string;
     countryCode: string;
-    state: string;
+    state?: string;
     streetAddress: string;
   };
   mandate: MandateTermsRequest;

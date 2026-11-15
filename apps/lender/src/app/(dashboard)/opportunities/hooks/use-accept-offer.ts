@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage } from "@/api/client";
 import { offerService } from "../services";
-import { CONVERSATIONS, settleNegotiationError } from "../utils/negotiation";
+import {
+  refreshNegotiations,
+  settleNegotiationError,
+} from "../utils/negotiation";
 
 export function useAcceptOffer() {
   const { toast } = useToast();
@@ -11,7 +14,7 @@ export function useAcceptOffer() {
   return useMutation({
     mutationFn: (offerId: string) => offerService.accept(offerId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+      refreshNegotiations(queryClient);
       toast({ state: "success", message: "Counter offer accepted" });
     },
     onError: (error) => {

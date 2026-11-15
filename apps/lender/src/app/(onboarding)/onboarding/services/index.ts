@@ -1,4 +1,5 @@
 import { mutation } from "@/api/client";
+import { hasState } from "@/utils/countries";
 import { toTermsRequest } from "@/services/mandate";
 import { fromDraft } from "@/utils/mandate-options";
 import type {
@@ -15,7 +16,7 @@ function toRequest({
     organization: {
       name: data.companyName,
       countryCode: data.countryCode,
-      state: data.state,
+      ...(hasState(data.countryCode) && { state: data.state }),
       streetAddress: data.streetAddress,
     },
     mandate: toTermsRequest(fromDraft(data)),

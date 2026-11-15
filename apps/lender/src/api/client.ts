@@ -102,6 +102,17 @@ export function readStatus(err: unknown) {
   return axios.isAxiosError(err) ? err.response?.status : undefined;
 }
 
+/** A 422's field messages, each with its pointer as a path: `organization/name`. */
+export function readFieldErrors(err: unknown) {
+  if (readProblemType(err) !== "validation-failed") return null;
+  const errors = readProblem(err)?.errors;
+  if (!errors?.length) return null;
+  return errors.map(({ pointer, detail }) => ({
+    path: pointer.replace(/^#\//, ""),
+    detail,
+  }));
+}
+
 /** A 422's first field message is more useful than its generic `detail`. */
 export function extractErrorMessage(err: unknown, fallback: string): string {
   const problem = readProblem(err);

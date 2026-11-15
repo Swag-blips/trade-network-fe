@@ -1,6 +1,15 @@
 export interface LoginSession {
   id: string;
-  userAgent: string;
-  ipAddress: string;
+  ipAddress: string | null;
+  userAgent: string | null;
   createdAt: string;
+  /** This browser. */
+  current: boolean;
+  active: boolean;
+  endedAt: string | null;
+}
+
+export interface SessionPage {
+  items: LoginSession[];
+  nextCursor: string | null;
 }

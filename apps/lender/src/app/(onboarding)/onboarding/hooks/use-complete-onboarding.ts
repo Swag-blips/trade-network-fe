@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@repo/ui/toast";
 import {
   extractErrorMessage,
-  readProblem,
+  readFieldErrors,
   readProblemType,
 } from "@/api/client";
 import { clearOnboarding } from "@/lib/onboarding-storage";
@@ -14,26 +14,27 @@ import type { CompleteOnboardingDto } from "../types";
 export function useCompleteOnboarding() {
   const router = useRouter();
   const { toast } = useToast();
-  const { back } = useOnboarding();
+  const { back, showErrors } = useOnboarding();
 
   return useMutation({
     mutationFn: (fields: CompleteOnboardingDto) =>
       onboardingService.complete(fields),
     onError: (error) => {
       const type = readProblemType(error);
+      const fields = readFieldErrors(error);
 
-      const onFirstStep = readProblem(error)?.errors?.some(({ pointer }) =>
-        pointer.startsWith("#/organization/"),
-      );
-      if (type === "validation-failed" && onFirstStep) back();
-
-      toast({
-        message: extractErrorMessage(
-          error,
-          "Could not finish setting up your account",
-        ),
-        state: "error",
-      });
+      if (fields) {
+        showErrors(error);
+        if (fields.some(({ path }) => path.startsWith("organization/"))) back();
+      } else {
+        toast({
+          message: extractErrorMessage(
+            error,
+            "Could not finish setting up your account",
+          ),
+          state: "error",
+        });
+      }
 
       // The form stays in session storage on an expired code, so logging back
       // in returns to it filled in, under the new challengeId.

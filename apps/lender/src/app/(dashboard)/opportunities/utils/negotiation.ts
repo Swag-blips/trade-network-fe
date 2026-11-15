@@ -1,12 +1,19 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { readProblemType, readStatus } from "@/api/client";
 import { forgetOpportunity } from "./opportunity-cache";
+import { CAPITAL_KEY } from "@/hooks/use-capital";
 import { ORGANIZATION_KEY } from "@/hooks/use-organization";
 
 export const CONVERSATIONS = ["conversations"] as const;
 
 export const conversationKey = (id: string) =>
   [...CONVERSATIONS, "detail", id] as const;
+
+/** Every negotiation change can move the thread, the inbox and available capital. */
+export function refreshNegotiations(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+  void queryClient.invalidateQueries({ queryKey: CAPITAL_KEY });
+}
 
 /** Errors the dialog stays open for, so the terms can be corrected and resent. */
 export function isFormError(error: unknown) {
@@ -20,7 +27,7 @@ export function afterNegotiation(
   opportunityId: string,
 ) {
   forgetOpportunity(queryClient, opportunityId);
-  void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+  refreshNegotiations(queryClient);
 }
 
 export function settleNegotiationError(
@@ -40,5 +47,5 @@ export function settleNegotiationError(
       queryKey: ORGANIZATION_KEY,
     });
   }
-  void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+  refreshNegotiations(queryClient);
 }

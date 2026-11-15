@@ -11,6 +11,7 @@ export function FormDialog({
   onClose,
   onSubmit,
   footer,
+  dismissible = true,
   children,
 }: {
   title: string;
@@ -18,6 +19,7 @@ export function FormDialog({
   onClose: () => void;
   onSubmit?: () => void;
   footer?: ReactNode;
+  dismissible?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -52,9 +54,11 @@ export function FormDialog({
           >
             {title}
           </h2>
-          <IconButton label="Close" size="xs" onClick={onClose}>
-            <HugeiconsIcon icon={Cancel01Icon} />
-          </IconButton>
+          {dismissible ? (
+            <IconButton label="Close" size="xs" onClick={onClose}>
+              <HugeiconsIcon icon={Cancel01Icon} />
+            </IconButton>
+          ) : null}
         </header>
 
         <div className="flex min-h-0 flex-col gap-lg overflow-y-auto px-lg py-md">

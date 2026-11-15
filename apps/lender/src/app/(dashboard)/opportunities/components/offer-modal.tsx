@@ -9,6 +9,8 @@ import { Field } from "@repo/ui/field";
 import { Select } from "@repo/ui/select";
 import { readProblem, readProblemType } from "@/api/client";
 import { RANGE_THUMB } from "@/components/financing-range";
+import { useCapital } from "@/hooks/use-capital";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { useMandate } from "@/hooks/use-mandate";
 import {
   formatAmountInput,
@@ -25,7 +27,7 @@ import {
   tenorLabel,
   tenorOptions,
 } from "../utils/offer";
-import { shortDate } from "../utils/format";
+import { shortDate } from "@/utils/date";
 
 function Row({
   label,
@@ -62,10 +64,12 @@ export function OfferModal({
   const amountId = useId();
   const tenorId = useId();
   const { data: mandate } = useMandate();
+  const { data: capital } = useCapital();
   const { mutate: makeOffer, isPending } = useMakeOffer(opportunity, onSent);
   const [amountText, setAmountText] = useState("");
   const [pickedTenor, setPickedTenor] = useState<number>();
   const [capitalLeft, setCapitalLeft] = useState<number>();
+  const fieldErrors = useFieldErrors(["amountMinor", "tenorDays"]);
   useEffect(() => {
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
@@ -76,9 +80,7 @@ export function OfferModal({
     pickedTenor !== undefined && tenors.days.includes(pickedTenor)
       ? pickedTenor
       : tenors.days[0]!;
-  // The API has no "available capital" figure; it checks on send and, if the
-  // offer is too big, says how much is left. Until then only the mandate caps it.
-  const available = capitalLeft;
+  const available = capitalLeft ?? capital?.available;
   const ceiling = Math.min(
     opportunity.advance,
     mandate?.fundingMax ?? Infinity,
@@ -95,13 +97,16 @@ export function OfferModal({
 
   const overCapital = available !== undefined && amount > available;
   const fill = ceiling > 0 ? Math.min(amount / ceiling, 1) * 100 : 0;
-  const amountError = offerAmountError(amount, opportunity.advance, mandate);
-  const canSend = !!mandate && amount > 0 && !overCapital && !amountError;
+  const ownAmountError = offerAmountError(amount, opportunity.advance, mandate);
+  const amountError = ownAmountError ?? fieldErrors.errors.amountMinor;
+  const canSend = !!mandate && amount > 0 && !overCapital && !ownAmountError;
 
   function send() {
     if (!canSend || isPending) return;
+    fieldErrors.reset();
     makeOffer(terms, {
       onError: (error) => {
+        fieldErrors.show(error);
         if (readProblemType(error) === "capital-exceeded") {
           const left = readProblem(error)?.availableMinor;
           setCapitalLeft(fromMinorUnits(Number(left ?? 0)));
@@ -211,6 +216,7 @@ export function OfferModal({
                     aria-invalid={amountError ? true : undefined}
                     onChange={(event) => {
                       setAmountText(formatAmountInput(event.target.value));
+                      fieldErrors.clear("amountMinor");
                     }}
                     className="field-sizing-content min-w-16 max-w-56 bg-transparent text-grey-900 caret-grey-900 outline-none placeholder:text-grey-300"
                   />
@@ -246,6 +252,7 @@ export function OfferModal({
                     value={Math.min(amount, ceiling)}
                     onChange={(event) => {
                       setAmountText(formatAmountInput(event.target.value));
+                      fieldErrors.clear("amountMinor");
                     }}
                     className={`absolute inset-0 m-0 h-5 w-full cursor-pointer appearance-none bg-transparent outline-none ${RANGE_THUMB}`}
                   />
@@ -261,13 +268,19 @@ export function OfferModal({
               </div>
             </div>
 
-            <Field label="Repayment tenure" htmlFor={tenorId} variant="auth">
+            <Field
+              label="Repayment tenure"
+              htmlFor={tenorId}
+              variant="auth"
+              error={fieldErrors.errors.tenorDays}
+            >
               <Select
                 id={tenorId}
                 variant="strong"
                 value={tenorLabel(tenorDays)}
                 onValueChange={(value) => {
                   setPickedTenor(parseInt(value, 10));
+                  fieldErrors.clear("tenorDays");
                 }}
                 options={tenors.days.map(tenorLabel)}
               />

@@ -10,10 +10,10 @@ export interface Organization {
   permissions: string[];
 }
 
-/** `PUT` takes all four every time. */
+/** `state` only for Nigeria. */
 export interface OrganizationRequest {
   name: string;
   countryCode: string;
-  state: string;
+  state?: string;
   streetAddress: string;
 }

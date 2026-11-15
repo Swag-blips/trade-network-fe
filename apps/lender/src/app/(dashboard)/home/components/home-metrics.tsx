@@ -4,9 +4,10 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AlertCircleIcon, Coins01Icon } from "@hugeicons/core-free-icons";
-import { useMandate } from "@/hooks/use-mandate";
 import { TextPlaceholder } from "@/components/text-placeholder";
 import { withKobo } from "@/utils/naira";
+import { useCapital } from "@/hooks/use-capital";
+import type { Capital } from "@/types/capital";
 
 /** A zero greys out everything after the symbol. */
 function Amount({ value }: { value: number }) {
@@ -43,24 +44,22 @@ function Metric({
 }
 
 export function HomeMetrics() {
-  const { data: mandate, isPending, isError } = useMandate();
+  const { data: capital, isPending, isError } = useCapital();
+
+  function figure(key: keyof Capital) {
+    if (isPending) return <TextPlaceholder className="w-40" />;
+    if (isError) return "—";
+    return <Amount value={capital[key]} />;
+  }
 
   return (
     <div className="flex items-stretch gap-sm">
-      {/* No API reports available capital; the allocation over-reads it while an offer is pending. */}
       <Metric
         label="Available to deploy"
         icon={<HugeiconsIcon icon={Coins01Icon} size={16} />}
       >
-        {isPending ? (
-          <TextPlaceholder className="w-40" />
-        ) : isError ? (
-          "—"
-        ) : (
-          <Amount value={mandate.capitalAllocation} />
-        )}
+        {figure("available")}
       </Metric>
-      {/* No endpoint for these two yet. */}
       <Metric
         label="Capital deployed"
         icon={
@@ -68,13 +67,13 @@ export function HomeMetrics() {
           <Image src="/home/money-bag-time.svg" alt="" width={16} height={16} />
         }
       >
-        <Amount value={0} />
+        {figure("deployed")}
       </Metric>
       <Metric
         label="Outstanding balance"
         icon={<HugeiconsIcon icon={AlertCircleIcon} size={16} />}
       >
-        <Amount value={0} />
+        {figure("outstanding")}
       </Metric>
     </div>
   );

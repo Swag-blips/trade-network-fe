@@ -3,19 +3,23 @@
 import { useState } from "react";
 import { Button } from "@repo/ui/button";
 import { MandateFields } from "@/components/mandate-fields";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import type { Mandate } from "@/types/mandate";
 import {
+  changedMandateFields,
   fromDraft,
   isCompleteMandate,
   isSameDraft,
+  MANDATE_FIELDS,
   toDraft,
 } from "@/utils/mandate-options";
 import { useUpdateMandate } from "../hooks/use-update-mandate";
-import { longDate } from "../utils/format";
+import { longDate } from "@/utils/date";
 import { UpdateLimitBanner } from "./update-limit-banner";
 
 export function MandateForm({ mandate }: { mandate: Mandate }) {
   const { mutate: updateMandate, isPending } = useUpdateMandate();
+  const fieldErrors = useFieldErrors(MANDATE_FIELDS);
   const [draft, setDraft] = useState(() => toDraft(mandate));
   const [dismissed, setDismissed] = useState<"edited" | "locked" | null>(null);
 
@@ -51,13 +55,21 @@ export function MandateForm({ mandate }: { mandate: Mandate }) {
         onSubmit={(event) => {
           event.preventDefault();
           if (!dirty || !valid || locked) return;
-          updateMandate({ ...mandate, ...fromDraft(draft) });
+          fieldErrors.reset();
+          updateMandate(
+            { ...mandate, ...fromDraft(draft) },
+            { onError: fieldErrors.show },
+          );
         }}
       >
         <MandateFields
           value={draft}
           disabled={locked}
-          onChange={(fields) => setDraft({ ...draft, ...fields })}
+          errors={fieldErrors.errors}
+          onChange={(fields) => {
+            setDraft({ ...draft, ...fields });
+            changedMandateFields(fields).forEach(fieldErrors.clear);
+          }}
         />
 
         <div className="flex justify-end py-lg">

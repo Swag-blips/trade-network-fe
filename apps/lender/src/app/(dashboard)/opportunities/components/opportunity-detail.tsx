@@ -27,7 +27,8 @@ import { RequestInfoModal } from "./request-info-modal";
 import { useDismissOpportunity } from "../hooks/use-dismiss-opportunity";
 import { useOpportunity } from "../hooks/use-opportunity";
 import type { Opportunity, OpportunitySummary } from "../types/opportunity";
-import { fullNaira, MATCH, shortDate } from "../utils/format";
+import { shortDate } from "@/utils/date";
+import { fullNaira, MATCH } from "../utils/format";
 import { forgetOpportunity } from "../utils/opportunity-cache";
 
 const TABS = ["Overview", "Trade details"] as const;

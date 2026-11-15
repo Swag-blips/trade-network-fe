@@ -1,7 +1,8 @@
 import { Avatar } from "@repo/ui/avatar";
 import { SelectableRow } from "./selectable-row";
 import type { OpportunitySummary } from "../types/opportunity";
-import { MATCH, nairaSuffix, shortDate } from "../utils/format";
+import { shortDate } from "@/utils/date";
+import { MATCH, nairaSuffix } from "../utils/format";
 
 export function OpportunityCard({
   item,

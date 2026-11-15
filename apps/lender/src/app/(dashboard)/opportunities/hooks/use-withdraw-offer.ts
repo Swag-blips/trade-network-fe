@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage } from "@/api/client";
 import { offerService } from "../services";
-import { CONVERSATIONS, settleNegotiationError } from "../utils/negotiation";
+import {
+  refreshNegotiations,
+  settleNegotiationError,
+} from "../utils/negotiation";
 
 export function useWithdrawOffer() {
   const { toast } = useToast();
@@ -11,7 +14,7 @@ export function useWithdrawOffer() {
   return useMutation({
     mutationFn: (offerId: string) => offerService.withdraw(offerId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+      refreshNegotiations(queryClient);
       toast({ state: "success", message: "Offer withdrawn" });
     },
     onError: (error) => {

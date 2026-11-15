@@ -1,4 +1,4 @@
-import type { FinancingPurpose } from "./opportunity";
+import type { FinancingPurpose } from "@/utils/financing-purpose";
 
 export type OfferStatus =
   "PENDING" | "WITHDRAWN" | "ACCEPTED" | "REJECTED" | "LAPSED" | "COUNTERED";
@@ -6,7 +6,11 @@ export type ConversationStatus = "ACTIVE" | "CLOSED" | "FUNDED";
 export type MessageKind = "OFFER" | "DOCUMENT_REQUEST" | "EXIT";
 export type Sender = "LENDER" | "BORROWER";
 export type FundingStatus =
-  "AWAITING_PAYMENT" | "AWAITING_CONFIRMATION" | "ACTIVE" | "EXPIRED";
+  | "AWAITING_PAYMENT"
+  | "AWAITING_CONFIRMATION"
+  | "ACTIVE"
+  | "REPAID"
+  | "EXPIRED";
 
 /** `GET /conversations` query. */
 export interface ConversationQuery {
@@ -37,6 +41,7 @@ export interface OfferResponse {
 
 export interface FundingResponse {
   id: string;
+  reference: string;
   offerId: string;
   status: FundingStatus;
   currency: "NGN";
@@ -129,9 +134,12 @@ export interface Offer extends OfferTerms {
 /** An accepted offer, in naira. */
 export interface Funding {
   id: string;
+  reference: string;
+  offerId: string;
   status: FundingStatus;
   amount: number;
   payBy: string;
+  confirmedAt: string | null;
 }
 
 export type Message =

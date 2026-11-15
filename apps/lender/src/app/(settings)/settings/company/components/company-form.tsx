@@ -9,15 +9,28 @@ import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { Select } from "@repo/ui/select";
 import { OrgAvatar } from "@repo/ui/avatars";
+import { useFieldErrors } from "@/hooks/use-field-errors";
 import { useOrganization } from "@/hooks/use-organization";
 import { usePermission } from "@/hooks/use-permission";
-import { COUNTRIES } from "@/utils/countries";
+import {
+  COUNTRIES,
+  hasState,
+  isNigerianState,
+  NIGERIAN_STATES,
+} from "@/utils/countries";
 import { useUpdateOrganization } from "../hooks/use-update-organization";
 
 export function CompanyForm() {
   const { data: organization } = useOrganization();
   const canEdit = usePermission("organization:update");
   const { mutate: updateOrganization, isPending } = useUpdateOrganization();
+  const fieldErrors = useFieldErrors([
+    "name",
+    "countryCode",
+    "state",
+    "streetAddress",
+  ]);
+  const { errors } = fieldErrors;
 
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -32,16 +45,22 @@ export function CompanyForm() {
     setStreetAddress(organization.streetAddress ?? "");
   }, [organization]);
 
+  const withState = hasState(country);
+  const savedState = organization?.state;
+  const states =
+    savedState && !isNigerianState(savedState)
+      ? [{ value: savedState, label: savedState }, ...NIGERIAN_STATES]
+      : NIGERIAN_STATES;
   const dirty =
     !!organization &&
     (name !== organization.name ||
       country !== organization.countryCode ||
-      state !== (organization.state ?? "") ||
+      (withState && state !== (organization.state ?? "")) ||
       streetAddress !== (organization.streetAddress ?? ""));
   const complete =
     name.trim() !== "" &&
     country !== "" &&
-    state.trim() !== "" &&
+    (!withState || isNigerianState(state)) &&
     streetAddress.trim() !== "";
 
   return (
@@ -50,12 +69,16 @@ export function CompanyForm() {
       onSubmit={(event) => {
         event.preventDefault();
         if (!canEdit || !dirty || !complete || isPending) return;
-        updateOrganization({
-          name: name.trim(),
-          countryCode: country,
-          state: state.trim(),
-          streetAddress: streetAddress.trim(),
-        });
+        fieldErrors.reset();
+        updateOrganization(
+          {
+            name: name.trim(),
+            countryCode: country,
+            ...(withState && { state }),
+            streetAddress: streetAddress.trim(),
+          },
+          { onError: fieldErrors.show },
+        );
       }}
     >
       <div className="flex flex-col gap-lg pb-md">
@@ -81,44 +104,80 @@ export function CompanyForm() {
         </div>
 
         <div className="grid grid-cols-2 gap-x-md gap-y-lg">
-          <Field label="Company name" htmlFor="company-name" variant="auth">
+          <Field
+            label="Company name"
+            htmlFor="company-name"
+            variant="auth"
+            error={errors.name}
+          >
             <Input
               id="company-name"
               variant="strong"
               maxLength={200}
               disabled={!canEdit}
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setName(event.target.value);
+                fieldErrors.clear("name");
+              }}
             />
           </Field>
-          <Field label="Country" htmlFor="country" variant="auth">
+          <Field
+            label="Country"
+            htmlFor="country"
+            variant="auth"
+            error={errors.countryCode}
+          >
             <Select
               id="country"
               variant="strong"
               disabled={!canEdit}
               value={country}
-              onValueChange={setCountry}
+              onValueChange={(code) => {
+                setCountry(code);
+                fieldErrors.clear("countryCode");
+                fieldErrors.clear("state");
+              }}
               options={COUNTRIES}
             />
           </Field>
-          <Field label="State" htmlFor="state" variant="auth">
-            <Input
-              id="state"
-              variant="strong"
-              maxLength={100}
-              disabled={!canEdit}
-              value={state}
-              onChange={(event) => setState(event.target.value)}
-            />
-          </Field>
-          <Field label="Street address" htmlFor="street-address" variant="auth">
+          {withState ? (
+            <Field
+              label="State"
+              htmlFor="state"
+              variant="auth"
+              error={errors.state}
+            >
+              <Select
+                id="state"
+                variant="strong"
+                disabled={!canEdit}
+                value={state}
+                onValueChange={(value) => {
+                  setState(value);
+                  fieldErrors.clear("state");
+                }}
+                placeholder="Select state"
+                options={states}
+              />
+            </Field>
+          ) : null}
+          <Field
+            label="Street address"
+            htmlFor="street-address"
+            variant="auth"
+            error={errors.streetAddress}
+          >
             <Input
               id="street-address"
               variant="strong"
               maxLength={300}
               disabled={!canEdit}
               value={streetAddress}
-              onChange={(event) => setStreetAddress(event.target.value)}
+              onChange={(event) => {
+                setStreetAddress(event.target.value);
+                fieldErrors.clear("streetAddress");
+              }}
             />
           </Field>
         </div>

@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
-import { extractErrorMessage, mutation, readStatus } from "@/api/client";
+import {
+  extractErrorMessage,
+  mutation,
+  readFieldErrors,
+  readStatus,
+} from "@/api/client";
 import { ORGANIZATION_KEY } from "@/hooks/use-organization";
 import type { Organization, OrganizationRequest } from "@/types/organization";
 
@@ -21,6 +26,7 @@ export function useUpdateOrganization() {
       if (readStatus(error) === 403) {
         void queryClient.invalidateQueries({ queryKey: ORGANIZATION_KEY });
       }
+      if (readFieldErrors(error)) return;
       toast({
         state: "error",
         message: extractErrorMessage(

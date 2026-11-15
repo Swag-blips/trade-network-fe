@@ -7,14 +7,6 @@ export const compactNaira = (value: number) => `NGN ${compactAmount(value)}`;
 
 export const nairaSuffix = (value: number) => `${formatAmount(value)} NGN`;
 
-/** "Dec 05, 2026", in the viewer's timezone. */
-export const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-
 export const clockTime = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric",

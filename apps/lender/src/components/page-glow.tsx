@@ -22,7 +22,7 @@ function Shape({ src, top }: { src: string; top: string }) {
   );
 }
 
-export function HomeGlow() {
+export function PageGlow() {
   return (
     <div
       aria-hidden

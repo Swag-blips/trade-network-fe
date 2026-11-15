@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
 import { extractErrorMessage } from "@/api/client";
 import { conversationService } from "../services";
-import { CONVERSATIONS, settleNegotiationError } from "../utils/negotiation";
+import {
+  refreshNegotiations,
+  settleNegotiationError,
+} from "../utils/negotiation";
 
 export function useExitConversation() {
   const { toast } = useToast();
@@ -12,7 +15,7 @@ export function useExitConversation() {
     mutationFn: (conversationId: string) =>
       conversationService.exit(conversationId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: CONVERSATIONS });
+      refreshNegotiations(queryClient);
       toast({ state: "success", message: "You left the negotiation" });
     },
     onError: (error) => {

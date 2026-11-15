@@ -27,7 +27,8 @@ import {
 } from "./opportunity-detail";
 import { useOpportunity } from "../hooks/use-opportunity";
 import type { Opportunity } from "../types/opportunity";
-import { fullNaira, MATCH, shortDate } from "../utils/format";
+import { shortDate } from "@/utils/date";
+import { fullNaira, MATCH } from "../utils/format";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

@@ -8,18 +8,29 @@ export interface Column<Row> {
   cell: (row: Row) => ReactNode;
 }
 
-const LAYOUT = {
+const LAYOUT: Record<
+  "default" | "cards" | "outlined",
+  { root: string; header: string; items?: string; row: string; cell: string }
+> = {
   default: {
     root: "flex flex-col gap-xs",
-    header: "px-sm",
+    header: "px-sm text-grey-500",
     row: "rounded-md px-sm py-2.5",
     cell: "text-body-sm/[normal]",
   },
   cards: {
     root: "flex flex-col",
-    header: "border-y border-grey-100 px-xl",
+    header: "border-y border-grey-100 px-xl text-grey-500",
+    items: "flex flex-col gap-xs px-md py-2.5",
     row: "rounded-xl border border-grey-100 bg-white px-md py-3.5",
     cell: "text-body/[1.4]",
+  },
+  outlined: {
+    root: "flex flex-col overflow-hidden rounded-lg border border-grey-200 bg-white",
+    header: "border-b border-grey-100 px-md text-grey-600",
+    items: "flex flex-col px-md py-2.5",
+    row: "py-3.25",
+    cell: "text-body-sm/[normal]",
   },
 };
 
@@ -118,7 +129,7 @@ export function DataTable<Row>({
     <div className={layout.root}>
       <div
         style={{ gap }}
-        className={`type-overline flex h-8.75 items-center bg-grey-50 whitespace-nowrap tracking-[0.24px] text-grey-500 ${layout.header}`}
+        className={`type-overline flex h-8.75 items-center bg-grey-50 whitespace-nowrap tracking-[0.24px] ${layout.header}`}
       >
         {columns.map((column) => (
           <span
@@ -131,11 +142,7 @@ export function DataTable<Row>({
         ))}
       </div>
 
-      {variant === "cards" ? (
-        <div className="flex flex-col gap-xs px-md py-2.5">{items}</div>
-      ) : (
-        items
-      )}
+      {layout.items ? <div className={layout.items}>{items}</div> : items}
     </div>
   );
 }

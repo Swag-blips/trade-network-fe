@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon } from "@hugeicons/core-free-icons";
 import { Field } from "@repo/ui/field";
 import { Input } from "@repo/ui/input";
 import { compactAmount, formatAmount, parseAmount } from "@/utils/naira";
@@ -26,6 +28,9 @@ export const RANGE_THUMB =
   "[&::-moz-range-thumb]:bg-[radial-gradient(circle,var(--color-evergreen-500)_4px,white_4.5px)] " +
   "focus-visible:[&::-moz-range-thumb]:outline-2 focus-visible:[&::-moz-range-thumb]:outline-offset-2 " +
   "focus-visible:[&::-moz-range-thumb]:outline-evergreen-600";
+
+const CARD =
+  "rounded-lg border border-grey-100 bg-white px-lg py-md shadow-soft-section";
 
 const RANGE = `pointer-events-none absolute inset-0 m-0 h-5 w-full appearance-none bg-transparent outline-none ${RANGE_THUMB}`;
 
@@ -56,6 +61,7 @@ function scale(top: number) {
 export function FinancingRange({
   min,
   max,
+  minError,
   maxError,
   ceiling,
   disabled = false,
@@ -63,21 +69,33 @@ export function FinancingRange({
 }: {
   min: number;
   max: number;
+  minError?: string;
   maxError?: string;
-  ceiling?: number;
+  ceiling: number;
   disabled?: boolean;
   onChange: (range: { min: number; max: number }) => void;
 }) {
+  if (!ceiling) {
+    return (
+      <section className={CARD}>
+        <p className="flex items-center justify-center gap-2.5 p-xs text-body-sm/[normal] text-grey-600">
+          <HugeiconsIcon icon={AlertCircleIcon} size={20} className="flex-none" />
+          Set your capital allocation first
+        </p>
+      </section>
+    );
+  }
+
   const setMin = (value: number) => onChange({ min: value, max });
   const setMax = (value: number) => onChange({ min, max: value });
 
   const fromInput = (value: string) => Math.min(parseAmount(value), CEILING);
   const top =
-    ceiling && ceiling > FLOOR * 10 ? Math.min(ceiling, CEILING) : CEILING;
+    ceiling > FLOOR * 10 ? Math.min(ceiling, CEILING) : CEILING;
   const { toStep, fromStep, thumbCentre } = scale(top);
 
   return (
-    <section className="flex flex-col gap-lg rounded-lg border border-grey-100 bg-white px-lg py-md shadow-soft-section">
+    <section className={`flex flex-col gap-lg ${CARD}`}>
       <div className="flex flex-col gap-xs">
         <p className="font-sans text-body/[1.21] font-medium text-grey-900">
           What financing amount would you consider per transaction?
@@ -96,6 +114,7 @@ export function FinancingRange({
           htmlFor="financing-min"
           variant="caption"
           className="flex-1"
+          error={minError}
         >
           <Input
             id="financing-min"

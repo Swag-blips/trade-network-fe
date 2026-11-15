@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@repo/ui/toast";
-import { extractErrorMessage, mutation } from "@/api/client";
+import { extractErrorMessage, mutation, readFieldErrors } from "@/api/client";
 import { ME_KEY } from "@/hooks/use-me";
 import type { User, UserRequest } from "@/types/user";
 
@@ -17,13 +17,15 @@ export function useUpdateMe() {
         message: "Your personal details were updated",
       });
     },
-    onError: (error) =>
+    onError: (error) => {
+      if (readFieldErrors(error)) return;
       toast({
         state: "error",
         message: extractErrorMessage(
           error,
           "We couldn't save your details. Please try again.",
         ),
-      }),
+      });
+    },
   });
 }
