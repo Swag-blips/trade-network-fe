@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+.agents
+docs
+Dockerfile
+.dockerignore
+**/node_modules
+**/.next
+**/.turbo
+**/out
+**/.env*
+**/coverage

@@ -17,11 +17,11 @@ export interface PortfolioResponse {
 }
 
 /** `GET /portfolio/borrowers` query. */
-export interface BorrowerQuery {
+export type BorrowerQuery = {
   search?: string;
   limit?: number;
   cursor?: string;
-}
+};
 
 export interface BorrowerSummaryResponse {
   id: string;
